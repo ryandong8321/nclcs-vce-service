@@ -7,6 +7,8 @@ import org.ryan.nclcs.vce.entity.SysNotificationDetail;
 
 public interface ISysNotificationDetailManagementDAO extends INclcsVceServiceBaseDAO<SysNotificationDetail, Integer>{
 	
-	public Map<String, Object> deleteMultiple(String ids);
+	public Map<String, Object> deleteMultiple(String notificationDetailIds);
+	
+	public Map<String, Object> deleteMultiple(String notificationIds, Integer notificationReceivceUserId);
 
 }

@@ -136,7 +136,7 @@ public class SysUsers implements Serializable{
 	@ManyToMany(mappedBy="sysRolesUsers", cascade=CascadeType.ALL)
 	private List<SysRoles> sysRoles;
 	
-	@ManyToMany(mappedBy="sysGroupsUsers")
+	@ManyToMany(mappedBy="sysGroupsUsers", cascade=CascadeType.ALL)
 	private List<SysGroups> sysGroups;
 	
 	/**

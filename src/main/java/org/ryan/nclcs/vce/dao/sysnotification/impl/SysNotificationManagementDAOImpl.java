@@ -122,7 +122,7 @@ public class SysNotificationManagementDAOImpl extends NclcsVceServiceBaseDAOImpl
 		Pagination<SysNotification> page=new Pagination<SysNotification>();
 		
 		Object[] param = null;
-		StringBuffer hql = new StringBuffer("select snn from SysNotification snn join snn.sysNotificationDetailInfo snd ");
+		StringBuffer hql = new StringBuffer("select distinct snn from SysNotification snn join snn.sysNotificationDetailInfo snd ");
 		
 		page.setFirst(displayStart);
 		page.setPageSize(displayLength);

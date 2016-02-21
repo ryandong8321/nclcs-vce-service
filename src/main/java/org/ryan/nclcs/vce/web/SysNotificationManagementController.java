@@ -12,11 +12,13 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.ryan.nclcs.vce.annotation.SystemLogIsCheck;
 import org.ryan.nclcs.vce.annotation.SystemUserLoginIsCheck;
+import org.ryan.nclcs.vce.entity.SysDeviceToken;
 import org.ryan.nclcs.vce.entity.SysGroups;
 import org.ryan.nclcs.vce.entity.SysNotification;
 import org.ryan.nclcs.vce.entity.SysNotificationDetail;
 import org.ryan.nclcs.vce.entity.SysRoles;
 import org.ryan.nclcs.vce.entity.SysUsers;
+import org.ryan.nclcs.vce.service.devicetoken.ISysDeviceTokenManagementService;
 import org.ryan.nclcs.vce.service.sysgroups.ISysGroupsManagementService;
 import org.ryan.nclcs.vce.service.sysnotification.ISysNotificationDetailManagementService;
 import org.ryan.nclcs.vce.service.sysnotification.ISysNotificationManagementService;
@@ -53,6 +55,9 @@ public class SysNotificationManagementController {
 	
 	@Autowired
 	private ISysUsersManagementService sysUsersManagementService;
+	
+	@Autowired
+	private ISysDeviceTokenManagementService DeviceTokenManagementService;
 	
 	@RequestMapping(value = "/sysnotificationlist.do")
 	@SystemUserLoginIsCheck
@@ -304,6 +309,10 @@ public class SysNotificationManagementController {
 //				user.setId(Integer.parseInt(""+request.getSession().getAttribute("u_id")));
 //				sysNotification.setNotificationUserInfo(user);
 				
+				//for send notification to App users
+				List<Integer> userIds=new ArrayList<Integer>();
+				//end
+				
 				SysNotificationDetail notificationDetail=null;
 				List<SysNotificationDetail> details=new ArrayList<SysNotificationDetail>();
 				for (SysUsers receiveUser:lstReceiveUsers){
@@ -316,11 +325,24 @@ public class SysNotificationManagementController {
 					notificationDetail.setIsRead(0);
 					notificationDetail.setDetailNotificationInfo(sysNotification);
 					details.add(notificationDetail);
+					
+					//for send notification to App users
+					userIds.add(receiveUser.getId());
+					//end
 				}
 				sysNotification.setSysNotificationDetailInfo(details);
 				sysNotification.setIsSend(1);
 				logger.info("this is [sendsysnotification.do] is saving...");
 				sysNotificationManagementService.save(sysNotification);
+				
+				//send notification to App user
+				List<SysDeviceToken> deviceTokens=DeviceTokenManagementService.findDeviceTokenByUserId(userIds);
+				String text="您有一条新通知";
+				String ticker="";
+				String title="";
+				boolean flag=DeviceTokenManagementService.sendNotificationToApp(deviceTokens, text, title, ticker);
+				//end
+				
 				result.put("status", 1);
 				result.put("data", "operation success!");
 				logger.info("this is [sendsysnotification.do] save sysNotification done ...");

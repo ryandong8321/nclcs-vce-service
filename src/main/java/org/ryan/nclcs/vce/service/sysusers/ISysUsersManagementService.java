@@ -3,6 +3,8 @@ package org.ryan.nclcs.vce.service.sysusers;
 import java.util.List;
 import java.util.Map;
 
+import org.ryan.nclcs.vce.entity.SysGroups;
+import org.ryan.nclcs.vce.entity.SysRoles;
 import org.ryan.nclcs.vce.entity.SysUsers;
 import org.ryan.nclcs.vce.service.INclcsVceServiceBaseService;
 
@@ -46,5 +48,11 @@ public interface ISysUsersManagementService extends INclcsVceServiceBaseService<
 	 * @return
 	 */
 	public SysUsers isExistByParameters(Map<String,Object> parameters);
+	
+	public List<Map<String, Object>> findAllSysUsersByParameters(Map<String, Object> parameters);
+	
+	public List<Map<String, Object>> findUsersByGroupIds(List<Integer> campusIds, List<Integer> classIds);
+	
+	public boolean saveRegisterUser(SysUsers user, SysGroups group, SysRoles role);
 
 }

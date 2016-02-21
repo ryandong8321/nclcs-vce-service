@@ -5,16 +5,28 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.ryan.nclcs.vce.dao.NclcsVceServiceBaseDAOImpl;
 import org.ryan.nclcs.vce.dao.Pagination;
+import org.ryan.nclcs.vce.dao.sysgroups.ISysGroupsManagementDAO;
+import org.ryan.nclcs.vce.dao.sysroles.ISysRolesManagementDAO;
 import org.ryan.nclcs.vce.dao.sysusers.ISysUsersManagementDAO;
 import org.ryan.nclcs.vce.entity.SysGroups;
 import org.ryan.nclcs.vce.entity.SysRoles;
 import org.ryan.nclcs.vce.entity.SysUsers;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 @Repository("sysUsersManagementDAO")
 public class SysUsersManagementDAOImpl extends NclcsVceServiceBaseDAOImpl<SysUsers, Integer> implements ISysUsersManagementDAO {
+	
+	@Autowired
+	private ISysRolesManagementDAO sysRolesManagementDAO;
+	
+	@Autowired
+	private ISysGroupsManagementDAO sysGroupsManagementDAO;
+	
 	@Override
 	public Pagination<SysUsers> searchData(int displayLength, int displayStart, int sEcho, Map<String, Object> parameters){
 		Pagination<SysUsers> page=new Pagination<SysUsers>();
@@ -403,12 +415,16 @@ public class SysUsersManagementDAOImpl extends NclcsVceServiceBaseDAOImpl<SysUse
 				hql.append("sus.userName like ?");
 				param.add("%"+parameters.get("userName")+"%");
 			}
+			if (parameters.containsKey("chineseName")){
+				hql.append("sus.chineseName like ?");
+				param.add("%"+parameters.get("chineseName")+"%");
+			}
 			if (parameters.containsKey("schoolName")){
 				hql.append(" or sgs.groupParentId in (select sgrs.id from SysGroups sgrs where sgrs.groupName like ?)");
 				param.add("%"+parameters.get("schoolName")+"%");
 			}
 			if (parameters.containsKey("sgs.groupName")){
-				hql.append(" or sus.sgs.groupName like ?");
+				hql.append(" or sgs.groupName like ?");
 				param.add("%"+parameters.get("sgs.groupName")+"%");
 			}
 			hql.append(")");
@@ -416,5 +432,31 @@ public class SysUsersManagementDAOImpl extends NclcsVceServiceBaseDAOImpl<SysUse
 		
 		page=this.findPage(page, hql.toString(), param.toArray());
 		return page;
+	}
+
+	@Override
+	public boolean saveRegisterUser(SysUsers user, SysGroups group, SysRoles role) {
+		boolean result=true;
+		Session session=null;
+		Transaction tran=null;
+		try{
+			session=this.sessionFactory.openSession();
+			tran=session.beginTransaction();
+			this.save(user);
+			role.getSysRolesUsers().add(user);
+			this.sysRolesManagementDAO.save(role);
+			group.getSysGroupsUsers().add(user);
+			this.sysGroupsManagementDAO.save(group);
+			tran.commit();
+		}catch(Exception ex){
+			ex.printStackTrace();
+			result=false;
+		}finally{
+			if (session!=null){
+				session.flush();
+				session.close();
+			}
+		}
+		return result;
 	}
 }

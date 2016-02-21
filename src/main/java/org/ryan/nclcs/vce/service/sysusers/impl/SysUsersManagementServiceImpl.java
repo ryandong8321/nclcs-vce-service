@@ -167,6 +167,10 @@ public class SysUsersManagementServiceImpl extends NclcsVceServiceBaseServiceImp
 		return result;
 	}
 	
+	public boolean saveRegisterUser(SysUsers user, SysGroups group, SysRoles role){
+		return this.getCurrentDAO().saveRegisterUser(user, group, role);
+	}
+	
 	private String getUserRolesName(List<SysRoles> lst){
 		StringBuffer buf=new StringBuffer();
 		SysRoles role=null;
@@ -178,5 +182,95 @@ public class SysUsersManagementServiceImpl extends NclcsVceServiceBaseServiceImp
 			buf.append(role.getRoleName());
 		}
 		return buf.toString();
+	}
+
+	@Override
+	public List<Map<String, Object>> findAllSysUsersByParameters(Map<String, Object> parameters) {
+		List<Object> param=new ArrayList<Object>();
+		StringBuffer hql=new StringBuffer("from SysUsers sus");
+		
+		List<Map<String, Object>> result=new ArrayList<Map<String, Object>>();
+		
+		boolean hasWhere=false;
+		for (String key:parameters.keySet()){
+			if (hasWhere){
+				hql.append(" and ");
+			}else{
+				hql.append(" where ");
+				hasWhere=true;
+			}
+			
+			hql.append("sus.");
+			hql.append(key);
+			hql.append(" = ?");
+			param.add(parameters.get(key));
+		}
+		
+		List<SysUsers> lstUser=this.getCurrentDAO().find(hql.toString(), param.toArray());
+		if (lstUser!=null&&!lstUser.isEmpty()){
+			Map<String, Object> map=null;
+			for (SysUsers user:lstUser){
+				map=new HashMap<String, Object>();
+				map.put("id", user.getId());
+				map.put("userName", user.getUserName());
+				map.put("chineseName", user.getChineseName());
+				map.put("englishName", user.getEnglishName());
+//				map.put("imagePath", user.get)
+				result.add(map);
+			}
+		}
+		return result;
+	}
+
+	@Override
+	public List<Map<String, Object>> findUsersByGroupIds(List<Integer> campusIds, List<Integer> classIds) {
+		List<Map<String, Object>> result=new ArrayList<Map<String, Object>>();
+		
+		StringBuffer hql=new StringBuffer("select distinct sus from SysUsers sus join sus.sysGroups sgs where");
+		
+		List<Object> param=new ArrayList<>();
+		if (classIds!=null&&!classIds.isEmpty()){
+			hql.append(" sgs.id in (");
+			for (int idx=0;idx<classIds.size();idx++){
+				if (idx==0){
+					hql.append("?");
+				}else{
+					hql.append(",?");
+				}
+				param.add(classIds.get(idx));
+			}
+			hql.append(")");
+		}
+		
+		if (campusIds!=null&&!campusIds.isEmpty()){
+			if (!param.isEmpty()){
+				hql.append(" or ");
+			}
+			hql.append(" sgs.groupParentId in (");
+			for (int idx=0;idx<campusIds.size();idx++){
+				if (idx==0){
+					hql.append("?");
+				}else{
+					hql.append(",?");
+				}
+				param.add(campusIds.get(idx));
+			}
+			hql.append(")");
+		}
+		
+		List<SysUsers> lst=this.getCurrentDAO().find(hql.toString(), param.toArray());
+		
+		if (lst!=null&&!lst.isEmpty()){
+			Map<String, Object> map=null;
+			for (SysUsers user:lst){
+				map=new HashMap<String, Object>();
+				map.put("id", user.getId());
+				map.put("userName", user.getUserName());
+				map.put("chineseName", user.getChineseName());
+				map.put("englishName", user.getEnglishName());
+				result.add(map);
+			}
+		}
+		return result;
 	}
 }

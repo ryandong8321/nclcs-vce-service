@@ -5,6 +5,8 @@ import java.util.Map;
 
 import org.ryan.nclcs.vce.dao.INclcsVceServiceBaseDAO;
 import org.ryan.nclcs.vce.dao.Pagination;
+import org.ryan.nclcs.vce.entity.SysGroups;
+import org.ryan.nclcs.vce.entity.SysRoles;
 import org.ryan.nclcs.vce.entity.SysUsers;
 
 public interface ISysUsersManagementDAO extends INclcsVceServiceBaseDAO<SysUsers, Integer>{
@@ -37,5 +39,7 @@ public interface ISysUsersManagementDAO extends INclcsVceServiceBaseDAO<SysUsers
 	public Map<String, Object> deleteUsers(String ids);
 	
 	public List<SysUsers> findSysUsersInGroups(List<Object> groupIds);
+	
+	public boolean saveRegisterUser(SysUsers user, SysGroups group, SysRoles role);
 	
 }

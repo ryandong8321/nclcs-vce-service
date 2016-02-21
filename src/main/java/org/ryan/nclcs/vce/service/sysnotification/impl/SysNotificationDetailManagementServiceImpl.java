@@ -69,8 +69,19 @@ public class SysNotificationDetailManagementServiceImpl extends NclcsVceServiceB
 	}
 
 	@Override
-	public Map<String, Object> deleteMultiple(String ids) {
-		return this.getCurrentDAO().deleteMultiple(ids);
+	public Map<String, Object> deleteMultiple(String notificationDetailIds) {
+		return this.getCurrentDAO().deleteMultiple(notificationDetailIds);
+	}
+
+	@Override
+	public Pagination<SysNotification> searchData(int displayLength, int displayStart, Map<String, Object> parameter) {
+		Pagination<SysNotification> page=sysNotificationManagementDAO.searchDataForDetail(displayLength, displayStart, 0, parameter);
+		return page;
+	}
+
+	@Override
+	public Map<String, Object> deleteMultiple(String notificationIds, Integer notificationReceivceUserId) {
+		return this.getCurrentDAO().deleteMultiple(notificationIds,notificationReceivceUserId);
 	}
 
 }
