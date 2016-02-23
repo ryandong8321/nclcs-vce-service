@@ -1386,7 +1386,7 @@ public class SysRemoteServiceController {
 					
 					List<SysRoles> roles=currentUser.getSysRoles();
 					if (roles!=null&&!roles.isEmpty()){
-						int roleCategory=-1;//1-amdin, 2-management of campus, 3-teacher or student or parent
+						int roleCategory=-1;//1-amdin, 2-assistant of campus, 3-teacher or student or parent
 						for (SysRoles role:roles){
 							if(role.getId()==1||role.getId()==2){
 								roleCategory=1;
@@ -1414,6 +1414,18 @@ public class SysRemoteServiceController {
 									}
 								}
 								result.put("data", sysUsersManagementService.findUsersByGroupIds(campusIds, classIds));
+							}
+						}else if (roleCategory==3){
+							if (currentUser.getSysGroups()==null||currentUser.getSysGroups().isEmpty()){
+								result.put("data", "");
+							}else{
+								List<Integer> classIds=new ArrayList<>();
+								for (SysGroups group:currentUser.getSysGroups()){
+									if(group.getGroupCategory()==1){
+										classIds.add(group.getId());
+									}
+								}
+								result.put("data", sysUsersManagementService.findUsersByGroupIds(null, classIds));
 							}
 						}
 						result.put("status", 1);

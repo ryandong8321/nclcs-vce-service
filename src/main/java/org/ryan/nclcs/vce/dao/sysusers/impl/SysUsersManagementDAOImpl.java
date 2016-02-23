@@ -459,4 +459,15 @@ public class SysUsersManagementDAOImpl extends NclcsVceServiceBaseDAOImpl<SysUse
 		}
 		return result;
 	}
+
+	@Override
+	public SysUsers findStudentsParent(Integer studentId) {
+		SysUsers parent=null;
+		StringBuffer hql=new StringBuffer("from SysUsers sus where sus.childrenId = ?");
+		List<SysUsers> lst=this.find(hql.toString(), studentId);
+		if (lst!=null&&!lst.isEmpty()){
+			parent=lst.get(0);
+		}
+		return parent;
+	}
 }

@@ -67,25 +67,21 @@ public class SysDeviceTokenManagementServiceImpl
 		try {
 			if (deviceTokens != null && !deviceTokens.isEmpty()) {
 				for (SysDeviceToken device : deviceTokens) {
-					if (device.getDeviceTokenType()==0){
+					if (device!=null&&0==device.getDeviceTokenType()){
 						iOSTokens.add(device.getDeviceTokenValue());
-					}else if (device.getDeviceTokenType()==1){
-						iOSTokens.add(device.getDeviceTokenValue());
+					}else if (device!=null&&1==device.getDeviceTokenType()){
+						androidTokens.add(device.getDeviceTokenValue());
 					}
 					
 				}
 
 				if (!iOSTokens.isEmpty()){
 					IOSListcast iListcast = new IOSListcast(WebUtilConstant._ios_appkey, WebUtilConstant._ios_appMasterSecret);
-					// TODO Set your device token
 					iListcast.setDeviceToken(iOSTokens);
 					iListcast.setAlert(text);
 					iListcast.setBadge(0);
 					iListcast.setSound("default");
-					// TODO set 'production_mode' to 'true' if your app is under
-					// production mode
 					iListcast.setTestMode();
-					// Set customized fields
 					iListcast.setCustomizedField("test", "helloworld");
 					result=this.sendNotificationToApp(iListcast,WebUtilConstant._ios_appMasterSecret);
 				}
@@ -98,10 +94,7 @@ public class SysDeviceTokenManagementServiceImpl
 					aListcast.setText(text);
 					aListcast.goAppAfterOpen();
 					aListcast.setDisplayType(AndroidNotification.DisplayType.NOTIFICATION);
-					// TODO Set 'production_mode' to 'false' if it's a test device. 
-					// For how to register a test device, please see the developer doc.
 					aListcast.setProductionMode();
-					// Set customized fields
 					aListcast.setExtraField("test", "helloworld");
 					result=this.sendNotificationToApp(aListcast, WebUtilConstant._android_appMasterSecret);
 				}
@@ -131,7 +124,6 @@ public class SysDeviceTokenManagementServiceImpl
 			post.setHeader("User-Agent", WebUtilConstant.USER_AGENT);
 			StringEntity se = new StringEntity(postBody, "UTF-8");
 			post.setEntity(se);
-			// Send the post request and get the response
 			HttpResponse response = client.execute(post);
 			int status = response.getStatusLine().getStatusCode();
 			logger.info("this is method [sendNotificationToApp] Response Code ["+status+"]");

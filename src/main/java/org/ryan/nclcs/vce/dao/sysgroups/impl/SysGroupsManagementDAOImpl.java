@@ -1,22 +1,37 @@
 package org.ryan.nclcs.vce.dao.sysgroups.impl;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.ryan.nclcs.vce.app.notification.UmengNotification;
+import org.ryan.nclcs.vce.app.notification.android.AndroidListcast;
+import org.ryan.nclcs.vce.app.notification.android.AndroidNotification;
+import org.ryan.nclcs.vce.app.notification.ios.IOSListcast;
 import org.ryan.nclcs.vce.dao.NclcsVceServiceBaseDAOImpl;
+import org.ryan.nclcs.vce.dao.devicetoken.ISysDeviceTokenManagementDAO;
 import org.ryan.nclcs.vce.dao.sysgroups.ISysGroupsManagementDAO;
 import org.ryan.nclcs.vce.dao.sysnotification.ISysNotificationManagementDAO;
 import org.ryan.nclcs.vce.dao.sysusers.ISysUsersManagementDAO;
+import org.ryan.nclcs.vce.entity.SysDeviceToken;
 import org.ryan.nclcs.vce.entity.SysGroups;
 import org.ryan.nclcs.vce.entity.SysNotification;
 import org.ryan.nclcs.vce.entity.SysNotificationDetail;
 import org.ryan.nclcs.vce.entity.SysRoles;
 import org.ryan.nclcs.vce.entity.SysUsers;
+import org.ryan.nclcs.vce.web.util.WebUtilConstant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -28,6 +43,9 @@ public class SysGroupsManagementDAOImpl extends NclcsVceServiceBaseDAOImpl<SysGr
 	
 	@Autowired
 	private ISysNotificationManagementDAO sysNotificationManagementDAO;
+	
+	@Autowired
+	private ISysDeviceTokenManagementDAO sysDeviceTokenManagementDAO;
 
 	@Override
 	public Map<String, Object> saveRelationship(String groupId, String userIds) {
@@ -166,6 +184,13 @@ public class SysGroupsManagementDAOImpl extends NclcsVceServiceBaseDAOImpl<SysGr
 		StringBuffer receiveGroupId=new StringBuffer();
 		
 		try {
+			
+			List<SysDeviceToken> devices=new ArrayList<SysDeviceToken>();
+			
+			//add parent SysUsers object for student change class
+			SysUsers parentUser=sysUsersManagementDAO.findStudentsParent(userStudent.getId());
+			//end
+			
 			if (userStudent.getSysGroups()==null||userStudent.getSysGroups().isEmpty()){//未分配班级，直接分配保存
 				groupNewClass=this.get(changeToGroupId);
 				lstUsers=groupNewClass.getSysGroupsUsers();
@@ -193,8 +218,15 @@ public class SysGroupsManagementDAOImpl extends NclcsVceServiceBaseDAOImpl<SysGr
 					//将原来群组里的SysUsers对象去除掉
 					for (int index=0;index<currentGroup.getSysGroupsUsers().size();index++){
 						tmpUser=currentGroup.getSysGroupsUsers().get(index);
+//						if (!tmpUser.getId().equals(userStudent.getId())){
+//							newSysGroupsUsersList.add(tmpUser);
+//						}
 						if (!tmpUser.getId().equals(userStudent.getId())){
-							newSysGroupsUsersList.add(tmpUser);
+							if (parentUser==null){//学生没家长
+								newSysGroupsUsersList.add(tmpUser);
+							}else if (!parentUser.getId().equals(tmpUser)){
+								newSysGroupsUsersList.add(tmpUser);
+							}
 						}
 					}
 					currentGroup.setSysGroupsUsers(newSysGroupsUsersList);
@@ -206,6 +238,13 @@ public class SysGroupsManagementDAOImpl extends NclcsVceServiceBaseDAOImpl<SysGr
 						lstUsers=groupNewClass.getSysGroupsUsers();
 					}
 					lstUsers.add(userStudent);
+					
+					//add parent
+					if (parentUser!=null){
+						lstUsers.add(parentUser);
+					}
+					//end
+					
 					groupNewClass.setSysGroupsUsers(lstUsers);
 					
 					List<SysUsers> lstNotifiedUsers=new ArrayList<SysUsers>();
@@ -218,6 +257,9 @@ public class SysGroupsManagementDAOImpl extends NclcsVceServiceBaseDAOImpl<SysGr
 									for (SysRoles newRole:newClassUsers.getSysRoles()){
 										if (newRole.getId()==3){
 											lstNotifiedUsers.add(newClassUsers);
+											//find mobile device token for sending notification to user mobile phone
+											devices.add(sysDeviceTokenManagementDAO.findDeviceTokenByUserId(newClassUsers.getId()));
+											//end
 											break;
 										}
 									}
@@ -233,6 +275,9 @@ public class SysGroupsManagementDAOImpl extends NclcsVceServiceBaseDAOImpl<SysGr
 									for (SysRoles newRole:originalClassUsers.getSysRoles()){
 										if (newRole.getId()==4){
 											lstNotifiedUsers.add(originalClassUsers);
+											//find mobile device token for sending notification to user mobile phone
+											devices.add(sysDeviceTokenManagementDAO.findDeviceTokenByUserId(originalClassUsers.getId()));
+											//end
 											break;
 										}
 									}
@@ -241,13 +286,24 @@ public class SysGroupsManagementDAOImpl extends NclcsVceServiceBaseDAOImpl<SysGr
 						}
 						//学生
 						lstNotifiedUsers.add(userStudent);
+						//find mobile device token for sending notification to user mobile phone
+						devices.add(sysDeviceTokenManagementDAO.findDeviceTokenByUserId(userStudent.getId()));
+						//end
 						
-						notificationMessage.append("由 ");
-						notificationMessage.append(groupNewSchool.getGroupName()+" 校区－");
-						notificationMessage.append(originalClassGroup.getGroupName()+ " 转至 ");
-						notificationMessage.append(groupNewSchool.getGroupName()+" 校区－");
-						notificationMessage.append(groupNewClass.getGroupName());
-						notificationMessage.append("\n特此通知");
+						//家长
+						if (parentUser!=null){
+							lstNotifiedUsers.add(parentUser);
+							//find mobile device token for sending notification to user mobile phone
+							devices.add(sysDeviceTokenManagementDAO.findDeviceTokenByUserId(parentUser.getId()));
+							//end
+						}
+						
+						notificationMessage.append("由 [");
+						notificationMessage.append(groupNewSchool.getGroupName()+"] 校区－[");
+						notificationMessage.append(originalClassGroup.getGroupName()+ "] 转至 [");
+						notificationMessage.append(groupNewSchool.getGroupName()+"] 校区－[");
+						notificationMessage.append(groupNewClass.getGroupName()+"]");
+						notificationMessage.append("\n\n特此通知");
 						
 						receiveGroupId.append(groupNewSchool.getId()+","+groupNewClass.getId()+","+originalClassGroup.getId());
 						
@@ -259,6 +315,9 @@ public class SysGroupsManagementDAOImpl extends NclcsVceServiceBaseDAOImpl<SysGr
 									for (SysRoles newRole:newClassUsers.getSysRoles()){
 										if (newRole.getId()==4){
 											lstNotifiedUsers.add(newClassUsers);
+											//find mobile device token for sending notification to user mobile phone
+											devices.add(sysDeviceTokenManagementDAO.findDeviceTokenByUserId(newClassUsers.getId()));
+											//end
 											break;
 										}
 									}
@@ -273,6 +332,9 @@ public class SysGroupsManagementDAOImpl extends NclcsVceServiceBaseDAOImpl<SysGr
 									for (SysRoles newRole:newSchoolUsers.getSysRoles()){
 										if (newRole.getId()==3){
 											lstNotifiedUsers.add(newSchoolUsers);
+											//find mobile device token for sending notification to user mobile phone
+											devices.add(sysDeviceTokenManagementDAO.findDeviceTokenByUserId(newSchoolUsers.getId()));
+											//end
 											break;
 										}
 									}
@@ -288,6 +350,9 @@ public class SysGroupsManagementDAOImpl extends NclcsVceServiceBaseDAOImpl<SysGr
 									for (SysRoles newRole:originalClassUsers.getSysRoles()){
 										if (newRole.getId()==3){
 											lstNotifiedUsers.add(originalClassUsers);
+											//find mobile device token for sending notification to user mobile phone
+											devices.add(sysDeviceTokenManagementDAO.findDeviceTokenByUserId(originalClassUsers.getId()));
+											//end
 											break;
 										}
 									}
@@ -302,6 +367,9 @@ public class SysGroupsManagementDAOImpl extends NclcsVceServiceBaseDAOImpl<SysGr
 									for (SysRoles newRole:originalSchoolUsers.getSysRoles()){
 										if (newRole.getId()==3){
 											lstNotifiedUsers.add(originalSchoolUsers);
+											//find mobile device token for sending notification to user mobile phone
+											devices.add(sysDeviceTokenManagementDAO.findDeviceTokenByUserId(originalSchoolUsers.getId()));
+											//end
 											break;
 										}
 									}
@@ -310,13 +378,24 @@ public class SysGroupsManagementDAOImpl extends NclcsVceServiceBaseDAOImpl<SysGr
 						}
 						//学生
 						lstNotifiedUsers.add(userStudent);
+						//find mobile device token for sending notification to user mobile phone
+						devices.add(sysDeviceTokenManagementDAO.findDeviceTokenByUserId(userStudent.getId()));
+						//end
 						
-						notificationMessage.append("由 ");
-						notificationMessage.append(originalSchoolGroup.getGroupName()+" 校区－");
-						notificationMessage.append(originalClassGroup.getGroupName()+ " 转至 ");
-						notificationMessage.append(groupNewSchool.getGroupName()+" 校区－");
-						notificationMessage.append(groupNewClass.getGroupName());
-						notificationMessage.append("\n特此通知");
+						//家长
+						if (parentUser!=null){
+							lstNotifiedUsers.add(parentUser);
+							//find mobile device token for sending notification to user mobile phone
+							devices.add(sysDeviceTokenManagementDAO.findDeviceTokenByUserId(parentUser.getId()));
+							//end
+						}
+						
+						notificationMessage.append("由 [");
+						notificationMessage.append(originalSchoolGroup.getGroupName()+"] 校区－[");
+						notificationMessage.append(originalClassGroup.getGroupName()+ "] 转至 [");
+						notificationMessage.append(groupNewSchool.getGroupName()+"] 校区－[");
+						notificationMessage.append(groupNewClass.getGroupName()+"]");
+						notificationMessage.append("\n\n特此通知");
 						
 						receiveGroupId.append(groupNewSchool.getId()+","+groupNewClass.getId()+","+originalSchoolGroup.getId()+","+originalClassGroup.getId());
 					}
@@ -348,6 +427,10 @@ public class SysGroupsManagementDAOImpl extends NclcsVceServiceBaseDAOImpl<SysGr
 						this.save(groupNewClass);
 						sysNotificationManagementDAO.save(notification);
 						tran.commit();
+						
+						//send notification to mobile
+						sendNotificationToUserMobile(devices, notification.getNotificationTitle(), "通知", "通知");
+						//end
 					} finally {
 						if (session!=null){
 							session.flush();
@@ -364,6 +447,91 @@ public class SysGroupsManagementDAOImpl extends NclcsVceServiceBaseDAOImpl<SysGr
 			parameters.put("data", "operation failed!");
 		}
 		return parameters;
+	}
+	
+	private void sendNotificationToUserMobile(List<SysDeviceToken> deviceTokens, String text, String title, String ticker){
+		List<String> iOSTokens = new ArrayList<String>();
+		List<String> androidTokens = new ArrayList<String>();
+		try {
+			if (deviceTokens != null && !deviceTokens.isEmpty()) {
+				for (SysDeviceToken device : deviceTokens) {
+					if (device!=null&&0==device.getDeviceTokenType()){
+						iOSTokens.add(device.getDeviceTokenValue());
+					}else if (device!=null&&1==device.getDeviceTokenType()){
+						androidTokens.add(device.getDeviceTokenValue());
+					}
+				}
+
+				if (!iOSTokens.isEmpty()){
+					IOSListcast iListcast = new IOSListcast(WebUtilConstant._ios_appkey, WebUtilConstant._ios_appMasterSecret);
+					iListcast.setDeviceToken(iOSTokens);
+					iListcast.setAlert(text);
+					iListcast.setBadge(0);
+					iListcast.setSound("default");
+					iListcast.setTestMode();
+					iListcast.setCustomizedField("test", "helloworld");
+					this.sendNotificationToApp(iListcast,WebUtilConstant._ios_appMasterSecret);
+				}
+				
+				if (!androidTokens.isEmpty()){
+					AndroidListcast aListcast=new AndroidListcast(WebUtilConstant._android_appkey, WebUtilConstant._android_appMasterSecret);
+					aListcast.setDeviceToken(androidTokens);
+					aListcast.setTicker(ticker);
+					aListcast.setTitle(title);
+					aListcast.setText(text);
+					aListcast.goAppAfterOpen();
+					aListcast.setDisplayType(AndroidNotification.DisplayType.NOTIFICATION);
+					aListcast.setProductionMode();
+					aListcast.setExtraField("test", "helloworld");
+					this.sendNotificationToApp(aListcast, WebUtilConstant._android_appMasterSecret);
+				}
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+	
+	private boolean sendNotificationToApp(UmengNotification notification, String secret){
+		boolean result=false;
+		try {
+			HttpClient client = new DefaultHttpClient();
+
+			// send
+			String timestamp = Integer.toString((int) (System.currentTimeMillis() / 1000));
+			notification.setPredefinedKeyValue("timestamp", timestamp);
+			String url = WebUtilConstant.HOST + WebUtilConstant.POSTPATH;
+			String postBody = notification.getPostBody();
+			String sign = DigestUtils.md5Hex(("POST" + url + postBody + secret).getBytes("utf8"));
+			url = url + "?sign=" + sign;
+			HttpPost post = new HttpPost(url);
+			post.setHeader("User-Agent", WebUtilConstant.USER_AGENT);
+			StringEntity se = new StringEntity(postBody, "UTF-8");
+			post.setEntity(se);
+			// Send the post request and get the response
+			HttpResponse response = client.execute(post);
+			int status = response.getStatusLine().getStatusCode();
+			logger.info("this is method [sendNotificationToApp] Response Code ["+status+"]");
+			BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+			StringBuffer buf = new StringBuffer();
+			String line = "";
+			while ((line = rd.readLine()) != null) {
+				buf.append(line);
+			}
+			logger.info("this is method [sendNotificationToApp] buf ["+buf.toString()+"]");
+			if (status == 200) {
+				result=true;
+				logger.info("this is method [sendNotificationToApp] alert [Notification sent successfully!]");
+			} else {
+				result=false;
+				logger.info("this is method [sendNotificationToApp] alert [Failed to send the notification!]");
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			result=false;
+			logger.info("this is method [sendNotificationToApp] occur Exception...");
+		}
+		
+		return result;
 	}
 
 }

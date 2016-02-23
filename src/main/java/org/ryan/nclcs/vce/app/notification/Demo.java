@@ -282,8 +282,8 @@ public class Demo {
 		Demo demo = new Demo("56c5b57be0f55ae0750026dc", "shcs79qzeaoroyv3i4iyh4mid1f2akkz");
 		try {
 			//demo.sendAndroidUnicast();
-			//demo.sendIOSUnicast();
-			demo.sendAndroidListcast();
+			demo.sendIOSUnicast();
+			//demo.sendAndroidListcast();
 			/* TODO these methods are all available, just fill in some fields and do the test
 			 * demo.sendAndroidCustomizedcastFile();
 			 * demo.sendAndroidBroadcast();

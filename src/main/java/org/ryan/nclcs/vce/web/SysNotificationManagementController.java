@@ -340,7 +340,7 @@ public class SysNotificationManagementController {
 				String text="您有一条新通知";
 				String ticker="";
 				String title="";
-				boolean flag=DeviceTokenManagementService.sendNotificationToApp(deviceTokens, text, title, ticker);
+				DeviceTokenManagementService.sendNotificationToApp(deviceTokens, text, title, ticker);
 				//end
 				
 				result.put("status", 1);

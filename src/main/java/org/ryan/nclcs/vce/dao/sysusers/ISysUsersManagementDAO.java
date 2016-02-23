@@ -42,4 +42,6 @@ public interface ISysUsersManagementDAO extends INclcsVceServiceBaseDAO<SysUsers
 	
 	public boolean saveRegisterUser(SysUsers user, SysGroups group, SysRoles role);
 	
+	public SysUsers findStudentsParent(Integer studentId);
+	
 }
