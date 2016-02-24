@@ -35,16 +35,6 @@ CREATE TABLE `app_students_scores` (
   CONSTRAINT `FK_app_students_scores_sys_user_id` FOREIGN KEY (`app_students_scores_user_id`) REFERENCES `sys_users` (`user_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `app_students_scores`
---
-
-LOCK TABLES `app_students_scores` WRITE;
-/*!40000 ALTER TABLE `app_students_scores` DISABLE KEYS */;
-INSERT INTO `app_students_scores` VALUES (3,8,18,0),(4,8,19,70),(5,8,20,0),(6,8,21,0),(7,8,22,100),(8,8,23,90),(9,8,24,0),(10,8,25,0),(11,8,26,0),(12,8,27,0),(13,8,28,0),(14,8,29,0),(15,8,30,0),(16,8,31,0),(17,17,18,0),(18,17,19,0),(19,17,20,0),(20,17,21,40),(21,17,22,0),(22,17,23,100),(23,17,24,0),(24,17,25,0),(25,17,26,0),(26,17,27,0),(27,17,28,0),(28,17,29,0),(29,17,30,0),(30,17,31,0);
-/*!40000 ALTER TABLE `app_students_scores` ENABLE KEYS */;
-UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -55,4 +45,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2016-02-24 22:43:24
+-- Dump completed on 2016-02-24 22:57:13

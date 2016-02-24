@@ -29,16 +29,6 @@ CREATE TABLE `sys_roles` (
   PRIMARY KEY (`role_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `sys_roles`
---
-
-LOCK TABLES `sys_roles` WRITE;
-/*!40000 ALTER TABLE `sys_roles` DISABLE KEYS */;
-INSERT INTO `sys_roles` VALUES (1,'管理者',''),(2,'管理者助理',''),(3,'校区助理',''),(4,'教师',''),(5,'学生',''),(6,'学生家长','');
-/*!40000 ALTER TABLE `sys_roles` ENABLE KEYS */;
-UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -49,4 +39,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2016-02-24 22:43:24
+-- Dump completed on 2016-02-24 22:57:13

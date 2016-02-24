@@ -38,16 +38,6 @@ CREATE TABLE `sys_groups` (
   CONSTRAINT `FK_SYS_GROUPS_DATE_INFO` FOREIGN KEY (`group_date_info`) REFERENCES `sys_properties` (`property_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `sys_groups`
---
-
-LOCK TABLES `sys_groups` WRITE;
-/*!40000 ALTER TABLE `sys_groups` DISABLE KEYS */;
-INSERT INTO `sys_groups` VALUES (1,'新金山总校',0,-1,NULL,NULL,NULL),(2,'Box Hill',0,1,NULL,NULL,''),(3,'ThornBury H.S.',0,1,NULL,NULL,''),(4,'Balwyn H.S.',0,1,NULL,NULL,''),(5,'Mckinnon S.C.',0,1,NULL,NULL,''),(6,'Ringwood S.C.',0,1,NULL,NULL,''),(7,'Blackburn H.S.',0,1,NULL,NULL,''),(8,'Thomas Carr College',0,1,NULL,NULL,''),(9,'Macleod',0,1,NULL,NULL,''),(10,'City',0,1,NULL,NULL,''),(11,'周五 VCE 预备班',1,2,7,12,'11:00'),(12,'周六 VCE Unit 1 & 2 第一语言班',1,2,8,13,'10:00'),(14,'测试用校区',0,1,NULL,NULL,NULL),(15,'周日 VCE Unit 3 & 4 第二语言班',1,3,9,16,'11:00'),(16,'rooney 上课',1,3,8,12,'10:00'),(17,'Balwyn VCE UNIT 3 & 4 第二语言高级',1,4,9,17,'11:00');
-/*!40000 ALTER TABLE `sys_groups` ENABLE KEYS */;
-UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -58,4 +48,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2016-02-24 22:43:26
+-- Dump completed on 2016-02-24 22:57:15

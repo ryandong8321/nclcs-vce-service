@@ -34,16 +34,6 @@ CREATE TABLE `sys_users_groups_relationship` (
   CONSTRAINT `FK_USERS_GROUPS_RELATIONSHIP_USER_ID` FOREIGN KEY (`relationship_user_id`) REFERENCES `sys_users` (`user_id`) ON UPDATE NO ACTION
 ) ENGINE=InnoDB AUTO_INCREMENT=238 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `sys_users_groups_relationship`
---
-
-LOCK TABLES `sys_users_groups_relationship` WRITE;
-/*!40000 ALTER TABLE `sys_users_groups_relationship` DISABLE KEYS */;
-INSERT INTO `sys_users_groups_relationship` VALUES (1,1,1),(4,5,2),(9,6,3),(46,5,4),(187,21,17),(188,11,17),(216,5,11),(217,9,11),(218,14,11),(225,5,16),(226,10,16),(227,22,16),(228,7,15),(229,18,15),(230,20,15),(231,19,15),(232,23,15),(233,2,12),(234,8,12),(235,12,12),(236,17,12),(237,24,12);
-/*!40000 ALTER TABLE `sys_users_groups_relationship` ENABLE KEYS */;
-UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -54,4 +44,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2016-02-24 22:43:25
+-- Dump completed on 2016-02-24 22:57:14

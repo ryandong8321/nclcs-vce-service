@@ -34,16 +34,6 @@ CREATE TABLE `sys_users_roles_relationship` (
   CONSTRAINT `FK_USERS_ROLES_RELATIONSHIP_USER_ID` FOREIGN KEY (`user_id`) REFERENCES `sys_users` (`user_id`) ON UPDATE NO ACTION
 ) ENGINE=InnoDB AUTO_INCREMENT=130 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `sys_users_roles_relationship`
---
-
-LOCK TABLES `sys_users_roles_relationship` WRITE;
-/*!40000 ALTER TABLE `sys_users_roles_relationship` DISABLE KEYS */;
-INSERT INTO `sys_users_roles_relationship` VALUES (5,1,1),(39,2,4),(40,5,4),(41,6,4),(42,7,4),(43,5,3),(44,6,3),(45,13,3),(116,8,5),(117,9,5),(118,10,5),(119,11,5),(120,12,5),(121,14,5),(122,17,5),(123,18,5),(124,19,5),(125,20,5),(126,21,5),(127,22,5),(128,23,5),(129,24,6);
-/*!40000 ALTER TABLE `sys_users_roles_relationship` ENABLE KEYS */;
-UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -54,4 +44,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2016-02-24 22:43:26
+-- Dump completed on 2016-02-24 22:57:15

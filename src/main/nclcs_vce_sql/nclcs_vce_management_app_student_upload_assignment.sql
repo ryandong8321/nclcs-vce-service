@@ -39,15 +39,6 @@ CREATE TABLE `app_student_upload_assignment` (
   CONSTRAINT `FK_APP_STUDENT_UPLOAD_ASSIGNMENT_TUTOR_ID` FOREIGN KEY (`upload_assignment_tutor_id`) REFERENCES `sys_users` (`user_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `app_student_upload_assignment`
---
-
-LOCK TABLES `app_student_upload_assignment` WRITE;
-/*!40000 ALTER TABLE `app_student_upload_assignment` DISABLE KEYS */;
-/*!40000 ALTER TABLE `app_student_upload_assignment` ENABLE KEYS */;
-UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -58,4 +49,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2016-02-24 22:43:25
+-- Dump completed on 2016-02-24 22:57:15

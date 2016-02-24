@@ -41,15 +41,6 @@ CREATE TABLE `app_tutor_appointment_assignment_tutor` (
   CONSTRAINT `FK_APP_TUTOR_APPOINTMENT_ASSIGNMENT_TUTOR_TARGET_TUTOR_ID` FOREIGN KEY (`appointment_tutor_target_tutor_id`) REFERENCES `sys_users` (`user_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `app_tutor_appointment_assignment_tutor`
---
-
-LOCK TABLES `app_tutor_appointment_assignment_tutor` WRITE;
-/*!40000 ALTER TABLE `app_tutor_appointment_assignment_tutor` DISABLE KEYS */;
-/*!40000 ALTER TABLE `app_tutor_appointment_assignment_tutor` ENABLE KEYS */;
-UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -60,4 +51,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2016-02-24 22:43:25
+-- Dump completed on 2016-02-24 22:57:14
