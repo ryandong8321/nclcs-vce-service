@@ -263,10 +263,10 @@ public class SysNotificationManagementController {
 	@SystemLogIsCheck(description="发送通知")
 	public String sendSysNotification(HttpServletRequest request, Integer sendNotificationId) {
 		logger.info("this is [sendsysnotification.do] start ...");
-		if (request.getSession().getAttribute("u_id")==null||request.getSession().getAttribute("u_sr")==null||request.getSession().getAttribute("u_sg")==null){
-			logger.info("this is [sendsysnotification.do] there is no login info ...");
-			return "redirect:/index.jsp";
-		}
+//		if (request.getSession().getAttribute("u_id")==null||request.getSession().getAttribute("u_sr")==null||request.getSession().getAttribute("u_sg")==null){
+//			logger.info("this is [sendsysnotification.do] there is no login info ...");
+//			return "redirect:/index.jsp";
+//		}
 		
 		Map<String, Object> result=new HashMap<String, Object>();
 		if (sendNotificationId!=null&&sendNotificationId!=0){
@@ -339,7 +339,7 @@ public class SysNotificationManagementController {
 				List<SysDeviceToken> deviceTokens=DeviceTokenManagementService.findDeviceTokenByUserId(userIds);
 				String text="您有一条新通知";
 				String ticker="";
-				String title="";
+				String title="通知";
 				DeviceTokenManagementService.sendNotificationToApp(deviceTokens, text, title, ticker);
 				//end
 				

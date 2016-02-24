@@ -77,6 +77,7 @@ public class SysNotificationManagementDAOImpl extends NclcsVceServiceBaseDAOImpl
 		lstColumn.add("id");
 		lstColumn.add("notificationTitle");
 		lstColumn.add("notificationMessage");
+		lstColumn.add("notificationCreateTime");
 		
 		return lstColumn.get(index-1);
 	}

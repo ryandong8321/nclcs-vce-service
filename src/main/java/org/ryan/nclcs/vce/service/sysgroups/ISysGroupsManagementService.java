@@ -80,5 +80,7 @@ public interface ISysGroupsManagementService extends INclcsVceServiceBaseService
 	 * @return
 	 */
 	public Map<String, Object> saveStudentGroupChange(SysUsers studentUser, Integer changeToGroupId, SysUsers currentOperationUser);
+	
+	public List<Map<String, Object>> findAllCampusOrClass(Map<String, Object> parameters, Integer groupCategory);
 
 }

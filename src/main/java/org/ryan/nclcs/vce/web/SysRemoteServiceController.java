@@ -13,8 +13,10 @@ import javax.servlet.http.HttpServletRequest;
 import org.ryan.nclcs.vce.annotation.SystemLogIsCheck;
 import org.ryan.nclcs.vce.dao.Pagination;
 import org.ryan.nclcs.vce.entity.AppStudentsScores;
+import org.ryan.nclcs.vce.entity.SysDeviceToken;
 import org.ryan.nclcs.vce.entity.SysGroups;
 import org.ryan.nclcs.vce.entity.SysNotification;
+import org.ryan.nclcs.vce.entity.SysNotificationDetail;
 import org.ryan.nclcs.vce.entity.SysProperties;
 import org.ryan.nclcs.vce.entity.SysRoles;
 import org.ryan.nclcs.vce.entity.SysUsers;
@@ -22,6 +24,7 @@ import org.ryan.nclcs.vce.service.appstudents.IAppStudentsManagementService;
 import org.ryan.nclcs.vce.service.devicetoken.ISysDeviceTokenManagementService;
 import org.ryan.nclcs.vce.service.sysgroups.ISysGroupsManagementService;
 import org.ryan.nclcs.vce.service.sysnotification.ISysNotificationDetailManagementService;
+import org.ryan.nclcs.vce.service.sysnotification.ISysNotificationManagementService;
 import org.ryan.nclcs.vce.service.sysproperties.ISysPropertiesManagementService;
 import org.ryan.nclcs.vce.service.sysroles.ISysRolesManagementService;
 import org.ryan.nclcs.vce.service.sysusers.ISysUsersManagementService;
@@ -58,6 +61,9 @@ public class SysRemoteServiceController {
 	
 	@Autowired
 	private IAppStudentsManagementService appStudentsManagementService;
+	
+	@Autowired
+	private ISysNotificationManagementService sysNotificationManagementService;
 	
 	@Autowired
 	private ISysNotificationDetailManagementService sysNotificationDetailManagementService;
@@ -1307,10 +1313,10 @@ public class SysRemoteServiceController {
 //					}
 //					
 //					if (sort!=null&&!sort.equals("")){
-//						parameters.put("sort", sort);
+						parameters.put("sort", 3);
 //					}
 //					if (dir!=null&&!dir.equals("")){
-//						parameters.put("order", dir);
+						parameters.put("order", "desc");
 //					}
 					
 //					if (request.getSession().getAttribute("u_id")!=null){
@@ -1503,6 +1509,164 @@ public class SysRemoteServiceController {
 		
 		String tmp=JSONObject.fromMap(result).toString();
 		logger.info("this is [deletenotifications.do] return ["+tmp+"] ...");
+		return tmp;
+	}
+	
+	@RequestMapping(value = "/findAllCampusOrClass.do", method=RequestMethod.POST)
+	@ResponseBody
+	@SystemLogIsCheck(description="查询全部校区或班级")
+	public String findAllCampusOrClass(HttpServletRequest request, @RequestBody String data) {
+		logger.info("this is [findAllCampusOrClass.do] start ...");
+		Map<String, Object> result=new HashMap<String, Object>();
+		logger.info("this is [findAllCampusOrClass.do] is decoding ...");
+		JSONObject json=JSONObject.fromString(this.decodeParameters(data));
+		logger.info("this is [findAllCampusOrClass.do] decode done ...");
+		
+		Integer userId=-1;
+		String token=null;
+		if (!json.has("userId")||!json.has("token")||!json.has("groupCategory")){
+			result.put("status", -1);
+			result.put("info", "the lack of parameter");
+			logger.info("this is [findAllCampusOrClass.do] the lack of parameter ...");
+		}
+		
+		if (result.isEmpty()){
+			try{
+				userId=json.getInt("userId");
+				token=json.getString("token");
+				String localToken=WebApplicationUtils.getToken(userId);
+				if (localToken!=null&&localToken.equals(token)){
+					Integer groupCategory=json.getInt("groupCategory");
+					result.put("data", sysGroupsManagementService.findAllCampusOrClass(null, groupCategory));
+					result.put("status", 1);
+					result.put("info", "operation success");
+				}else{
+					result.put("status", -2);
+					result.put("info", "illegal user");
+					logger.info("this is [findAllCampusOrClass.do] illegal user ...");
+				}
+			}catch(Exception ex){
+				ex.printStackTrace();
+				result.put("status", 0);
+				result.put("info", "find user info error");
+				logger.info("this is [findAllCampusOrClass.do] exception ...");
+			}
+		}
+		String tmp=JSONObject.fromMap(result).toString();
+		logger.info("this is [findAllCampusOrClass.do] return ["+tmp+"] ...");
+		return tmp;
+	}
+	
+	@RequestMapping(value = "/saveandsendnotification.do", method=RequestMethod.POST)
+	@ResponseBody
+	@SystemLogIsCheck(description="保存并发送通知")
+	public String saveAndSendNotification(HttpServletRequest request, @RequestBody String data) {
+		logger.info("this is [saveandsendnotification.do] start ...");
+		Map<String, Object> result=new HashMap<String, Object>();
+		logger.info("this is [saveandsendnotification.do] is decoding ...");
+		JSONObject json=JSONObject.fromString(this.decodeParameters(data));
+		logger.info("this is [saveandsendnotification.do] decode done ...");
+		
+		Integer userId=-1;
+		String token=null;
+		if (!json.has("userId")||!json.has("token")||!json.has("groupIds")||!json.has("notificationTitle")||!json.has("notificationMessage")){
+			result.put("status", -1);
+			result.put("info", "the lack of parameter");
+			logger.info("this is [saveandsendnotification.do] the lack of parameter ...");
+		}
+		
+		if (result.isEmpty()){
+			try{
+				userId=json.getInt("userId");
+				token=json.getString("token");
+				String localToken=WebApplicationUtils.getToken(userId);
+				if (localToken!=null&&localToken.equals(token)){
+					SysUsers currentUser=sysUsersManagementService.get(userId);
+					
+					String groupIds=json.getString("groupIds");
+					String notificationTitle=json.getString("notificationTitle");
+					String notificationMessage=json.getString("notificationMessage");
+					
+					SysNotification notification=new SysNotification();
+					notification.setNotificationTitle(notificationTitle);
+					notification.setNotificationMessage(notificationMessage);
+					notification.setNotificationReceiveGroupIds(groupIds);
+					notification.setNotificationUserInfo(currentUser);
+					
+					int roleCategory=-1;//1:全查，2:查校区(用户所在)和班级，3:查班级
+					
+					List<SysRoles> lstRoles=currentUser.getSysRoles();
+					for (SysRoles role:lstRoles){
+						if (role.getId()==1||role.getId()==2){//管理者|管理助理
+							roleCategory=1;
+							break;
+						}else if (role.getId()==3){//校区助理
+							roleCategory=2;
+						}else if (role.getId()==4){//教师
+							roleCategory=3;
+						}
+					}
+					logger.info("this is [saveandsendnotification.do] get [u_sr] is ["+roleCategory+"]...");
+					List <SysGroups> lstGroups=null;
+					if (roleCategory==-1){
+						result.put("status",0);
+						result.put("info", "wrong role, login again please");
+					}else if (roleCategory!=1){
+						lstGroups=currentUser.getSysGroups();
+					}
+					
+					List<SysUsers> lstReceiveUsers=sysGroupsManagementService.findSysUsersInGroups(groupIds, roleCategory, lstGroups);
+					
+					//for send notification to App users
+					List<Integer> userIds=new ArrayList<Integer>();
+					//end
+					
+					SysNotificationDetail notificationDetail=null;
+					List<SysNotificationDetail> details=new ArrayList<SysNotificationDetail>();
+					for (SysUsers receiveUser:lstReceiveUsers){
+						if (receiveUser.getId().equals(notification.getNotificationUserInfo().getId())){
+							continue;
+						}
+						notificationDetail=new SysNotificationDetail();
+						notificationDetail.setDetailReceiveUserInfo(receiveUser);
+						logger.info("this is [savesysnotification.do] get [receive_user] is ["+receiveUser.getUserName()+"]...");
+						notificationDetail.setIsRead(0);
+						notificationDetail.setDetailNotificationInfo(notification);
+						details.add(notificationDetail);
+						
+						//for send notification to App users
+						userIds.add(receiveUser.getId());
+						//end
+					}
+					notification.setSysNotificationDetailInfo(details);
+					notification.setIsSend(1);
+					logger.info("this is [saveandsendnotification.do] is saving...");
+					sysNotificationManagementService.save(notification);
+					
+					//send notification to App user
+					List<SysDeviceToken> deviceTokens=sysDeviceTokenManagementService.findDeviceTokenByUserId(userIds);
+					String text="您有一条新通知";
+					String ticker="";
+					String title="通知";
+					sysDeviceTokenManagementService.sendNotificationToApp(deviceTokens, text, title, ticker);
+					//end
+					
+					result.put("status", 1);
+					result.put("info", "operation success");
+				}else{
+					result.put("status", -2);
+					result.put("info", "illegal user");
+					logger.info("this is [saveandsendnotification.do] illegal user ...");
+				}
+			}catch(Exception ex){
+				ex.printStackTrace();
+				result.put("status", 0);
+				result.put("info", "find user info error");
+				logger.info("this is [saveandsendnotification.do] exception ...");
+			}
+		}
+		String tmp=JSONObject.fromMap(result).toString();
+		logger.info("this is [saveandsendnotification.do] return ["+tmp+"] ...");
 		return tmp;
 	}
 	

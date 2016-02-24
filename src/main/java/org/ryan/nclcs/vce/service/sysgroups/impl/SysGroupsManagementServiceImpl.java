@@ -357,4 +357,34 @@ public class SysGroupsManagementServiceImpl extends NclcsVceServiceBaseServiceIm
 	public Map<String, Object> saveStudentGroupChange(SysUsers studentUser, Integer changeToGroupId, SysUsers currentOperationUser) {
 		return this.getCurrentDAO().saveStudentGroupChange(studentUser, changeToGroupId, currentOperationUser);
 	}
+
+	@Override
+	public List<Map<String, Object>> findAllCampusOrClass(Map<String, Object> parameters, Integer groupCategory) {
+		List<Map<String, Object>> result=new ArrayList<>();
+		List<Object> param=new ArrayList<Object>();
+		
+		StringBuffer hql=new StringBuffer("from SysGroups sgs where sgs.groupCategory = ?");
+		param.add(groupCategory);
+		if (parameters!=null&&!parameters.isEmpty()){
+			for (String key:parameters.keySet()){
+				hql.append(" and");
+				hql.append(" sgs.");
+				hql.append(key);
+				hql.append(" = ?");
+				param.add(parameters.get(key));
+			}
+		}
+		
+		List<SysGroups> lst=this.getCurrentDAO().find(hql.toString(), param.toArray());
+		if (lst!=null&&!lst.isEmpty()){
+			Map<String, Object> map=null;
+			for (SysGroups group:lst){
+				map=new HashMap<String, Object>();
+				map.put("id", group.getId());
+				map.put("text", group.getGroupName());
+				result.add(map);
+			}
+		}
+		return result;
+	}
 }
