@@ -275,11 +275,12 @@ public class SysRemoteServiceController {
 		logger.info("this is [saveuserregister.do] start ...");
 		Map<String, Object> result=new HashMap<String, Object>();
 		
-		logger.info("this is [saveuserregister.do] is decoding ...");
-		JSONObject json=JSONObject.fromString(this.decodeParameters(data));
-		logger.info("this is [saveuserregister.do] decode done ...");
-		
 		try {
+			logger.info("this is [saveuserregister.do] is decoding ...");
+			logger.info("this is [saveuserregister.do] data ["+data+"] ...");
+			JSONObject json=JSONObject.fromString(this.decodeParameters(data));
+			logger.info("this is [saveuserregister.do] decode done ...");
+			
 			logger.info("this is [saveuserregister.do] check is user_name exist...");
 			String userName=json.has("userName")?json.getString("userName"):"";
 			
