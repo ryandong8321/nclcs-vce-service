@@ -1439,8 +1439,8 @@ public class SysRemoteServiceController {
 						logger.info("this is [searchfreindlist.do] finding notification done...");
 					}else{
 						result.put("status", -1);
-						result.put("info", "operation success!");
-						logger.info("this is [searchfreindlist.do] finding notification done...");
+						result.put("info", "operation failed!");
+						logger.info("this is [searchfreindlist.do] found roles is empty...");
 					}
 				}else{
 					result.put("status", -2);
@@ -1498,6 +1498,10 @@ public class SysRemoteServiceController {
 							e.printStackTrace();
 						}
 					}
+				}else{
+					result.put("status", -2);
+					result.put("info", "illegal user");
+					logger.info("this is [searchfreindlist.do] illegal user ...");
 				}
 			}catch(Exception ex){
 				ex.printStackTrace();
