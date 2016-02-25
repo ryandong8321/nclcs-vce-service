@@ -3,6 +3,7 @@
 	String path = request.getContextPath();
 	String basePath = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort()
 			+ path + "/";
+	String userName=""+request.getSession().getAttribute("u_name");
 	request.setAttribute("BasePath", basePath);
 %>
 <!DOCTYPE html>
@@ -59,8 +60,8 @@
 	<div class="page-header-inner">
 		<!-- BEGIN LOGO -->
 		<div class="page-logo">
-			<a href="index.html">
-			<img src="<%=basePath%>assets/metronic/assets/admin/layout4/img/logo-light.png" alt="logo" class="logo-default"/>
+			<a href="#">
+			<img src="<%=basePath%>assets/image/logo_word_1.png" alt="logo" class="logo-default"/>
 			</a>
 			<div class="menu-toggler sidebar-toggler">
 				<!-- DOC: Remove the above "hide" to enable the sidebar toggler button on header -->
@@ -98,9 +99,9 @@
 					<li class="dropdown dropdown-user dropdown-dark">
 						<a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown" data-hover="dropdown" data-close-others="true">
 						<span class="username username-hide-on-mobile">
-						Nick </span>
+						<%=userName %> </span>
 						<!-- DOC: Do not remove below empty space(&nbsp;) as its purposely used -->
-						<img alt="" class="img-circle" src="<%=basePath%>assets/metronic/assets/admin/layout4/img/avatar9.jpg"/>
+						<img alt="" class="img-circle" src="<%=basePath%>assets/image/logo_image_only_1.png"/>
 						</a>
 						<ul class="dropdown-menu dropdown-menu-default">
 							<!-- <li>
@@ -112,9 +113,8 @@
 								<i class="icon-calendar"></i> My Calendar </a>
 							</li> -->
 							<li>
-								<a href="inbox.html">
-								<i class="icon-envelope-open"></i> My Inbox <span class="badge badge-danger">
-								3 </span>
+								<a href="<%=basePath%>sysnotificationmanagement/sysnotificationdetail.do">
+								<i class="icon-envelope-open"></i> My Inbox 
 								</a>
 							</li>
 							<!-- <li>
