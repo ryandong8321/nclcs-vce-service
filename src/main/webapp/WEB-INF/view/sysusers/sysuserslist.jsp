@@ -104,10 +104,10 @@
 						<img alt="" class="img-circle" src="<%=basePath%>assets/image/logo_image_only_1.png"/>
 						</a>
 						<ul class="dropdown-menu dropdown-menu-default">
-							<li>
+							<!-- <li>
 								<a href="extra_profile.html">
 								<i class="icon-user"></i> My Profile </a>
-							</li>
+							</li> -->
 							<!-- <li>
 								<a href="page_calendar.html">
 								<i class="icon-calendar"></i> My Calendar </a>

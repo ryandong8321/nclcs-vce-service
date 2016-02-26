@@ -388,7 +388,9 @@ License: You must have a valid license purchased only from themeforest(the above
 										<div class="row">
 											<div class="col-md-offset-3 col-md-9">
 												<button type="submit" class="btn blue"><i class="fa fa-check"></i> 保存</button>
+												<c:if test="${not empty sysuser.id}">
 												<button id="btnChangePWD" type="button" class="btn blue" onclick="javascript:changePassword();"><i class="fa fa-gears"></i> 修改密码</button>
+												</c:if>
 												<button type="button" class="btn default" onclick="javascript:history.back();">取消</button>
 											</div>
 										</div>
