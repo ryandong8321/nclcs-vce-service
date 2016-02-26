@@ -197,7 +197,7 @@
 						<li class="">
 							<a href="<%=basePath%>syspropertiesmanagement/syspropertiestree.do">
 							<i class="icon-docs"></i>
-							<span class="title">系统信息管理</span>
+							<span class="title">系统属性管理</span>
 							</a>
 						</li>
 					</ul>

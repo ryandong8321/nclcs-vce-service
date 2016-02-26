@@ -51,7 +51,8 @@ public class AppStudentsManagementServiceImpl extends NclcsVceServiceBaseService
 				if (isShowScore){//查询学生成绩列表不要删除功能
 					tmp.add("");
 				}else{
-					tmp.add("<a href=\"javascript:deleteStudent('"+user.getId()+"');\" class=\"btn btn-sm red\"><i class=\"fa fa-times\"></i> DELETE</a>");
+//					tmp.add("<a href=\"javascript:deleteStudent('"+user.getId()+"');\" class=\"btn btn-sm red\"><i class=\"fa fa-times\"></i> DELETE</a>");
+					tmp.add("");
 				}
 				data.add(tmp);
 			}

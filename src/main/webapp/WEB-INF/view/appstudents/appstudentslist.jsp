@@ -196,7 +196,7 @@
 						<li class="">
 							<a href="<%=basePath%>syspropertiesmanagement/syspropertiestree.do">
 							<i class="icon-docs"></i>
-							<span class="title">系统信息管理</span>
+							<span class="title">系统属性管理</span>
 							</a>
 						</li>
 					</ul>
@@ -298,7 +298,7 @@
 								<span class="caption-subject font-green-sharp bold uppercase">学生信息</span>
 								<span class="caption-helper"></span>
 							</div>
-							<div class="actions">
+							<!-- <div class="actions">
 								<div class="btn-group">
 									<a class="btn btn-default btn-circle" href="javascript:;" data-toggle="dropdown">
 									<i class="fa fa-share"></i>
@@ -311,7 +311,7 @@
 											<a href="javascript:deleteSeletedStudents();">
 											删除选择的学生 </a>
 										</li>
-										<!-- <li>
+										<li>
 											<a href="javascript:;">
 											Export to Excel </a>
 										</li>
@@ -324,10 +324,10 @@
 										<li>
 											<a href="javascript:;">
 											Print Invoices </a>
-										</li> -->
+										</li>
 									</ul>
 								</div>
-							</div>
+							</div> -->
 						</div>
 						<div class="portlet-body">
 							<div class="table-container">

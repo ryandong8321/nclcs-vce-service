@@ -199,7 +199,7 @@
 						<li class="">
 							<a href="<%=basePath%>syspropertiesmanagement/syspropertiestree.do">
 							<i class="icon-docs"></i>
-							<span class="title">系统信息管理</span>
+							<span class="title">系统属性管理</span>
 							</a>
 						</li>
 					</ul>
@@ -472,7 +472,6 @@
      
      function deleteSeletedNotification(){
     	 var userTable = new Datatable(), selections=userTable.getSelectedRows();
-    	 alert(selections);
     	 if(JSON.stringify(selections)=="[]"){
     		 showMessage("选择要删除的通知");
     		 return;

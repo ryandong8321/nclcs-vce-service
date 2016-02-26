@@ -197,7 +197,7 @@
 						<li class="active">
 							<a href="<%=basePath%>syspropertiesmanagement/syspropertiestree.do">
 							<i class="icon-docs"></i>
-							<span class="title">系统信息管理</span>
+							<span class="title">系统属性管理</span>
 							</a>
 						</li>
 					</ul>
@@ -273,7 +273,7 @@
 			<div class="page-head">
 				<!-- BEGIN PAGE TITLE -->
 				<div class="page-title">
-					<h1>VCE课程管理系统-系统信息管理</h1>
+					<h1>VCE课程管理系统-系统属性管理</h1>
 				</div>
 				<!-- END PAGE TITLE -->
 				<!-- BEGIN PAGE TOOLBAR -->
@@ -310,7 +310,7 @@
 									<ul class="dropdown-menu pull-right">
 										<li>
 											<a href="javascript:deleteProperty();">
-											删除选择的系统信息 </a>
+											删除选择的系统属性 </a>
 										</li>
 										<!-- <li>
 											<a href="javascript:;">
@@ -366,9 +366,9 @@
 											</div>
 										</div>
 										<div class="form-group">
-											<label class="control-label col-md-3">系统信息</label>
+											<label class="control-label col-md-3">系统属性<span class="required">*</span></label>
 											<div class="col-md-9">
-												<input type="text" name="propertyName" placeholder="系统信息" class="form-control" id="propertyName"  readOnly="readonly"/>
+												<input type="text" name="propertyName" placeholder="系统属性" class="form-control" id="propertyName"  readOnly="readonly"/>
 											</div>
 										</div>
 									</div>

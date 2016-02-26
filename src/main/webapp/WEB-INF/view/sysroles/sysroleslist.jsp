@@ -199,7 +199,7 @@
 						<li class="">
 							<a href="<%=basePath%>syspropertiesmanagement/syspropertiestree.do">
 							<i class="icon-docs"></i>
-							<span class="title">系统信息管理</span>
+							<span class="title">系统属性管理</span>
 							</a>
 						</li>
 					</ul>
@@ -358,7 +358,7 @@
 							<div class="portlet-title">
 								<div class="caption">
 									<i class="icon-user font-blue-hoki"></i>
-									<span class="caption-subject font-blue-hoki bold uppercase">用户信息</span>
+									<span class="caption-subject font-blue-hoki bold uppercase">角色信息</span>
 								</div>
 								<div class="actions">
 									<a class="btn btn-circle btn-icon-only btn-default" href="javascript:createInfo();">
@@ -423,8 +423,8 @@
 												</div>
 											</div>
 											<div class="modal-footer">
-												<button type="button" data-dismiss="modal" class="btn default">Close</button>
-												<button type="button" class="btn blue" onclick="javascript:saveSelected()">Save changes</button>
+												<button type="button" data-dismiss="modal" class="btn default">取消</button>
+												<button type="button" class="btn blue" onclick="javascript:saveSelected()">保存</button>
 											</div>
 										</div>
 									</div>

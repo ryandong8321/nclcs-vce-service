@@ -200,7 +200,7 @@
 						<li class="">
 							<a href="<%=basePath%>syspropertiesmanagement/syspropertiestree.do">
 							<i class="icon-docs"></i>
-							<span class="title">系统信息管理</span>
+							<span class="title">系统属性管理</span>
 							</a>
 						</li>
 					</ul>
@@ -370,7 +370,7 @@
 											</div>
 										</div>
 										<div class="form-group">
-											<label class="control-label col-md-3">群组名称</label>
+											<label class="control-label col-md-3">群组名称<span class="required">*</span></label>
 											<div class="col-md-9">
 												<input type="text" name="groupName" placeholder="群组名称" class="form-control" id="groupName"  readOnly="readonly"/>
 											</div>

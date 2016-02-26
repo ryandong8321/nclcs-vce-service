@@ -215,7 +215,7 @@ License: You must have a valid license purchased only from themeforest(the above
 						<li class="">
 							<a href="<%=basePath%>syspropertiesmanagement/syspropertiestree.do">
 							<i class="icon-docs"></i>
-							<span class="title">系统信息管理</span>
+							<span class="title">系统属性管理</span>
 							</a>
 						</li>
 					</ul>
@@ -442,8 +442,8 @@ License: You must have a valid license purchased only from themeforest(the above
 										</div>
 									</div>
 									<div class="modal-footer">
-										<button type="button" data-dismiss="modal" class="btn default">Close</button>
-										<button type="button" class="btn blue" onclick="javascript:saveNewPWD()">Save changes</button>
+										<button type="button" data-dismiss="modal" class="btn default">取消</button>
+										<button type="button" class="btn blue" onclick="javascript:saveNewPWD()">保存</button>
 									</div>
 								</div>
 							</div>
