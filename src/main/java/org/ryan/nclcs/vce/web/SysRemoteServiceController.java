@@ -1435,6 +1435,17 @@ public class SysRemoteServiceController {
 								result.put("data", sysUsersManagementService.findUsersByGroupIds(null, classIds));
 							}
 						}
+						@SuppressWarnings("unchecked")
+						List<Map<String, Object>> lst=(List<Map<String, Object>>)result.get("data");
+						List<Map<String, Object>> lstData=new ArrayList<Map<String, Object>>();
+						Integer tmpInt=-1;
+						for (Map<String, Object> map:lst){
+							tmpInt=Integer.parseInt(""+map.get("id"));
+							if (tmpInt!=userId){
+								lstData.add(map);
+							}
+						}
+						result.put("data", lstData);
 						result.put("status", 1);
 						result.put("info", "operation success!");
 						logger.info("this is [searchfreindlist.do] finding notification done...");
