@@ -274,8 +274,8 @@ License: You must have a valid license purchased only from themeforest(the above
 							 Widget settings form goes here
 						</div>
 						<div class="modal-footer">
-							<button type="button" class="btn blue">Save changes</button>
-							<button type="button" class="btn default" data-dismiss="modal">Close</button>
+							<button type="button" class="btn blue">保存</button>
+							<button type="button" class="btn default" data-dismiss="modal">取消</button>
 						</div>
 					</div>
 					<!-- /.modal-content -->
@@ -548,8 +548,8 @@ License: You must have a valid license purchased only from themeforest(the above
 										</div>
 									</div>
 									<div class="modal-footer">
-										<button type="button" data-dismiss="modal" class="btn default">Close</button>
-										<button type="button" class="btn blue" onclick="javascript:saveNewPWD()">Save changes</button>
+										<button type="button" data-dismiss="modal" class="btn default">取消</button>
+										<button type="button" class="btn blue" onclick="javascript:saveNewPWD()">保存</button>
 									</div>
 								</div>
 							</div>

@@ -260,8 +260,8 @@
 							 Widget settings form goes here
 						</div>
 						<div class="modal-footer">
-							<button type="button" class="btn blue">Save changes</button>
-							<button type="button" class="btn default" data-dismiss="modal">Close</button>
+							<button type="button" class="btn blue">保存</button>
+							<button type="button" class="btn default" data-dismiss="modal">取消</button>
 						</div>
 					</div>
 					<!-- /.modal-content -->
