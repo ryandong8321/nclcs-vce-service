@@ -103,9 +103,13 @@ public class SysNotificationManagementController {
 		
 		if (sort!=null&&!sort.equals("")){
 			parameters.put("sort", sort);
+		}else{
+			parameters.put("sort", 4);
 		}
 		if (dir!=null&&!dir.equals("")){
 			parameters.put("order", dir);
+		}else{
+			parameters.put("order", "desc");
 		}
 		
 		if (request.getSession().getAttribute("u_id")!=null){
@@ -289,7 +293,7 @@ public class SysNotificationManagementController {
 						break;
 					}else if (role.getId()==3){//校区助理
 						roleCategory=2;
-					}else if (role.getId()==4){//教师
+					}else if (role.getId()==4&&roleCategory!=2){//教师
 						roleCategory=3;
 					}
 				}

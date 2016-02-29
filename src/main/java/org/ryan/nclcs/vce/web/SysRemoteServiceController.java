@@ -1437,6 +1437,44 @@ public class SysRemoteServiceController {
 						}
 						@SuppressWarnings("unchecked")
 						List<Map<String, Object>> lst=(List<Map<String, Object>>)result.get("data");
+						
+						if (roleCategory==2||roleCategory==3){
+							boolean needAndAdmin=false;
+							for (SysRoles role:roles){
+								if (role.getId()==3||role.getId()==4){
+									needAndAdmin=true;
+								}
+							}
+							
+							if (needAndAdmin){
+								List<SysUsers> lstAdminAssistant=sysRolesManagementService.get(2).getSysRolesUsers();
+								if (lstAdminAssistant!=null&&!lstAdminAssistant.isEmpty()){
+									Map<String, Object> map=null;
+									for (SysUsers assistant:lstAdminAssistant){
+										map=new HashMap<String, Object>();
+										map.put("id", assistant.getId());
+										map.put("userName", assistant.getUserName());
+										map.put("chineseName", assistant.getChineseName());
+										map.put("englishName", assistant.getEnglishName());
+										lst.add(0,map);
+									}
+								}
+								
+								List<SysUsers> lstAdmin=sysRolesManagementService.get(1).getSysRolesUsers();
+								if (lstAdmin!=null&&!lstAdmin.isEmpty()){
+									Map<String, Object> map=null;
+									for (SysUsers admin:lstAdmin){
+										map=new HashMap<String, Object>();
+										map.put("id", admin.getId());
+										map.put("userName", admin.getUserName());
+										map.put("chineseName", admin.getChineseName());
+										map.put("englishName", admin.getEnglishName());
+										lst.add(0,map);
+									}
+								}
+							}
+						}
+						
 						List<Map<String, Object>> lstData=new ArrayList<Map<String, Object>>();
 						Integer tmpInt=-1;
 						for (Map<String, Object> map:lst){
