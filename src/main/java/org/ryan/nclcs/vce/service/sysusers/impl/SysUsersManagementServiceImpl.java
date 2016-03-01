@@ -114,7 +114,8 @@ public class SysUsersManagementServiceImpl extends NclcsVceServiceBaseServiceImp
 			for (SysUsers user:lst){
 				map=new HashMap<String, Object>();
 				map.put("value", user.getId());
-				map.put("text", user.getUserName());
+//				map.put("text", user.getUserName());
+				map.put("text", user.getChineseName());
 				result.add(map);
 			}
 		}
@@ -154,7 +155,8 @@ public class SysUsersManagementServiceImpl extends NclcsVceServiceBaseServiceImp
 			for (SysUsers user:lst){
 				map=new HashMap<String, Object>();
 				map.put("value", user.getId());
-				map.put("text", user.getUserName()+"["+getUserRolesName(user.getSysRoles())+"]");
+//				map.put("text", user.getUserName()+"["+getUserRolesName(user.getSysRoles())+"]");
+				map.put("text", user.getUserName()+"["+user.getChineseName()+"|"+getUserRolesName(user.getSysRoles())+"]");
 				for (SysUsers haveUsers:sysGroup.getSysGroupsUsers()){
 					 if (user.getId().equals(haveUsers.getId())){
 						 map.put("isSelected", true);

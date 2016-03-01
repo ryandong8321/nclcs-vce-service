@@ -482,7 +482,7 @@
      
      function deleteSeletedUsers(){
     	 var userTable = new Datatable(), selections=userTable.getSelectedRows();
-    	 alert(selections);
+    	 //alert(selections);
     	 if(JSON.stringify(selections)=="[]"){
     		 showMessage("Checking row(s) that you want to delete.");
     		 return;
