@@ -87,7 +87,7 @@ public class SysRemoteServiceController {
 		String userPWD=json.has("userPWD")?json.getString("userPWD"):"";
 		String deviceToken=json.has("deviceToken")?json.getString("deviceToken"):"";
 		
-		logger.info("this is [userlogin.do] userName ["+userName+"] pwd ["+userPWD+"]...");
+		logger.info("this is [userlogin.do] userName ["+userName+"] pwd ["+userPWD+"] deviceToken ["+deviceToken+"]");
 		
 		Map<String,Object> parameters=new HashMap<String,Object>();
 		parameters.put("userName", userName);
