@@ -1700,7 +1700,7 @@ public class SysRemoteServiceController {
 					//send notification to App user
 					List<SysDeviceToken> deviceTokens=sysDeviceTokenManagementService.findDeviceTokenByUserId(userIds);
 					String text="您有一条新通知";
-					String ticker="";
+					String ticker="通知";
 					String title="通知";
 					sysDeviceTokenManagementService.sendNotificationToApp(deviceTokens, text, title, ticker);
 					//end
