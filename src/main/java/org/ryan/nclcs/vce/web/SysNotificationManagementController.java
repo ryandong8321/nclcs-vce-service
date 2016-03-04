@@ -342,7 +342,7 @@ public class SysNotificationManagementController {
 				//send notification to App user
 				List<SysDeviceToken> deviceTokens=DeviceTokenManagementService.findDeviceTokenByUserId(userIds);
 				String text="您有一条新通知";
-				String ticker="";
+				String ticker="通知";
 				String title="通知";
 				DeviceTokenManagementService.sendNotificationToApp(deviceTokens, text, title, ticker);
 				//end

@@ -1591,9 +1591,49 @@ public class SysRemoteServiceController {
 				String localToken=WebApplicationUtils.getToken(userId);
 				if (localToken!=null&&localToken.equals(token)){
 					Integer groupCategory=json.getInt("groupCategory");
-					result.put("data", sysGroupsManagementService.findAllCampusOrClass(null, groupCategory));
-					result.put("status", 1);
-					result.put("info", "operation success");
+//					result.put("data", sysGroupsManagementService.findAllCampusOrClass(null, groupCategory));
+//					result.put("status", 1);
+//					result.put("info", "operation success");
+					SysUsers currentUser=sysUsersManagementService.get(userId);
+					if (currentUser!=null&&currentUser.getSysGroups()!=null&&!currentUser.getSysGroups().isEmpty()){
+						List<SysGroups> lstGroups=currentUser.getSysGroups();
+						boolean isAll=false;
+						
+						List<Map<String,Object>> resultList=new ArrayList<Map<String,Object>>();
+						Map<String,Object> contentMap=null;
+						for (SysGroups group:lstGroups){
+							if (group.getGroupParentId()==-1){
+								isAll=true;
+								break;
+							}
+							
+							if (group.getGroupCategory()==groupCategory){
+								contentMap=new HashMap<String,Object>();
+								contentMap.put("id", group.getId());
+								contentMap.put("text", group.getGroupName());
+								resultList.add(contentMap);
+							}
+						}
+						List<Map<String,Object>> lstMaps=null;
+						if (isAll){
+							lstMaps=sysGroupsManagementService.findGroupsForTree(new HashMap<String, Object>());
+							if (lstMaps!=null){
+								resultList=new ArrayList<Map<String,Object>>();
+								String parent=null;
+								for (Map<String,Object> map:lstMaps){
+									parent=""+map.get("parent");
+									if (groupCategory==0&&parent.equals("1")){
+										resultList.add(map);
+									}else if (groupCategory==1&&!parent.equals("#")&&!parent.equals("1")){
+										resultList.add(map);
+									}
+								}
+							}
+						}
+						result.put("data", resultList);
+						result.put("status", 1);
+						result.put("info", "operation success");
+					}
 				}else{
 					result.put("status", -2);
 					result.put("info", "illegal user");
@@ -1644,7 +1684,7 @@ public class SysRemoteServiceController {
 					SysNotification notification=new SysNotification();
 					notification.setNotificationTitle(notificationTitle);
 					notification.setNotificationMessage(notificationMessage);
-					notification.setNotificationReceiveGroupIds(groupIds);
+//					notification.setNotificationReceiveGroupIds(groupIds);
 					notification.setNotificationUserInfo(currentUser);
 					
 					int roleCategory=-1;//1:全查，2:查校区(用户所在)和班级，3:查班级
@@ -1656,7 +1696,7 @@ public class SysRemoteServiceController {
 							break;
 						}else if (role.getId()==3){//校区助理
 							roleCategory=2;
-						}else if (role.getId()==4){//教师
+						}else if (role.getId()==4&&roleCategory!=2){//校区助理
 							roleCategory=3;
 						}
 					}
@@ -1665,10 +1705,15 @@ public class SysRemoteServiceController {
 					if (roleCategory==-1){
 						result.put("status",0);
 						result.put("info", "wrong role, login again please");
-					}else if (roleCategory!=1){
-						lstGroups=currentUser.getSysGroups();
+					}else if (roleCategory!=4){//非教师
+						List<SysGroups> lst=sysGroupsManagementService.findSubGroups(groupIds);
+						if (lst!=null&&!lst.isEmpty()){
+							for (SysGroups group:lst){
+								groupIds+=","+group.getId();
+							}
+						}
 					}
-					
+					notification.setNotificationReceiveGroupIds(groupIds);
 					List<SysUsers> lstReceiveUsers=sysGroupsManagementService.findSysUsersInGroups(groupIds, roleCategory, lstGroups);
 					
 					//for send notification to App users

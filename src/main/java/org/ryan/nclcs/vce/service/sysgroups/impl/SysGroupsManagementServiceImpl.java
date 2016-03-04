@@ -387,4 +387,32 @@ public class SysGroupsManagementServiceImpl extends NclcsVceServiceBaseServiceIm
 		}
 		return result;
 	}
+
+	@Override
+	public List<SysGroups> findSubGroups(String parentIds) {
+		List<SysGroups> result=null;
+		List<Object> params=new ArrayList<Object>();
+		if (parentIds!=null&&!parentIds.equals("")){
+			StringBuffer hql=new StringBuffer("from SysGroups sgs where sgs.groupParentId in (");
+			boolean hasPoint=false;
+			if (parentIds.contains(",")){
+				for (String s:parentIds.split(",")){
+					if (!hasPoint){
+						hql.append("?");
+						hasPoint=true;
+					}else{
+						hql.append(",?");
+					}
+					params.add(Integer.parseInt(s));
+				}
+			}else{
+				hql.append("?");
+				params.add(Integer.parseInt(parentIds));
+			}
+			hql.append(")");
+			result=this.getCurrentDAO().find(hql.toString(), params.toArray());
+		}
+		return result;
+	}
+
 }

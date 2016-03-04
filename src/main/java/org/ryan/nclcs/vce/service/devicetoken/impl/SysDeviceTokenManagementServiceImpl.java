@@ -154,17 +154,19 @@ public class SysDeviceTokenManagementServiceImpl
 	public boolean setNewDeviceToken(Integer userId, String deviceToken) {
 		boolean result=true;
 		try {
-			List<SysDeviceToken> lst=null;
+//			List<SysDeviceToken> lst=null;
+//			SysDeviceToken deviceToken=null;
 			if (userId!=null&&!userId.equals(0)){
 				SysDeviceToken device=null;
 				StringBuffer hql=new StringBuffer("from SysDeviceToken sdt where sdt.sysUserId = ?");
-				lst=this.getCurrentDAO().findUnique(hql.toString(), userId);
+				device=this.getCurrentDAO().findUnique(hql.toString(), userId);
 				
-				if (lst==null||lst.isEmpty()){
+				if (device==null){
 					device=new SysDeviceToken();
-				}else if (lst!=null&&!lst.isEmpty()){
-					device=lst.get(0);
 				}
+//				else if (deviceToken!=null){
+//					device=lst.get(0);
+//				}
 				
 				if (deviceToken.length()==44){
 					device.setDeviceTokenType(1);
