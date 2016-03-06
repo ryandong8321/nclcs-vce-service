@@ -8,17 +8,6 @@
 %>
 <!DOCTYPE html>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
-<!-- 
-Template Name: Metronic - Responsive Admin Dashboard Template build with Twitter Bootstrap 3.3.5
-Version: 4.1.0
-Author: KeenThemes
-Website: http://www.keenthemes.com/
-Contact: support@keenthemes.com
-Follow: www.twitter.com/keenthemes
-Like: www.facebook.com/keenthemes
-Purchase: http://themeforest.net/item/metronic-responsive-admin-dashboard-template/4021469?ref=keenthemes
-License: You must have a valid license purchased only from themeforest(the above link) in order to legally use the theme for your project.
--->
 <!--[if IE 8]> <html lang="en" class="ie8 no-js"> <![endif]-->
 <!--[if IE 9]> <html lang="en" class="ie9 no-js"> <![endif]-->
 <!--[if !IE]><!-->
@@ -27,7 +16,7 @@ License: You must have a valid license purchased only from themeforest(the above
 <!-- BEGIN HEAD -->
 <head>
 <meta charset="utf-8"/>
-<title>Metronic | Form Stuff - Form Layouts</title>
+<title>New Chinese Language and Culture School</title>
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8">
@@ -41,10 +30,9 @@ License: You must have a valid license purchased only from themeforest(the above
 <link href="<%=basePath%>assets/metronic/assets/global/plugins/uniform/css/uniform.default.css" rel="stylesheet" type="text/css">
 <!-- END GLOBAL MANDATORY STYLES -->
 <!-- BEGIN PAGE LEVEL STYLES -->
-<link href="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.1/css/select2.min.css" rel="stylesheet" />
-<link rel="stylesheet" type="text/css" href="<%=basePath%>assets/metronic/assets/global/plugins/bootstrap-wysihtml5/bootstrap-wysihtml5.css"/>
-<link rel="stylesheet" type="text/css" href="<%=basePath%>assets/metronic/assets/global/plugins/bootstrap-markdown/css/bootstrap-markdown.min.css">
-<!-- END PAGE LEVEL SCRIPTS -->
+<link rel="stylesheet" type="text/css" href="<%=basePath%>assets/metronic/assets/global/plugins/datatables/plugins/bootstrap/dataTables.bootstrap.css"/>
+<link rel="stylesheet" type="text/css" href="<%=basePath%>assets/metronic/assets/global/plugins/bootstrap-datepicker/css/bootstrap-datepicker3.min.css"/>
+<!-- END PAGE LEVEL STYLES -->
 <!-- BEGIN THEME STYLES -->
 <link href="<%=basePath%>assets/metronic/assets/global/css/components-rounded.css" id="style_components" rel="stylesheet" type="text/css"/>
 <link href="<%=basePath%>assets/metronic/assets/global/css/plugins.css" rel="stylesheet" type="text/css"/>
@@ -90,7 +78,6 @@ License: You must have a valid license purchased only from themeforest(the above
 		<!-- BEGIN PAGE TOP -->
 		<div class="page-top">
 			<!-- BEGIN HEADER SEARCH BOX -->
-			<!-- DOC: Apply "search-form-expanded" right after the "search-form" class to have half expanded search box -->
 			<!-- END HEADER SEARCH BOX -->
 			<!-- BEGIN TOP NAVIGATION MENU -->
 			<div class="top-menu">
@@ -98,17 +85,14 @@ License: You must have a valid license purchased only from themeforest(the above
 					<li class="separator hide">
 					</li>
 					<!-- BEGIN NOTIFICATION DROPDOWN -->
-					<!-- DOC: Apply "dropdown-dark" class after below "dropdown-extended" to change the dropdown styte -->
 					<!-- END NOTIFICATION DROPDOWN -->
 					<li class="separator hide">
 					</li>
 					<!-- BEGIN INBOX DROPDOWN -->
-					<!-- DOC: Apply "dropdown-dark" class after below "dropdown-extended" to change the dropdown styte -->
 					<!-- END INBOX DROPDOWN -->
 					<li class="separator hide">
 					</li>
 					<!-- BEGIN TODO DROPDOWN -->
-					<!-- DOC: Apply "dropdown-dark" class after below "dropdown-extended" to change the dropdown styte -->
 					<!-- END TODO DROPDOWN -->
 					<!-- BEGIN USER LOGIN DROPDOWN -->
 					<!-- DOC: Apply "dropdown-dark" class after below "dropdown-extended" to change the dropdown styte -->
@@ -220,20 +204,20 @@ License: You must have a valid license purchased only from themeforest(the above
 				</li>
 				</c:if>
 				<c:if test="${_sys_privilege eq 1 || _sys_privilege eq 2 || _sys_privilege eq 3 || _sys_privilege eq 4}">
-				<li class="active open">
+				<li>
 					<a href="javascript:;">
 					<i class="icon-graduation"></i>
 					<span class="title">学生学级管理</span>
-					<span class="arrow open"></span>
+					<span class="arrow "></span>
 					</a>
 					<ul class="sub-menu">
-						<li class="">
+						<li>
 							<a href="<%=basePath%>appstudentsinfomanagement/appstudentsinfolist.do">
 							<i class="icon-pencil"></i>
 							<span class="title">学生信息管理</span>
 							</a>
 						</li>
-						<li class="active">
+						<li class="">
 							<a href="<%=basePath%>appstudentsinfomanagement/appstudentsscorelist.do">
 							<i class="icon-bar-chart"></i>
 							<span class="title">学生成绩管理</span>
@@ -241,11 +225,11 @@ License: You must have a valid license purchased only from themeforest(the above
 						</li>
 					</ul>
 				</li>
-				<li>
+				<li class="active open">
 					<a href="javascript:;">
 					<i class="icon-book-open"></i>
 					<span class="title">学生作业管理</span>
-					<span class="arrow "></span>
+					<span class="arrow open"></span>
 					</a>
 					<ul class="sub-menu">
 						<li class="">
@@ -266,7 +250,7 @@ License: You must have a valid license purchased only from themeforest(the above
 							<span class="title">上传已审作业</span>
 							</a>
 						</li>
-						<li class="">
+						<li class="active">
 							<a href="<%=basePath%>appassignmenttutormanagement/uploadappointmentassignmentlist.do">
 							<i class="icon-logout"></i>
 							<span class="title">上传代审作业</span>
@@ -279,6 +263,29 @@ License: You must have a valid license purchased only from themeforest(the above
 					<i class="icon-envelope-letter"></i>
 					<span class="title">通知管理</span>
 					</a>
+				</li>
+				</c:if>
+				<c:if test="${_sys_privilege eq 5}">
+				<li class="active open">
+					<a href="javascript:;">
+					<i class="icon-book-open"></i>
+					<span class="title">学生作业管理</span>
+					<span class="arrow open"></span>
+					</a>
+					<ul class="sub-menu">
+						<li class="active">
+							<a href="<%=basePath%>appassignmentstudentmanagement/uploadassignmentlist.do">
+							<i class="icon-arrow-up"></i>
+							<span class="title">上传作业</span>
+							</a>
+						</li>
+						<li class="">
+							<a href="<%=basePath%>appassignmentstudentmanagement/downloadassignmentlist.do">
+							<i class="icon-arrow-down"></i>
+							<span class="title">下载作业</span>
+							</a>
+						</li>
+					</ul>
 				</li>
 				</c:if>
 				<li class="">
@@ -322,7 +329,7 @@ License: You must have a valid license purchased only from themeforest(the above
 			<div class="page-head">
 				<!-- BEGIN PAGE TITLE -->
 				<div class="page-title">
-					<h1>VCE课程管理系统-学生成绩管理</h1>
+					<h1>VCE课程管理系统-学生作业管理</h1>
 				</div>
 				<!-- END PAGE TITLE -->
 				<!-- BEGIN PAGE TOOLBAR -->
@@ -335,82 +342,135 @@ License: You must have a valid license purchased only from themeforest(the above
 			<!-- BEGIN PAGE CONTENT-->
 			<div class="row">
 				<div class="col-md-12">
-					<div class="tabbable tabbable-custom tabbable-noborder tabbable-reversed">
-						<div class="portlet light bordered form-fit">
-							<div class="portlet-title">
-								<div class="caption">
-									<i class="icon-user font-blue-hoki"></i>
-									<span class="caption-subject font-blue-hoki bold uppercase">学生成绩</span>
-								</div>
-								<div class="actions">
-									<a class="btn btn-circle btn-icon-only btn-default" href="javascript:modifyInfo();">
-									<i class="icon-wrench"></i>
+					<!-- <div class="note note-danger note-shadow">
+						<p>
+							 NOTE: The below datatable is not connected to a real database so the filter and sorting is just simulated for demo purposes only.
+						</p>
+					</div> -->
+					<!-- Begin: life time stats -->
+					<div class="portlet light">
+						<div class="portlet-title">
+							<div class="caption">
+								<i class="fa fa-user font-blue-sharp"></i>
+								<span class="caption-subject font-green-sharp bold uppercase">上传代审作业</span>
+								<span class="caption-helper"></span>
+							</div>
+							<div class="actions">
+								<a href="javascript:uploadNewAssignment();" class="btn btn-default btn-circle">
+									<i class="fa fa-plus"></i>
+									<span class="hidden-480">
+									上传作业</span>
+								</a>
+								<div class="btn-group">
+									<a class="btn btn-default btn-circle" href="javascript:;" data-toggle="dropdown">
+									<i class="fa fa-share"></i>
+									<span class="hidden-480">
+									Tools </span>
+									<i class="fa fa-angle-down"></i>
 									</a>
+									<ul class="dropdown-menu pull-right">
+										<li>
+											<a href="javascript:deleteSeletedAssignment();">
+											收回上传的作业 </a>
+										</li>
+										<%-- <li>
+											<a href="javascript:;">
+											Export to Excel </a>
+										</li>
+										<li>
+											<a href="javascript:;">
+											Export to XML </a>
+										</li>
+										<li class="divider">
+										</li>
+										<li>
+											<a href="javascript:;">
+											Print Invoices </a>
+										</li> --%>
+									</ul>
 								</div>
 							</div>
-							<div class="portlet-body form">
-								<!-- BEGIN FORM-->
-								<form action="<%=basePath%>appstudentsinfomanagement/savestudentscoresinfo.do" class="form-horizontal" Method="POST" id="frmsysstudentinfo">
-									<div class="form-body">
-										<div class="row">
-											<div class="col-md-6">
-												<div class="form-group">
-													<label class="control-label col-md-3">中文姓名<span class="required">*</span></label>
-													<div class="col-md-9">
-														<input type="text" name="chineseName" placeholder="中文姓名" class="form-control" id="chineseName" value="${sysuser.chineseName }"/>
-													</div>
-												</div>
-											</div>
-											<!--/span-->
-											<div class="col-md-6">
-												<div class="form-group">
-													<label class="control-label col-md-3">英文姓名<span class="required">*</span></label>
-													<div class="col-md-9">
-														<input type="text" name="englishName" placeholder="英文姓名" class="form-control" id="englishName" value="${sysuser.englishName }"/>
-													</div>
-												</div>
-											</div>
-											<!--/span-->
+						</div>
+						<div class="portlet-body">
+							<div class="table-container">
+								<div class="table-actions-wrapper">
+									<span>
+									</span>
+								</div>
+								<table class="table table-striped table-bordered table-hover" id="datatable_ajax">
+								<thead>
+								<tr role="row" class="heading">
+									<th width="2%">
+										<input type="checkbox" class="group-checkable">
+									</th>
+									<th width="3%">
+										 序号
+									</th>
+									<th width="20%">
+										 作业名称
+									</th>
+									<th width="5%">
+										 教师名称
+									</th>
+									<th width="15%">
+										 上传时间
+									</th>
+									<th width="15%">
+										 下载时间
+									</th>
+									<th width="20%">
+										 Actions
+									</th>
+								</tr>
+								<tr role="row" class="filter">
+									<td>
+									</td>
+									<td>
+									</td>
+									<td>
+										<input type="text" class="form-control form-filter input-sm" name="assignment_name">
+									</td>
+									<td>
+										<input type="text" class="form-control form-filter input-sm" name="tutor_name">
+									</td>
+									<td>
+										<div class="input-group date date-picker margin-bottom-5" data-date-format="yyyy-mm-dd">
+											<input type="text" class="form-control form-filter input-sm" readonly name="order_date_from" placeholder="From">
+											<span class="input-group-btn">
+											<button class="btn btn-sm default" type="button"><i class="fa fa-calendar"></i></button>
+											</span>
 										</div>
-										<!--/row-->
-										<c:forEach var="examName" items="${examNames }" varStatus="status">
-											<c:if test="${status.count%2==0 }">
-												<div class="row">
-											</c:if>
-											<div class="col-md-6">
-												<div class="form-group">
-													<label class="control-label col-md-3">${examName.propertyName }</label>
-													<div class="col-md-9">
-														<input type="text" name="property_${examName.id }" placeholder="${examName.propertyName } 成绩" class="form-control" id="property_${examName.id }"/>
-													</div>
-												</div>
-											</div>
-											<c:if test="${status.count%2==0 }">
-												</div>
-											</c:if>
-										</c:forEach>
-									</div>
-									<div class="form-actions">
-										<div class="row">
-											<div class="col-md-6">
-												<div class="row">
-													<div class="col-md-offset-3 col-md-9">
-														<button type="button" class="btn blue" onclick="javascript:saveStudentScores();"><i class="fa fa-check"></i> 保存</button>
-														<button type="button" class="btn default" onclick="javascript:history.back();">取消</button>
-													</div>
-												</div>
-											</div>
-											<div class="col-md-6">
-											</div>
+										<div class="input-group date date-picker" data-date-format="yyyy-mm-dd">
+											<input type="text" class="form-control form-filter input-sm" readonly name="order_date_to" placeholder="To">
+											<span class="input-group-btn">
+											<button class="btn btn-sm default" type="button"><i class="fa fa-calendar"></i></button>
+											</span>
 										</div>
-									</div>
-									<input type="hidden" name="userId" value="${sysuser.id }" id="userId" />
-								</form>
-								<!-- END FORM-->
+									</td>
+									<td>
+									</td>
+									<td>
+										<div class="margin-bottom-5">
+											<button class="btn btn-sm yellow filter-submit margin-bottom"><i class="fa fa-search"></i> Search</button>
+											<button class="btn btn-sm red filter-cancel"><i class="fa fa-times"></i> Reset</button>
+										</div>
+									</td>
+								</tr>
+								</thead>
+								<tbody>
+								</tbody>
+								</table>
 							</div>
 						</div>
 					</div>
+					<!-- End: life time stats -->
 				</div>
+				<form action="<%=basePath%>appassignmenttutormanagement/showuploadappointmentassignmentinfo.do" id="frmShowInfo" name="frmShowInfo" method="POST">
+					<input type="hidden" id="uploadAssignmentId" name="uploadAssignmentId" value=""/>
+				</form>
+				<form action="<%=basePath%>appassignmenttutormanagement/deletemultipleassignment.do" id="frmDeleteInfo" name="frmDeleteInfo" method="POST">
+					<input type="hidden" id="deleteIds" name="deleteIds" value=""/>
+				</form>
 			</div>
 			<!-- END PAGE CONTENT-->
 		</div>
@@ -419,13 +479,6 @@ License: You must have a valid license purchased only from themeforest(the above
 </div>
 <!-- END CONTAINER -->
 <!-- BEGIN FOOTER -->
-<div class="page-footer">
-	<div class="page-footer-inner">
-	</div>
-	<div class="scroll-to-top">
-		<i class="icon-arrow-up"></i>
-	</div>
-</div>
 <!-- END FOOTER -->
 <!-- BEGIN JAVASCRIPTS(Load javascripts at bottom, this will reduce page load time) -->
 <!-- BEGIN CORE PLUGINS -->
@@ -443,108 +496,82 @@ License: You must have a valid license purchased only from themeforest(the above
 <script src="<%=basePath%>assets/metronic/assets/global/plugins/jquery.blockui.min.js" type="text/javascript"></script>
 <script src="<%=basePath%>assets/metronic/assets/global/plugins/jquery.cokie.min.js" type="text/javascript"></script>
 <script src="<%=basePath%>assets/metronic/assets/global/plugins/uniform/jquery.uniform.min.js" type="text/javascript"></script>
+<script src="<%=basePath%>assets/metronic/assets/global/plugins/bootstrap-switch/js/bootstrap-switch.min.js" type="text/javascript"></script>
 <!-- END CORE PLUGINS -->
 <!-- BEGIN PAGE LEVEL PLUGINS -->
-<script type="text/javascript" src="<%=basePath%>assets/metronic/assets/global/plugins/jquery-validation/js/jquery.validate.min.js"></script>
-<script type="text/javascript" src="<%=basePath%>assets/metronic/assets/global/plugins/jquery-validation/js/additional-methods.min.js"></script>
+<script type="text/javascript" src="<%=basePath%>assets/metronic/assets/global/plugins/datatables/media/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="<%=basePath%>assets/metronic/assets/global/plugins/datatables/plugins/bootstrap/dataTables.bootstrap.js"></script>
+<script type="text/javascript" src="<%=basePath%>assets/metronic/assets/global/plugins/bootstrap-datepicker/js/bootstrap-datepicker.min.js"></script>
 <script type="text/javascript" src="<%=basePath%>assets/metronic/assets/global/plugins/bootbox/bootbox.min.js"></script>
 <!-- END PAGE LEVEL PLUGINS -->
-<!-- BEGIN SELECT2 -->
-<script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.1/js/select2.min.js"></script>
-<!-- END SELECT2 -->
 <!-- BEGIN PAGE LEVEL SCRIPTS -->
 <script src="<%=basePath%>assets/metronic/assets/global/scripts/metronic.js" type="text/javascript"></script>
 <script src="<%=basePath%>assets/metronic/assets/admin/layout4/scripts/layout.js" type="text/javascript"></script>
 <script src="<%=basePath%>assets/metronic/assets/admin/layout4/scripts/demo.js" type="text/javascript"></script>
-<script src="<%=basePath%>assets/metronic/assets/admin/pages/scripts/form-validation.js"></script>
+<script src="<%=basePath%>assets/metronic/assets/global/scripts/datatable.js"></script>
+<script src="<%=basePath%>assets/metronic/assets/admin/pages/scripts/table-ajax.js"></script>
 <!-- END PAGE LEVEL SCRIPTS -->
 <script>
-var $isLearnChinese, $studentGroup, $studentGroupClass;
-var isLearnChineseData, propertyIsLearnChineseId, studentGroupData, studentGroupClassData;
-jQuery(document).ready(function() {    
-   // initiate layout and plugins
-   	Metronic.init(); // init metronic core components
-	Layout.init(); // init current layout
-	Demo.init(); // init demo features
-   	//FormValidation.init();
-	
-	//var studentscores="${jsonScore}";
-	//alert(studentscores);
-	//$.each(studentscores,function(idx,item){
-		//alert(item.appScoreProperty.id);
-	//});
-	
-   if ($("#userId").val()&&$("#userId").val()!=""){
-	   $("#chineseName").attr("readOnly",true);
-	   $("#englishName").attr("readOnly",true);
-	   
-	   try{
-		   var examNames=${jsonExamNames};
-		   $.each(examNames,function(idx,item){
-			  $("#property_"+item.id).attr("readOnly",true);
-			});
-	   }catch(error){
-	   }
-	   
-	   try{
-		   var studentscores=${jsonScore};
-		   $.each(studentscores,function(idx,item){
-			  $("#property_"+item.id).val(item.scoreValue);
-			});
-	   }catch(error){
-	   }
-   }
-   
-   var result="${result}";
-	try{
-		if (result){
-			showMessage(result);
+     jQuery(document).ready(function() {    
+        Metronic.init(); // init metronic core components
+        Layout.init(); // init current layout
+		Demo.init(); // init demo features
+		TableAjax.init("<%=basePath%>appassignmenttutormanagement/inituploadappointmentassignmentlist.do");
+		
+		//init date pickers
+        $('.date-picker').datepicker({
+            rtl: Metronic.isRTL(),
+            autoclose: true
+        });
+		
+		var result="${result}";
+		try{
+			if (result){
+				showMessage(result);
+			}
+		}catch(error){
 		}
-	}catch(error){
-	}
-});
-
-function modifyInfo(){
-   	try{
-	   var examNames=${jsonExamNames};
-	   $.each(examNames,function(idx,item){
-		  $("#property_"+item.id).attr("readOnly",false);
+	});
+     
+     function uploadNewAssignment(){
+    	 $("#frmShowInfo").submit();
+     }
+     
+     function showUploadAssignment(sid){
+    	 $("#uploadAssignmentId").val(sid);
+    	 $("#frmShowInfo").submit();
+     }
+     
+     function deleteUploadAssignment(uid){
+    	 bootbox.confirm("<font size='3'>作业一旦收回将<font color='red'>不可恢复</font>，请确认!", function (result){
+   			if (result==true){
+   				$("#deleteIds").val(uid);
+   		    	$("#frmDeleteInfo").submit();
+   			}
+   		});
+     }
+     
+     function deleteSeletedAssignment(){
+    	 var userTable = new Datatable(), selections=userTable.getSelectedRows();
+    	 if(JSON.stringify(selections)=="[]"){
+    		 showMessage("请选择要回收的作业!");
+    		 return;
+    	 }
+    	 bootbox.confirm("<font size='3'>作业一旦收回将<font color='red'>不可恢复</font>，请确认!</br><font color='red'>注意</font>：只能收回学生未下载的作业，如果您选择的作业中包含学生已下载的作业，操作可能将无法完成.</font>", function (result){
+			if (result==true){
+				$("#deleteIds").val(selections);
+				$("#frmDeleteInfo").submit();
+			}
 		});
-   }catch(error){
-   }
-}
-
-function saveStudentScores(){
-	try{
-	   var examNames=${jsonExamNames};
-	   var score,msg="";
-	   $.each(examNames,function(idx,item){
-		   score=$("#property_"+item.id).val();
-		   if (score>100){
-			   if (msg==""){
-				   msg=item.text+" 成绩不能高于100分";
-			   }else{
-				   msg+="</br>"+item.text+" 成绩不能高于100分";
-			   }
-		   }
-		});
-	   if (msg!=""){
-		   showMessage(msg);
-		   return;
-	   }else{
-		   $("#frmsysstudentinfo").submit();
-	   }
-   }catch(error){
-   }
-}
-
-var message;
-function showMessage(msg){
-	if (msg){
-		message=msg;
 	}
-	bootbox.alert("<font size='4'>"+message+"</font>");
-}
+
+    var message;
+    function showMessage(msg) {
+    	if (msg) {
+    		message = msg;
+    	}
+		bootbox.alert("<font size='4'>"+message+"</font>");
+	}
 </script>
 <!-- END JAVASCRIPTS -->
 </body>

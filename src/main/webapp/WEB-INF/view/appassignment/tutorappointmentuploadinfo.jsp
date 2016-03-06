@@ -44,6 +44,7 @@ License: You must have a valid license purchased only from themeforest(the above
 <link href="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.1/css/select2.min.css" rel="stylesheet" />
 <link rel="stylesheet" type="text/css" href="<%=basePath%>assets/metronic/assets/global/plugins/bootstrap-wysihtml5/bootstrap-wysihtml5.css"/>
 <link rel="stylesheet" type="text/css" href="<%=basePath%>assets/metronic/assets/global/plugins/bootstrap-markdown/css/bootstrap-markdown.min.css">
+<link rel="stylesheet" type="text/css" href="<%=basePath%>assets/metronic/assets/global/plugins/bootstrap-fileinput/bootstrap-fileinput.css"/>
 <!-- END PAGE LEVEL SCRIPTS -->
 <!-- BEGIN THEME STYLES -->
 <link href="<%=basePath%>assets/metronic/assets/global/css/components-rounded.css" id="style_components" rel="stylesheet" type="text/css"/>
@@ -123,8 +124,8 @@ License: You must have a valid license purchased only from themeforest(the above
 							<!-- <li>
 								<a href="extra_profile.html">
 								<i class="icon-user"></i> My Profile </a>
-							</li>
-							<li>
+							</li> -->
+							<!-- <li>
 								<a href="page_calendar.html">
 								<i class="icon-calendar"></i> My Calendar </a>
 							</li> -->
@@ -220,11 +221,11 @@ License: You must have a valid license purchased only from themeforest(the above
 				</li>
 				</c:if>
 				<c:if test="${_sys_privilege eq 1 || _sys_privilege eq 2 || _sys_privilege eq 3 || _sys_privilege eq 4}">
-				<li class="active open">
+				<li>
 					<a href="javascript:;">
 					<i class="icon-graduation"></i>
 					<span class="title">学生学级管理</span>
-					<span class="arrow open"></span>
+					<span class="arrow "></span>
 					</a>
 					<ul class="sub-menu">
 						<li class="">
@@ -233,7 +234,7 @@ License: You must have a valid license purchased only from themeforest(the above
 							<span class="title">学生信息管理</span>
 							</a>
 						</li>
-						<li class="active">
+						<li class="">
 							<a href="<%=basePath%>appstudentsinfomanagement/appstudentsscorelist.do">
 							<i class="icon-bar-chart"></i>
 							<span class="title">学生成绩管理</span>
@@ -241,11 +242,11 @@ License: You must have a valid license purchased only from themeforest(the above
 						</li>
 					</ul>
 				</li>
-				<li>
+				<li class="active open">
 					<a href="javascript:;">
 					<i class="icon-book-open"></i>
 					<span class="title">学生作业管理</span>
-					<span class="arrow "></span>
+					<span class="arrow open"></span>
 					</a>
 					<ul class="sub-menu">
 						<li class="">
@@ -266,7 +267,7 @@ License: You must have a valid license purchased only from themeforest(the above
 							<span class="title">上传已审作业</span>
 							</a>
 						</li>
-						<li class="">
+						<li class="active">
 							<a href="<%=basePath%>appassignmenttutormanagement/uploadappointmentassignmentlist.do">
 							<i class="icon-logout"></i>
 							<span class="title">上传代审作业</span>
@@ -279,6 +280,29 @@ License: You must have a valid license purchased only from themeforest(the above
 					<i class="icon-envelope-letter"></i>
 					<span class="title">通知管理</span>
 					</a>
+				</li>
+				</c:if>
+				<c:if test="${_sys_privilege eq 5}">
+				<li class="active open">
+					<a href="javascript:;">
+					<i class="icon-book-open"></i>
+					<span class="title">学生作业管理</span>
+					<span class="arrow open"></span>
+					</a>
+					<ul class="sub-menu">
+						<li class="active">
+							<a href="<%=basePath%>appassignmentstudentmanagement/uploadassignmentlist.do">
+							<i class="icon-arrow-up"></i>
+							<span class="title">上传作业</span>
+							</a>
+						</li>
+						<li class="">
+							<a href="<%=basePath%>appassignmentstudentmanagement/downloadassignmentlist.do">
+							<i class="icon-arrow-down"></i>
+							<span class="title">下载作业</span>
+							</a>
+						</li>
+					</ul>
 				</li>
 				</c:if>
 				<li class="">
@@ -322,7 +346,7 @@ License: You must have a valid license purchased only from themeforest(the above
 			<div class="page-head">
 				<!-- BEGIN PAGE TITLE -->
 				<div class="page-title">
-					<h1>VCE课程管理系统-学生成绩管理</h1>
+					<h1>VCE课程管理系统-学生作业管理</h1>
 				</div>
 				<!-- END PAGE TITLE -->
 				<!-- BEGIN PAGE TOOLBAR -->
@@ -340,71 +364,82 @@ License: You must have a valid license purchased only from themeforest(the above
 							<div class="portlet-title">
 								<div class="caption">
 									<i class="icon-user font-blue-hoki"></i>
-									<span class="caption-subject font-blue-hoki bold uppercase">学生成绩</span>
+									<span class="caption-subject font-blue-hoki bold uppercase">上传作业</span>
 								</div>
 								<div class="actions">
+									<!-- <a class="btn btn-circle btn-icon-only btn-default" href="javascript:;">
+									<i class="icon-cloud-upload"></i>
+									</a> -->
 									<a class="btn btn-circle btn-icon-only btn-default" href="javascript:modifyInfo();">
 									<i class="icon-wrench"></i>
+									</a>
+									<a class="btn btn-circle btn-icon-only btn-default" href="javascript:deleteInfo();">
+									<i class="icon-trash"></i>
 									</a>
 								</div>
 							</div>
 							<div class="portlet-body form">
 								<!-- BEGIN FORM-->
-								<form action="<%=basePath%>appstudentsinfomanagement/savestudentscoresinfo.do" class="form-horizontal" Method="POST" id="frmsysstudentinfo">
+								<form action="<%=basePath%>appassignmenttutormanagement/saveuploadappointmentassignmentinfo.do" 
+									enctype="multipart/form-data" Method="POST" class="form-horizontal form-bordered form-label-stripped" id="frmuploadassignmentinfo">
 									<div class="form-body">
-										<div class="row">
-											<div class="col-md-6">
-												<div class="form-group">
-													<label class="control-label col-md-3">中文姓名<span class="required">*</span></label>
-													<div class="col-md-9">
-														<input type="text" name="chineseName" placeholder="中文姓名" class="form-control" id="chineseName" value="${sysuser.chineseName }"/>
-													</div>
-												</div>
-											</div>
-											<!--/span-->
-											<div class="col-md-6">
-												<div class="form-group">
-													<label class="control-label col-md-3">英文姓名<span class="required">*</span></label>
-													<div class="col-md-9">
-														<input type="text" name="englishName" placeholder="英文姓名" class="form-control" id="englishName" value="${sysuser.englishName }"/>
-													</div>
-												</div>
-											</div>
-											<!--/span-->
+										<div class="alert alert-danger display-hide">
+											<button class="close" data-close="alert"></button>
+											You have some form errors. Please check below.
 										</div>
-										<!--/row-->
-										<c:forEach var="examName" items="${examNames }" varStatus="status">
-											<c:if test="${status.count%2==0 }">
-												<div class="row">
-											</c:if>
-											<div class="col-md-6">
-												<div class="form-group">
-													<label class="control-label col-md-3">${examName.propertyName }</label>
-													<div class="col-md-9">
-														<input type="text" name="property_${examName.id }" placeholder="${examName.propertyName } 成绩" class="form-control" id="property_${examName.id }"/>
+										<div class="alert alert-success display-hide">
+											<button class="close" data-close="alert"></button>
+											Your form validation is successful!
+										</div>
+										<div class="form-group">
+											<label class="control-label col-md-3">作业名称<span class="required">*</span></label>
+											<div class="col-md-9">
+												<input type="text" name="assignmentName" placeholder="作业名称" class="form-control" id="assignmentName" value="${uploadassignment.assignmentName }"/>
+											</div>
+										</div>
+										<div class="form-group">
+											<label class="control-label col-md-3">选择教师<span class="required">*</span></label>
+											<div class="col-md-9">
+												<select class="js-states form-control" id="toTutorId" name="toTutorId"></select>
+											</div>
+										</div>
+										<div class="form-group">
+											<label class="control-label col-md-3">上传作业<span class="required">*</span></label>
+											<div class="col-md-9">
+												<div id="div_cannot_handle">
+													${uploadassignment.fileName }
+												</div>
+												<div id="div_can_handle">
+													<div class="fileinput fileinput-new" data-provides="fileinput">
+														<span class="btn default btn-file">
+														<span class="fileinput-new">
+														Select file </span>
+														<span class="fileinput-exists">
+														Change </span>
+														<input type="file" name="files" id="files">
+														</span>
+														<span class="fileinput-filename">
+														</span>
+														&nbsp; <a href="javascript:;" class="close fileinput-exists" data-dismiss="fileinput">
+														</a>
 													</div>
 												</div>
 											</div>
-											<c:if test="${status.count%2==0 }">
-												</div>
-											</c:if>
-										</c:forEach>
+										</div>
 									</div>
 									<div class="form-actions">
 										<div class="row">
-											<div class="col-md-6">
-												<div class="row">
-													<div class="col-md-offset-3 col-md-9">
-														<button type="button" class="btn blue" onclick="javascript:saveStudentScores();"><i class="fa fa-check"></i> 保存</button>
-														<button type="button" class="btn default" onclick="javascript:history.back();">取消</button>
-													</div>
-												</div>
-											</div>
-											<div class="col-md-6">
+											<div class="col-md-offset-3 col-md-9">
+												<button type="button" class="btn blue" onclick="javascript:saveUploadAssignment();"><i class="fa fa-check"></i> 保存</button>
+												<button type="button" class="btn default" onclick="javascript:history.back();">取消</button>
 											</div>
 										</div>
 									</div>
-									<input type="hidden" name="userId" value="${sysuser.id }" id="userId" />
+									<input type="hidden" name="uploadAssignmentId" value="${uploadassignment.id }" id="uploadAssignmentId" />
+									<input type="hidden" name="targetTutorId" value="${uploadassignment.targetTutor.id }" id="targetTutorId" />
+								</form>
+								<form action="<%=basePath%>appassignmenttutormanagement/.do" Method="POST" id="frmdeleteinfo">
+									<input type="hidden" name="deleteId" value="${uploadassignment.id }" id="deleteId" />
 								</form>
 								<!-- END FORM-->
 							</div>
@@ -447,6 +482,7 @@ License: You must have a valid license purchased only from themeforest(the above
 <!-- BEGIN PAGE LEVEL PLUGINS -->
 <script type="text/javascript" src="<%=basePath%>assets/metronic/assets/global/plugins/jquery-validation/js/jquery.validate.min.js"></script>
 <script type="text/javascript" src="<%=basePath%>assets/metronic/assets/global/plugins/jquery-validation/js/additional-methods.min.js"></script>
+<script type="text/javascript" src="<%=basePath%>assets/metronic/assets/global/plugins/bootstrap-fileinput/bootstrap-fileinput.js"></script>
 <script type="text/javascript" src="<%=basePath%>assets/metronic/assets/global/plugins/bootbox/bootbox.min.js"></script>
 <!-- END PAGE LEVEL PLUGINS -->
 <!-- BEGIN SELECT2 -->
@@ -459,42 +495,42 @@ License: You must have a valid license purchased only from themeforest(the above
 <script src="<%=basePath%>assets/metronic/assets/admin/pages/scripts/form-validation.js"></script>
 <!-- END PAGE LEVEL SCRIPTS -->
 <script>
-var $isLearnChinese, $studentGroup, $studentGroupClass;
-var isLearnChineseData, propertyIsLearnChineseId, studentGroupData, studentGroupClassData;
+var $toTutor;
+var toTutorData;
 jQuery(document).ready(function() {    
    // initiate layout and plugins
    	Metronic.init(); // init metronic core components
 	Layout.init(); // init current layout
 	Demo.init(); // init demo features
-   	//FormValidation.init();
-	
-	//var studentscores="${jsonScore}";
-	//alert(studentscores);
-	//$.each(studentscores,function(idx,item){
-		//alert(item.appScoreProperty.id);
-	//});
-	
-   if ($("#userId").val()&&$("#userId").val()!=""){
-	   $("#chineseName").attr("readOnly",true);
-	   $("#englishName").attr("readOnly",true);
-	   
-	   try{
-		   var examNames=${jsonExamNames};
-		   $.each(examNames,function(idx,item){
-			  $("#property_"+item.id).attr("readOnly",true);
-			});
-	   }catch(error){
-	   }
-	   
-	   try{
-		   var studentscores=${jsonScore};
-		   $.each(studentscores,function(idx,item){
-			  $("#property_"+item.id).val(item.scoreValue);
-			});
-	   }catch(error){
-	   }
-   }
    
+   if ($("#uploadAssignmentId").val()&&$("#uploadAssignmentId").val()!=""){
+	   $("#assignmentName").attr("readOnly",true); 
+	   $("#toTutorId").attr("disabled",true);
+	   $("#div_can_handle").hide();
+	   $("#div_cannot_handle").show();
+   }
+	
+   $toTutor=$("#toTutorId");
+   $.ajax({
+       type: "POST",
+       async:false,
+       contentType: "application/json; charset=utf-8",
+       url: "<%=basePath%>appassignmenttutormanagement/findallappointmenttutors.do",
+       data: "{'targetTutorId' : '"+$("#toTutorId").val()+"'}",
+       dataType: 'json',
+       success: function(result) {
+    	   toTutorData=result.data;
+       }
+   });
+   $toTutor.select2({
+		data:toTutorData,
+		placeholder: "选择教师"
+	});
+   
+   if (!$("#uploadAssignmentId").val()){
+	   $toTutor.val(null).trigger("change");
+   }
+	
    var result="${result}";
 	try{
 		if (result){
@@ -505,37 +541,41 @@ jQuery(document).ready(function() {
 });
 
 function modifyInfo(){
-   	try{
-	   var examNames=${jsonExamNames};
-	   $.each(examNames,function(idx,item){
-		  $("#property_"+item.id).attr("readOnly",false);
-		});
-   }catch(error){
-   }
+   	$("#assignmentName").attr("readOnly",false);
+   	$("#toTutorId").attr("disabled",false);
+   	$("#div_cannot_handle").hide();
+   	$("#div_can_handle").show();
 }
 
-function saveStudentScores(){
-	try{
-	   var examNames=${jsonExamNames};
-	   var score,msg="";
-	   $.each(examNames,function(idx,item){
-		   score=$("#property_"+item.id).val();
-		   if (score>100){
-			   if (msg==""){
-				   msg=item.text+" 成绩不能高于100分";
-			   }else{
-				   msg+="</br>"+item.text+" 成绩不能高于100分";
-			   }
-		   }
-		});
-	   if (msg!=""){
-		   showMessage(msg);
-		   return;
-	   }else{
-		   $("#frmsysstudentinfo").submit();
-	   }
-   }catch(error){
-   }
+function saveUploadAssignment(){
+	var msg="";
+	if (!$("#toTutorId").val()){
+		msg="请选择要接收作业的教师。</br>";
+	}
+	if ($("#files").val()==""){
+		msg+="请选择要上传的作业。";
+	}
+	if (msg==""){
+		if ($("#assignmentName").val()==""){
+			msg="您没有填写作业名称，系统默认您上传的文件名做为作业名称，请确认";
+			bootbox.confirm("<font size='3'>"+msg+"</font>", function (result){
+				if (result==true){
+					$("#frmuploadassignmentinfo").submit();
+				}
+			});
+		}else{
+			$("#frmuploadassignmentinfo").submit();
+		}
+	}else{
+		showMessage(msg);
+	}
+	
+}
+
+function deleteInfo(){
+	if($("#deleteId").val()&&$("#deleteId").val()!=""){
+		$("#frmdeleteinfo").submit();
+	}
 }
 
 var message;

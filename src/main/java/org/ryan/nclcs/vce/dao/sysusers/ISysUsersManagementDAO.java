@@ -44,4 +44,5 @@ public interface ISysUsersManagementDAO extends INclcsVceServiceBaseDAO<SysUsers
 	
 	public SysUsers findStudentsParent(Integer studentId);
 	
+	public SysUsers findATutorFromGroup(Integer groupId);	
 }
