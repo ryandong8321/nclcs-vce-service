@@ -1949,7 +1949,6 @@ public class SysRemoteServiceController {
 //	}
 	
 	@RequestMapping(value = "/saveuploadassignmentinfo.do", method=RequestMethod.POST)
-	@SystemUserLoginIsCheck
 	@SystemLogIsCheck(description="保存学生上传作业信息")
 	public String saveUploadAssignmentInfo(HttpServletRequest request, @RequestParam("files") CommonsMultipartFile[] uploadFile) {
 		logger.info("this is [saveuploadassignmentinfo.do] start ...");
