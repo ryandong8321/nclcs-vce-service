@@ -27,16 +27,17 @@ CREATE TABLE `app_tutor_appointment_assignment_student` (
   `appointment_student_tutor_id` int(11) NOT NULL,
   `appointment_student_target_student_id` int(11) NOT NULL,
   `appointment_student_assignment_name` varchar(128) COLLATE utf8_bin DEFAULT NULL,
-  `appointment_student_upload_time` timestamp NULL DEFAULT NULL,
+  `appointment_student_upload_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `appointment_student_download_time` timestamp NULL DEFAULT NULL,
   `appointment_student_assginment_path` varchar(128) COLLATE utf8_bin DEFAULT NULL,
+  `appointment_student_assginment_file_name` varchar(128) COLLATE utf8_bin DEFAULT NULL,
   PRIMARY KEY (`appointment_student_id`),
   UNIQUE KEY `appointment_student_id_UNIQUE` (`appointment_student_id`),
   KEY `FK_APP_TUTOR_APPOINTMENT_ASSIGNMENT_STUDENT_TUTOR_ID_idx` (`appointment_student_tutor_id`),
   KEY `FK_APP_TUTOR_APPOINTMENT_ASSIGNMENT_STUDENT_TARGET_STUDENT__idx` (`appointment_student_target_student_id`),
   CONSTRAINT `FK_APP_TUTOR_APPOINTMENT_ASSIGNMENT_STUDENT_TARGET_STUDENT_ID` FOREIGN KEY (`appointment_student_target_student_id`) REFERENCES `sys_users` (`user_id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `FK_APP_TUTOR_APPOINTMENT_ASSIGNMENT_STUDENT_TUTOR_ID` FOREIGN KEY (`appointment_student_tutor_id`) REFERENCES `sys_users` (`user_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -48,4 +49,4 @@ CREATE TABLE `app_tutor_appointment_assignment_student` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2016-02-24 22:57:14
+-- Dump completed on 2016-03-08  0:58:13

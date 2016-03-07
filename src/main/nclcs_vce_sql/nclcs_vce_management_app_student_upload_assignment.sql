@@ -31,13 +31,15 @@ CREATE TABLE `app_student_upload_assignment` (
   `upload_assignment_download_time` timestamp NULL DEFAULT NULL,
   `upload_assignment_is_show` int(11) DEFAULT '1' COMMENT '1-YES, 0-NO',
   `upload_assignment_path` varchar(128) COLLATE utf8_bin NOT NULL,
+  `upload_assignment_file_name` varchar(128) COLLATE utf8_bin NOT NULL,
+  `upload_assignment_has_appointment` int(11) DEFAULT '0',
   PRIMARY KEY (`upload_assignment_id`),
   UNIQUE KEY `student_upload_assignment_id_UNIQUE` (`upload_assignment_id`),
   KEY `FK_APP_STUDENT_UPLOAD_ASSIGNMENT_STUDENT_ID_idx` (`upload_assignment_student_id`),
   KEY `FK_APP_STUDENT_UPLOAD_ASSIGNMENT_TUTOR_ID_idx` (`upload_assignment_tutor_id`),
   CONSTRAINT `FK_APP_STUDENT_UPLOAD_ASSIGNMENT_STUDENT_ID` FOREIGN KEY (`upload_assignment_student_id`) REFERENCES `sys_users` (`user_id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `FK_APP_STUDENT_UPLOAD_ASSIGNMENT_TUTOR_ID` FOREIGN KEY (`upload_assignment_tutor_id`) REFERENCES `sys_users` (`user_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -49,4 +51,4 @@ CREATE TABLE `app_student_upload_assignment` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2016-02-24 22:57:15
+-- Dump completed on 2016-03-08  0:58:13
