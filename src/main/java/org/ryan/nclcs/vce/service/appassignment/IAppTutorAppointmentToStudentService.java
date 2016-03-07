@@ -2,6 +2,7 @@ package org.ryan.nclcs.vce.service.appassignment;
 
 import java.util.Map;
 
+import org.ryan.nclcs.vce.dao.Pagination;
 import org.ryan.nclcs.vce.entity.AppTutorAppointmentAssignmentToStudent;
 import org.ryan.nclcs.vce.service.INclcsVceServiceBaseService;
 
@@ -30,4 +31,7 @@ public interface IAppTutorAppointmentToStudentService extends INclcsVceServiceBa
 	public Map<String, Object> searchDataForAjaxToStudent(int displayLength, int displayStart, int sEcho, Map<String, Object> parameters, Integer userId);
 	
 	public boolean revokeTutorToStudent(String deleteIds);
+	
+	//for remote interface
+	public Pagination<AppTutorAppointmentAssignmentToStudent> searchDataToStudent(int displayLength, int displayStart, Map<String, Object> parameters, Integer userId);
 }

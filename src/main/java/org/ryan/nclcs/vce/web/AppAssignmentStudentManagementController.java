@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -54,7 +55,8 @@ public class AppAssignmentStudentManagementController {
 //	@Autowired
 //	private ISysGroupsManagementService sysGroupsManagementService;
 	
-	protected final String _filePath="/usr/local/vce-uploadfiles/";
+	protected final String _filePath="/usr/local/vce-uploadfiles";
+//	protected final String _filePath="/usr/local/www/uploadfiles";
 	
 	@RequestMapping(value = "/uploadassignmentlist.do")
 	@SystemUserLoginIsCheck
@@ -189,9 +191,35 @@ public class AppAssignmentStudentManagementController {
 			
 //			String _filePath=request.getServletContext().getRealPath("");
 			
-			File directory=new File(_filePath+File.separator+"student_"+currentStudentId);
-			logger.info("this is [saveuploadassignmentinfo.do] show directory name ["+directory+"]");
+			Calendar now=new GregorianCalendar();
+			String year="/"+now.get(Calendar.YEAR);
+			String month=(now.get(Calendar.MONTH)+1)>9?"/"+(now.get(Calendar.MONTH)+1):"/0"+(now.get(Calendar.MONTH)+1);
+			String day=now.get(Calendar.DAY_OF_MONTH)>9?"/"+now.get(Calendar.DAY_OF_MONTH):"/0"+now.get(Calendar.DAY_OF_MONTH);
 			
+			String _localPath=year;
+			File directory=new File(_filePath+_localPath);
+			if (!directory.exists()){
+				directory.mkdir();
+				logger.info("this is [saveuploadassignmentinfo.do] create directory ["+directory+"] success...");
+			}
+			
+			_localPath+=month;
+			directory=new File(_filePath+_localPath);
+			if (!directory.exists()){
+				directory.mkdir();
+				logger.info("this is [saveuploadassignmentinfo.do] create directory ["+directory+"] success...");
+			}
+			
+			_localPath+=day;
+			directory=new File(_filePath+_localPath);
+			if (!directory.exists()){
+				directory.mkdir();
+				logger.info("this is [saveuploadassignmentinfo.do] create directory ["+directory+"] success...");
+			}
+			
+			_localPath+=File.separator+"student_"+currentStudentId;
+			directory=new File(_filePath+_localPath);
+			logger.info("this is [saveuploadassignmentinfo.do] show directory name ["+directory+"]");
 			if (!directory.exists()){
 				directory.mkdir();
 				logger.info("this is [saveuploadassignmentinfo.do] create directory ["+directory+"] success...");
@@ -238,7 +266,8 @@ public class AppAssignmentStudentManagementController {
 					}
 					
 					uploadAssignment.setAssignmentName((uploadAssignmentName==null||uploadAssignmentName.equals(""))?strFileName:uploadAssignmentName);
-					uploadAssignment.setFilePath(file.getAbsolutePath());
+//					uploadAssignment.setFilePath(file.getAbsolutePath());
+					uploadAssignment.setFilePath(_localPath+File.separator+file.getName());
 					uploadAssignment.setFileName(strFileName);
 					
 					SysUsers student=sysUsersManagementService.get(currentStudentId);
@@ -313,7 +342,7 @@ public class AppAssignmentStudentManagementController {
 	
 	@RequestMapping(value = "/initdownloadassignmentlist.do", method=RequestMethod.POST)
 	@ResponseBody
-	@SystemLogIsCheck(description="查询学生上传作业列表")
+	@SystemLogIsCheck(description="查询学生下载作业列表")
 	public String initDownloadAssignmentList(HttpServletRequest request) {
 		logger.info("this is [initdownloadassignmentlist.do] start ...");
 		
@@ -404,7 +433,7 @@ public class AppAssignmentStudentManagementController {
 			        InputStream inputStream=null;
 					OutputStream os=null;
 					try {
-						inputStream = new FileInputStream(new File(assignment.getFilePath()));
+						inputStream = new FileInputStream(new File(_filePath+assignment.getFilePath()));
 						os = response.getOutputStream();
 						byte[] b = new byte[2048];
 						int length;

@@ -98,4 +98,9 @@ public class AppTutorAppointmentToStudentServiceImpl extends NclcsVceServiceBase
 		return this.getCurrentDAO().deleteUploadAssignment(deleteIds);
 	}
 
+	@Override
+	public Pagination<AppTutorAppointmentAssignmentToStudent> searchDataToStudent(int displayLength, int displayStart,Map<String, Object> parameters, Integer userId) {
+		return this.getCurrentDAO().searchDataForAppointmentStudentForStudent(displayLength, displayStart, 0,parameters, userId);
+	}
+
 }

@@ -1,9 +1,13 @@
 
 package org.ryan.nclcs.vce.web;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,7 +15,9 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import org.ryan.nclcs.vce.annotation.SystemLogIsCheck;
+import org.ryan.nclcs.vce.annotation.SystemUserLoginIsCheck;
 import org.ryan.nclcs.vce.dao.Pagination;
+import org.ryan.nclcs.vce.entity.AppStudentUploadAssignment;
 import org.ryan.nclcs.vce.entity.AppStudentsScores;
 import org.ryan.nclcs.vce.entity.SysDeviceToken;
 import org.ryan.nclcs.vce.entity.SysGroups;
@@ -34,10 +40,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.ServletRequestBindingException;
+import org.springframework.web.bind.ServletRequestUtils;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.commons.CommonsMultipartFile;
 
 import net.sf.json.JSONObject;
 
@@ -70,6 +80,9 @@ public class SysRemoteServiceController {
 	
 	@Autowired
 	private ISysDeviceTokenManagementService sysDeviceTokenManagementService;
+	
+//	@Autowired
+//	private IAppTutorAppointmentToStudentService appTutorAppointmentToStudentService;
 	
 	@RequestMapping(value = "/userlogin.do", method=RequestMethod.POST)
 	@ResponseBody
@@ -1848,5 +1861,229 @@ public class SysRemoteServiceController {
 			}
 		}
 		return isParent;
+	}
+	
+	//--------------------------学生作业管理---------------------------------//
+	
+//	@RequestMapping(value = "/initdownloadassignmentlist.do", method=RequestMethod.POST)
+//	@ResponseBody
+//	@SystemLogIsCheck(description="查询学生下载作业列表")
+//	public String initDownloadAssignmentList(HttpServletRequest request, @RequestBody String data) {
+//		logger.info("this is [initdownloadassignmentlist.do] start ...");
+//		Map<String, Object> result=new HashMap<String, Object>();
+//		logger.info("this is [initdownloadassignmentlist.do] is decoding ...");
+//		JSONObject json=JSONObject.fromString(this.decodeParameters(data));
+//		logger.info("this is [initdownloadassignmentlist.do] decode done ...");
+//		
+//		Integer userId=-1;//studentId
+//		String token=null;
+//		if (!json.has("userId")||!json.has("token")){
+//			result.put("status", -1);
+//			result.put("info", "the lack of parameter");
+//			logger.info("this is [initdownloadassignmentlist.do] the lack of parameter ...");
+//		}
+//		
+//		if (result.isEmpty()){
+//			try{
+//				userId=json.getInt("userId");
+//				token=json.getString("token");
+//				String localToken=WebApplicationUtils.getToken(userId);
+//				
+//				logger.info("this is [initdownloadassignmentlist.do] studentId ["+userId+"] ...");
+////				if (localToken!=null&&localToken.equals(token)){
+//					//每页大小
+//					int displayLength=Integer.parseInt(json.has("displayLength")?json.getString("displayLength"):"10");
+//					//起始值
+//					int displayStart=Integer.parseInt(json.has("displayStart")?json.getString("displayStart"):"0");
+//					//查询条件
+//					String param=json.has("param")?json.getString("param"):"";
+//					
+//					logger.info("this is [initdownloadassignmentlist.do] requset parameters [displayLength = {"+displayLength+"}],[displayStart = {"+displayStart+"}],[param = {"+param+"}]");
+//					
+//					Map<String, Object> parameters=new HashMap<String, Object>();
+//					if (param!=null&&!param.equals("")){
+//						parameters.put("assignmentName", param);
+//					}
+////					parameters.put("sort", 3);
+////					parameters.put("order", "desc");
+////					parameters.put("snd.detailReceiveUserInfo.id", userId);
+//					
+//					logger.info("this is [initdownloadassignmentlist.do] finding assignment ...");
+//					Pagination<AppTutorAppointmentAssignmentToStudent> page=appTutorAppointmentToStudentService.searchDataToStudent(displayLength, displayStart, parameters,userId);
+//					
+//					List<Map<String, Object>> resultData=new ArrayList<Map<String, Object>>();
+//					Map<String, Object> map=null;
+//					for (AppTutorAppointmentAssignmentToStudent toStudent:page.getRows()){
+//						map=new HashMap<String, Object>();
+//						map.put("assignmentId", toStudent.getId());
+//						map.put("assignmentName", toStudent.getAssignmentName());
+//						map.put("assignmentUploadTime", toStudent.getUploadTime().toString());
+//						map.put("assignmentPath", toStudent.getFilePath());
+//						map.put("assignmentFileName", toStudent.getFileName());
+//						resultData.add(map);
+//					}
+//					
+//					result.put("data", resultData);
+//					result.put("status", 1);
+//					result.put("info", "operation success!");
+//					result.put("recordsTotal", page.getTotal());
+//					result.put("displayLength", displayLength);
+//					result.put("displayStart", displayStart+displayLength);
+//					result.put("param", param);
+//					logger.info("this is [initdownloadassignmentlist.do] finding assignment done...");
+////				}else{
+////					result.put("status", -2);
+////					result.put("info", "illegal user");
+////					logger.info("this is [initdownloadassignmentlist.do] illegal user ...");
+////				}
+//			}catch(Exception ex){
+//				ex.printStackTrace();
+//				result.put("status", 0);
+//				result.put("info", "find user info error");
+//				logger.info("this is [initdownloadassignmentlist.do] exception ...");
+//			}
+//		}
+//		String tmp=JSONObject.fromMap(result).toString();
+//		logger.info("this is [initdownloadassignmentlist.do] return ["+tmp+"] ...");
+//		return tmp;
+//	}
+	
+	@RequestMapping(value = "/saveuploadassignmentinfo.do", method=RequestMethod.POST)
+	@SystemUserLoginIsCheck
+	@SystemLogIsCheck(description="保存学生上传作业信息")
+	public String saveUploadAssignmentInfo(HttpServletRequest request, @RequestParam("files") CommonsMultipartFile[] uploadFile) {
+		logger.info("this is [saveuploadassignmentinfo.do] start ...");
+		Map<String, Object> result=new HashMap<String, Object>();
+		
+		logger.info("this is [saveuploadassignmentinfo.do] get page parameters ...");
+		Integer uploadAssignmentId=-1,currentStudentId=0;
+		String uploadAssignmentName=null;
+		AppStudentUploadAssignment uploadAssignment=null;
+		try {
+			uploadAssignmentId=ServletRequestUtils.getIntParameter(request, "uploadAssignmentId", -1);
+			uploadAssignmentName=ServletRequestUtils.getRequiredStringParameter(request, "assignmentName");
+			currentStudentId=Integer.parseInt(""+request.getSession().getAttribute("u_id"));
+		} catch (ServletRequestBindingException e1) {
+			logger.info("this is [saveuploadassignmentinfo.do] get page parameters occur exception...");
+			e1.printStackTrace();
+		}
+		
+		if (currentStudentId!=-1){
+//			if (uploadAssignmentId==-1){
+//				uploadAssignment=new AppStudentUploadAssignment();
+//			}else{
+//				uploadAssignment=appStudentUploadAssignmentSerivce.get(uploadAssignmentId);
+//			}
+			
+//			String _filePath=request.getServletContext().getRealPath("");
+			String _filePath="/usr/local/www/uploadfiles";
+			
+			Calendar now=new GregorianCalendar();
+			String year="/"+now.get(Calendar.YEAR);
+			String month=(now.get(Calendar.MONTH)+1)>9?"/"+(now.get(Calendar.MONTH)+1):"/0"+(now.get(Calendar.MONTH)+1);
+			String day=now.get(Calendar.DAY_OF_MONTH)>9?"/"+now.get(Calendar.DAY_OF_MONTH):"/0"+now.get(Calendar.DAY_OF_MONTH);
+			
+			String _localPath=year;
+			File directory=new File(_filePath+_localPath);
+			if (!directory.exists()){
+				directory.mkdir();
+				logger.info("this is [saveuploadassignmentinfo.do] create directory ["+directory+"] success...");
+			}
+			
+			_localPath+=month;
+			directory=new File(_filePath+_localPath);
+			if (!directory.exists()){
+				directory.mkdir();
+				logger.info("this is [saveuploadassignmentinfo.do] create directory ["+directory+"] success...");
+			}
+			
+			_localPath+=day;
+			directory=new File(_filePath+_localPath);
+			if (!directory.exists()){
+				directory.mkdir();
+				logger.info("this is [saveuploadassignmentinfo.do] create directory ["+directory+"] success...");
+			}
+			
+			_localPath+=File.separator+"student_"+currentStudentId;
+			directory=new File(_filePath+_localPath);
+			logger.info("this is [saveuploadassignmentinfo.do] show directory name ["+directory+"]");
+			if (!directory.exists()){
+				directory.mkdir();
+				logger.info("this is [saveuploadassignmentinfo.do] create directory ["+directory+"] success...");
+			}
+			
+			File file=null;
+			String strFileName=null;
+			String strSuffix=null;
+			String strPrefix=null;
+			int dotPosition=-1;
+			
+			for (int i=0;i<uploadFile.length;i++){
+				if (!uploadFile[i].isEmpty()){
+					int idx=1;
+					
+					strFileName=uploadFile[i].getOriginalFilename();
+					logger.info("this is [saveuploadassignmentinfo.do] show file name ["+strFileName+"]");
+					
+					dotPosition=strFileName.lastIndexOf(".");
+					strSuffix=strFileName.substring(dotPosition);
+					strPrefix=strFileName.substring(0, dotPosition);
+					
+					if (strSuffix!=null&&!strSuffix.equals("")&&(strSuffix.equals(".doc")||strSuffix.equals(".docx"))){
+						file=new File(directory+File.separator+strFileName);
+						
+						while(file.exists()){
+							logger.info("this is [saveuploadassignmentinfo.do] file ["+file+"] exist...");
+							file=new File(directory+File.separator+strPrefix+"("+(idx++)+")"+strSuffix);
+							logger.info("this is [saveuploadassignmentinfo.do] change file name ["+file+"]...");
+						}
+					}
+					
+					if (!file.exists()){
+						logger.info("this is [saveuploadassignmentinfo.do] file ["+file.getAbsolutePath()+"] do not exist...");
+						try {
+							file.createNewFile();
+							logger.info("this is [saveuploadassignmentinfo.do] create file ["+file.getAbsolutePath()+"] success...");
+							uploadFile[i].transferTo(file);
+							logger.info("this is [saveuploadassignmentinfo.do] file ["+file.getAbsolutePath()+"] transfer...");
+						} catch (IOException e) {
+							logger.info("this is [saveuploadassignmentinfo.do] create file ["+file.getAbsolutePath()+"] failed...");
+							e.printStackTrace();
+						}
+					}
+					
+//					uploadAssignment.setAssignmentName((uploadAssignmentName==null||uploadAssignmentName.equals(""))?strFileName:uploadAssignmentName);
+////					uploadAssignment.setFilePath(file.getAbsolutePath());
+//					uploadAssignment.setFilePath(_localPath+File.separator+file.getName());
+//					uploadAssignment.setFileName(strFileName);
+//					
+//					SysUsers student=sysUsersManagementService.get(currentStudentId);
+//					uploadAssignment.setStudent(student);
+//					SysGroups classGroup=student.getSysGroups().get(0);
+//					uploadAssignment.setTutor(sysUsersManagementService.findATutorFromGroup(classGroup.getId()));
+//					
+//					logger.info("this is [saveuploadassignmentinfo.do] is saving ...");
+//					appStudentUploadAssignmentSerivce.save(uploadAssignment);
+					
+					result.put("status", 1);
+					result.put("data", "operation success!");
+					logger.info("this is [saveuploadassignmentinfo.do] save uploadAssignment done ...");
+				}else{
+					logger.info("this is [saveuploadassignmentinfo.do] save uploadAssignment error ...");
+					result.put("status", 0);
+					result.put("data", "save failed, try again!");
+				}
+			}
+		}else{
+			logger.info("this is [saveuploadassignmentinfo.do] save uploadAssignment error ...");
+			result.put("status", 0);
+			result.put("data", "save failed, try again!");
+		}
+		
+//		logger.info("this is [saveuploadassignmentinfo.do] show result ["+result+"] ...");
+//		request.setAttribute("result", result.get("data"));
+//		request.setAttribute("uploadassignment", uploadAssignment);
+//		return result.get("status").equals(1)?"forward:/appassignmentstudentmanagement/uploadassignmentlist.do":"forward:/appassignmentstudentmanagement/showuploadassignmentinfo.do";
+		return "";
 	}
 }

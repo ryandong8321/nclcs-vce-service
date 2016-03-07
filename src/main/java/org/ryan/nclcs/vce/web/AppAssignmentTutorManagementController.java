@@ -9,6 +9,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,7 +67,8 @@ public class AppAssignmentTutorManagementController {
 	@Autowired
 	private ISysRolesManagementService sysRolesManagementService;
 	
-	protected final String _filePath="/usr/local/vce-uploadfiles/";
+	protected final String _filePath="/usr/local/vce-uploadfiles";
+//	protected final String _filePath="/usr/local/www/uploadfiles";
 	
 	@RequestMapping(value = "/downloadassignmentlist.do")
 	@SystemUserLoginIsCheck
@@ -208,7 +210,7 @@ public class AppAssignmentTutorManagementController {
 			        InputStream inputStream=null;
 					OutputStream os=null;
 					try {
-						inputStream = new FileInputStream(new File(assignment.getFilePath()));
+						inputStream = new FileInputStream(new File(_filePath+assignment.getFilePath()));
 						os = response.getOutputStream();
 						byte[] b = new byte[2048];
 						int length;
@@ -266,7 +268,7 @@ public class AppAssignmentTutorManagementController {
 			        InputStream inputStream=null;
 					OutputStream os=null;
 					try {
-						inputStream = new FileInputStream(new File(assignment.getFilePath()));
+						inputStream = new FileInputStream(new File(_filePath+assignment.getFilePath()));
 						os = response.getOutputStream();
 						byte[] b = new byte[2048];
 						int length;
@@ -762,11 +764,37 @@ public class AppAssignmentTutorManagementController {
 				uploadAssignment=appTutorAppointmentToStudentService.get(uploadAssignmentId);
 			}
 			
-			//String _filePath=request.getServletContext().getRealPath("");
+//			String _filePath=request.getServletContext().getRealPath("");
 			
-			File directory=new File(_filePath+File.separator+"tutor_"+currentTutorId);
+			Calendar now=new GregorianCalendar();
+			String year="/"+now.get(Calendar.YEAR);
+			String month=(now.get(Calendar.MONTH)+1)>9?"/"+(now.get(Calendar.MONTH)+1):"/0"+(now.get(Calendar.MONTH)+1);
+			String day=now.get(Calendar.DAY_OF_MONTH)>9?"/"+now.get(Calendar.DAY_OF_MONTH):"/0"+now.get(Calendar.DAY_OF_MONTH);
+			
+			String _localPath=year;
+			File directory=new File(_filePath+_localPath);
+			if (!directory.exists()){
+				directory.mkdir();
+				logger.info("this is [saveuploadassignmentinfo.do] create directory ["+directory+"] success...");
+			}
+			
+			_localPath+=month;
+			directory=new File(_filePath+_localPath);
+			if (!directory.exists()){
+				directory.mkdir();
+				logger.info("this is [saveuploadassignmentinfo.do] create directory ["+directory+"] success...");
+			}
+			
+			_localPath+=day;
+			directory=new File(_filePath+_localPath);
+			if (!directory.exists()){
+				directory.mkdir();
+				logger.info("this is [saveuploadassignmentinfo.do] create directory ["+directory+"] success...");
+			}
+			
+			_localPath+=File.separator+"tutor_"+currentTutorId;
+			directory=new File(_filePath+_localPath);
 			logger.info("this is [saveuploadassignmentinfo.do] show directory name ["+directory+"]");
-			
 			if (!directory.exists()){
 				directory.mkdir();
 				logger.info("this is [saveuploadassignmentinfo.do] create directory ["+directory+"] success...");
@@ -976,9 +1004,35 @@ public class AppAssignmentTutorManagementController {
 			
 //			String _filePath=request.getServletContext().getRealPath("");
 			
-			File directory=new File(_filePath+File.separator+"tutor_"+currentTutorId);
-			logger.info("this is [saveuploadappointmentassignmentinfo.do] show directory name ["+directory+"]");
+			Calendar now=new GregorianCalendar();
+			String year="/"+now.get(Calendar.YEAR);
+			String month=(now.get(Calendar.MONTH)+1)>9?"/"+(now.get(Calendar.MONTH)+1):"/0"+(now.get(Calendar.MONTH)+1);
+			String day=now.get(Calendar.DAY_OF_MONTH)>9?"/"+now.get(Calendar.DAY_OF_MONTH):"/0"+now.get(Calendar.DAY_OF_MONTH);
 			
+			String _localPath=year;
+			File directory=new File(_filePath+_localPath);
+			if (!directory.exists()){
+				directory.mkdir();
+				logger.info("this is [saveuploadassignmentinfo.do] create directory ["+directory+"] success...");
+			}
+			
+			_localPath+=month;
+			directory=new File(_filePath+_localPath);
+			if (!directory.exists()){
+				directory.mkdir();
+				logger.info("this is [saveuploadassignmentinfo.do] create directory ["+directory+"] success...");
+			}
+			
+			_localPath+=day;
+			directory=new File(_filePath+_localPath);
+			if (!directory.exists()){
+				directory.mkdir();
+				logger.info("this is [saveuploadassignmentinfo.do] create directory ["+directory+"] success...");
+			}
+			
+			_localPath+=File.separator+"tutor_"+currentTutorId;
+			directory=new File(_filePath+_localPath);
+			logger.info("this is [saveuploadassignmentinfo.do] show directory name ["+directory+"]");
 			if (!directory.exists()){
 				directory.mkdir();
 				logger.info("this is [saveuploadappointmentassignmentinfo.do] create directory ["+directory+"] success...");
