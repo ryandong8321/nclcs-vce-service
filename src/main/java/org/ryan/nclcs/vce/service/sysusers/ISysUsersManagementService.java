@@ -54,5 +54,7 @@ public interface ISysUsersManagementService extends INclcsVceServiceBaseService<
 	public List<Map<String, Object>> findUsersByGroupIds(List<Integer> campusIds, List<Integer> classIds);
 	
 	public boolean saveRegisterUser(SysUsers user, SysGroups group, SysRoles role);
+	
+	public SysUsers findATutorFromGroup(Integer groupId);
 
 }

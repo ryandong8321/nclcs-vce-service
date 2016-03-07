@@ -250,6 +250,29 @@ License: You must have a valid license purchased only from themeforest(the above
 					</a>
 				</li>
 				</c:if>
+				<c:if test="${_sys_privilege eq 5}">
+				<li>
+					<a href="javascript:;">
+					<i class="icon-book-open"></i>
+					<span class="title">学生作业管理</span>
+					<span class="arrow "></span>
+					</a>
+					<ul class="sub-menu">
+						<li class="">
+							<a href="<%=basePath%>appassignmentstudentmanagement/uploadassignmentlist.do">
+							<i class="icon-arrow-up"></i>
+							<span class="title">上传作业</span>
+							</a>
+						</li>
+						<li class="">
+							<a href="<%=basePath%>appassignmentstudentmanagement/downloadassignmentlist.do">
+							<i class="icon-arrow-down"></i>
+							<span class="title">下载作业</span>
+							</a>
+						</li>
+					</ul>
+				</li>
+				</c:if>
 				<li class="">
 					<a href="<%=basePath%>sysusersmanagement/sysuserspersonal.do">
 					<i class="icon-user-follow"></i>

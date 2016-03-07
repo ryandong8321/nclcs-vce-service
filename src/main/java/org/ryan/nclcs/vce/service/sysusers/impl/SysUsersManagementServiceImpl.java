@@ -278,4 +278,9 @@ public class SysUsersManagementServiceImpl extends NclcsVceServiceBaseServiceImp
 		}
 		return result;
 	}
+
+	@Override
+	public SysUsers findATutorFromGroup(Integer groupId) {
+		return this.getCurrentDAO().findATutorFromGroup(groupId);
+	}
 }

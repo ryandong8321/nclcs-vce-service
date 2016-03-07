@@ -470,4 +470,10 @@ public class SysUsersManagementDAOImpl extends NclcsVceServiceBaseDAOImpl<SysUse
 		}
 		return parent;
 	}
+
+	@Override
+	public SysUsers findATutorFromGroup(Integer groupId) {
+		StringBuffer hql = new StringBuffer("select sus from SysUsers sus join sus.sysRoles srs join sus.sysGroups sgs where srs.id = 4 and sgs.id = ?");
+		return this.findUnique(hql.toString(), groupId);
+	}
 }

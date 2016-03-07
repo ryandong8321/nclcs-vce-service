@@ -240,11 +240,67 @@ License: You must have a valid license purchased only from themeforest(the above
 						</li>
 					</ul>
 				</li>
+				<li>
+					<a href="javascript:;">
+					<i class="icon-book-open"></i>
+					<span class="title">学生作业管理</span>
+					<span class="arrow "></span>
+					</a>
+					<ul class="sub-menu">
+						<li class="">
+							<a href="<%=basePath%>appassignmenttutormanagement/downloadassignmentlist.do">
+							<i class="icon-action-redo"></i>
+							<span class="title">下载学生作业</span>
+							</a>
+						</li>
+						<li class="">
+							<a href="<%=basePath%>appassignmenttutormanagement/downloadappointmentassignmentlist.do">
+							<i class="icon-login"></i>
+							<span class="title">下载代审作业</span>
+							</a>
+						</li>
+						<li class="">
+							<a href="<%=basePath%>appassignmenttutormanagement/uploadassignmentlist.do">
+							<i class="icon-action-undo"></i>
+							<span class="title">上传已审作业</span>
+							</a>
+						</li>
+						<li class="">
+							<a href="<%=basePath%>appassignmenttutormanagement/uploadappointmentassignmentlist.do">
+							<i class="icon-logout"></i>
+							<span class="title">上传代审作业</span>
+							</a>
+						</li>
+					</ul>
+				</li>
 				<li class="active">
 					<a href="<%=basePath%>sysnotificationmanagement/sysnotificationlist.do">
 					<i class="icon-envelope-letter"></i>
 					<span class="title">通知管理</span>
 					</a>
+				</li>
+				</c:if>
+				<c:if test="${_sys_privilege eq 5}">
+				<li>
+					<a href="javascript:;">
+					<i class="icon-book-open"></i>
+					<span class="title">学生作业管理</span>
+					<span class="arrow "></span>
+					</a>
+					<ul class="sub-menu">
+						<li class="">
+							<a href="<%=basePath%>appassignmentstudentmanagement/uploadassignmentlist.do">
+							<i class="icon-arrow-up"></i>
+							<span class="title">上传作业</span>
+							</a>
+						</li>
+						<li class="">
+							<a href="<%=basePath%>appassignmentstudentmanagement/downloadassignmentlist.do">
+							<i class="icon-arrow-down"></i>
+							<span class="title">下载作业</span>
+							</a>
+						</li>
+					</ul>
 				</li>
 				</c:if>
 				<li class="">
