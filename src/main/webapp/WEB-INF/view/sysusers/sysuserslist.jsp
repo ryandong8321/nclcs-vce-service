@@ -476,18 +476,22 @@
      }
      
      function deleteInfo(uid){
-    	 $("#deleteIds").val(uid);
-    	 $("#frmDeleteInfo").submit();
+    	 bootbox.confirm("<font size='3'>您选择的用户会被删除，此操作<font color='red'>不可恢复</font>，请确认</font>", function (result){
+ 			if (result==true){
+ 				$("#deleteIds").val(uid);
+ 				$("#frmDeleteInfo").submit();
+ 			}
+ 		});
      }
      
      function deleteSeletedUsers(){
     	 var userTable = new Datatable(), selections=userTable.getSelectedRows();
     	 //alert(selections);
     	 if(JSON.stringify(selections)=="[]"){
-    		 showMessage("Checking row(s) that you want to delete.");
+    		 showMessage("请选择要删除的用户");
     		 return;
     	 }
-    	 bootbox.confirm("<font size='3'>You selected row(s) will be deleted.</font>", function (result){
+    	 bootbox.confirm("<font size='3'>您选择的用户会被删除，此操作<font color='red'>不可恢复</font>，请确认</font>", function (result){
 			if (result==true){
 				$("#deleteIds").val(selections);
 				$("#frmDeleteInfo").submit();

@@ -315,12 +315,17 @@ License: You must have a valid license purchased only from themeforest(the above
 									<!-- <a class="btn btn-circle btn-icon-only btn-default" href="javascript:;">
 									<i class="icon-cloud-upload"></i>
 									</a> -->
+									<c:if test="${not empty sysuser.id}">
 									<a class="btn btn-circle btn-icon-only btn-default" href="javascript:modifyInfo();">
 									<i class="icon-wrench"></i>
+									</a>
+									<a class="btn btn-circle btn-icon-only btn-default" href="javascript:changePassword();">
+									<i class="fa fa-gears"></i>
 									</a>
 									<a class="btn btn-circle btn-icon-only btn-default" href="javascript:deleteInfo();">
 									<i class="icon-trash"></i>
 									</a>
+									</c:if>
 								</div>
 							</div>
 							<div class="portlet-body form">
@@ -354,7 +359,7 @@ License: You must have a valid license purchased only from themeforest(the above
 											</div>
 										</div>
 										<div class="form-group">
-											<label class="control-label col-md-3">中文姓名</label>
+											<label class="control-label col-md-3">中文姓名<span class="required">*</span></label>
 											<div class="col-md-9">
 												<input type="text" name="chineseName" placeholder="中文姓名" class="form-control" id="chineseName" value="${sysuser.chineseName }"/>
 											</div>
@@ -388,9 +393,6 @@ License: You must have a valid license purchased only from themeforest(the above
 										<div class="row">
 											<div class="col-md-offset-3 col-md-9">
 												<button type="submit" class="btn blue"><i class="fa fa-check"></i> 保存</button>
-												<c:if test="${not empty sysuser.id}">
-												<button id="btnChangePWD" type="button" class="btn blue" onclick="javascript:changePassword();"><i class="fa fa-gears"></i> 修改密码</button>
-												</c:if>
 												<button type="button" class="btn default" onclick="javascript:history.back();">取消</button>
 											</div>
 										</div>
@@ -495,12 +497,12 @@ License: You must have a valid license purchased only from themeforest(the above
 <script type="text/javascript" src="<%=basePath%>assets/metronic/assets/global/plugins/ckeditor/ckeditor.js"></script>
 <script type="text/javascript" src="<%=basePath%>assets/metronic/assets/global/plugins/bootstrap-markdown/js/bootstrap-markdown.js"></script>
 <script type="text/javascript" src="<%=basePath%>assets/metronic/assets/global/plugins/bootstrap-markdown/lib/markdown.js"></script>
+<script type="text/javascript" src="<%=basePath%>assets/metronic/assets/global/plugins/bootbox/bootbox.min.js"></script>
 <!-- END PAGE LEVEL PLUGINS -->
 <!-- BEGIN PAGE LEVEL SCRIPTS -->
 <script src="<%=basePath%>assets/metronic/assets/global/scripts/metronic.js" type="text/javascript"></script>
 <script src="<%=basePath%>assets/metronic/assets/admin/layout4/scripts/layout.js" type="text/javascript"></script>
 <script src="<%=basePath%>assets/metronic/assets/admin/layout4/scripts/demo.js" type="text/javascript"></script>
-<script src="<%=basePath%>assets/metronic/assets/admin/pages/scripts/form-samples.js"></script>
 <script src="<%=basePath%>assets/metronic/assets/admin/pages/scripts/form-validation.js"></script>
 <!-- END PAGE LEVEL SCRIPTS -->
 <script>
@@ -509,8 +511,9 @@ jQuery(document).ready(function() {
    	Metronic.init(); // init metronic core components
 	Layout.init(); // init current layout
 	Demo.init(); // init demo features
-  	FormSamples.init();
    	FormValidation.init();
+	
+   	
    
    if ($("#userId").val()&&$("#userId").val()!=""){
 	   $("#userName").attr("readOnly",true);
@@ -522,8 +525,10 @@ jQuery(document).ready(function() {
 	   $("#emailAddress").attr("readOnly",true);
    }
    
+  
+   
    if ($("#userId").val()==""){
-	   $("#btnChangePWD".hide());
+	   $("#btnChangePWD").hide();
    }
    
    	$('#ajax').on('show.bs.modal', function (){
@@ -533,8 +538,8 @@ jQuery(document).ready(function() {
    		$("#newPassword").val("");
    		$("#confirmNewPWD").val("");
 	});
-   
-   var result="${result}";
+   	
+   	var result="${result}";
 	try{
 		if (result){
 			showMessage(result);
@@ -552,7 +557,11 @@ function modifyInfo(){
 
 function deleteInfo(){
 	if($("#deleteId").val()&&$("#deleteId").val()!=""){
-		$("#frmdeleteinfo").submit();
+		bootbox.confirm("<font size='3'>此用户将会被删除，此操作<font color='red'>不可恢复</font>，请确认</font>", function (result){
+			if (result==true){
+				$("#frmdeleteinfo").submit();
+			}
+		});
 	}
 }
 
@@ -596,12 +605,12 @@ function saveNewPWD(){
 	});
 }
 
-var message;
-function showMessage(msg){
-	if (msg){
-		message=msg;
+function showMessage(msg) {
+	if (msg) {
+		message = msg;
 	}
-	bootbox.alert("<font size='4'>"+message+"</font>");
+	bootbox.alert("<font size='4'>"+message+"</font>"); 
+	/* alert(message); */
 }
 </script>
 <!-- END JAVASCRIPTS -->

@@ -316,14 +316,14 @@ License: You must have a valid license purchased only from themeforest(the above
 									<a class="btn btn-circle btn-icon-only btn-default" href="javascript:modifyInfo();">
 									<i class="icon-wrench"></i>
 									</a>
-									<!-- <a class="btn btn-circle btn-icon-only btn-default" href="javascript:deleteInfo();">
-									<i class="icon-trash"></i>
-									</a> -->
+									<a class="btn btn-circle btn-icon-only btn-default" href="javascript:changePassword();">
+									<i class="fa fa-gears"></i>
+									</a>
 								</div>
 							</div>
 							<div class="portlet-body form">
 								<!-- BEGIN FORM-->
-								<form action="<%=basePath%>appstudentsinfomanagement/savestudentinfo.do" class="form-horizontal" Method="POST" id="frmsysstudentinfo">
+								<form action="<%=basePath%>sysusersmanagement/savepersonalinfo.do" class="form-horizontal" Method="POST" id="frmsysstudentinfo">
 									<div class="form-body">
 										<div class="alert alert-danger display-hide">
 											<button class="close" data-close="alert"></button>
@@ -492,7 +492,6 @@ License: You must have a valid license purchased only from themeforest(the above
 												<div class="row">
 													<div class="col-md-offset-3 col-md-9">
 														<button type="submit" class="btn blue"><i class="fa fa-check"></i> 保存</button>
-														<button id="btnChangePWD" type="button" class="btn blue" onclick="javascript:changePassword();"><i class="fa fa-gears"></i> 修改密码</button>
 														<button type="button" class="btn default" onclick="javascript:history.back();">取消</button>
 													</div>
 												</div>
@@ -751,7 +750,8 @@ function addValidation(){
             },
             mobilePhone:{
             	required: true,
-            	digits: true
+            	digits: true,
+            	rangelength:[10,10]
             }
         },
 
@@ -762,6 +762,9 @@ function addValidation(){
             service: {
                 required: "Please select  at least 2 types of Service",
                 minlength: jQuery.validator.format("Please select  at least {0} types of Service")
+            },
+            mobilePhone: {
+            	rangelength: $.validator.format( "Please enter a correct mobile phone number." )
             }
         },
 
@@ -796,7 +799,7 @@ function addValidation(){
             error3.hide();
             
             var canSubmit=true;
-            if (!$("#propertyIsLearnChineseId").val()){
+            /* if (!$("#propertyIsLearnChineseId").val()){
             	success3.hide();
                 error3.show();
                 Metronic.scrollTo(error3, -200);
@@ -816,7 +819,7 @@ function addValidation(){
                 Metronic.scrollTo(error3, -200);
                 alert("请选择学生所在班级");
                 canSubmit=false;
-            }
+            } */
             if (canSubmit){
             	form[0].submit(); // submit the form
             }

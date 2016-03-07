@@ -18,7 +18,7 @@ public interface ISysUsersManagementService extends INclcsVceServiceBaseService<
 	 * @param parameters
 	 * @return
 	 */
-	public Map<String, Object> searchDataForAjax(int displayLength, int displayStart, int sEcho, Map<String, Object> parameters);
+	public Map<String, Object> searchDataForAjax(int displayLength, int displayStart, int sEcho, Map<String, Object> parameters, Integer currentUserId);
 	
 	/**
 	 * 

@@ -404,7 +404,7 @@
 										<div class="row">
 											<div class="col-md-offset-3 col-md-9">
 												<button type="button" class="btn blue" id="btnSubmit" onclick="javascript:saveGroup();"><i class="fa fa-check"></i> 保存</button>
-												<button type="button" class="btn default" onclick="javascript:;" id="btnCancel">取消</button>
+												<button type="button" class="btn default" onclick="javascript:doCancelAction()" id="btnCancel">取消</button>
 											</div>
 										</div>
 									</div>
@@ -739,10 +739,10 @@
 	function deleteGroup() {
 		var ref=getInstanceOfTree();
 		if(ref.get_checked()==""){
-			showMessage("select option you want to delete.");
+			showMessage("请选择要删除的群组信息");
 			return;
 		}
-		bootbox.confirm("<font size='3'>You checked option(s) will be deleted and all included subclass were deleted at the same time.</font>", function (result){
+		bootbox.confirm("<font size='3'>您选择的群组信息会被删除，此操作<font color='red'>不可恢复</font>，请确认</font>", function (result){
 			if (result==true){
 				$.ajax({
 					type : "POST",
@@ -753,7 +753,10 @@
 			        dataType: 'json',
 			        success: function(result) {
 			        	if (result.status==1){
-			        		cleanAllFields();
+			        		try{
+			        			cleanAllFields();
+			        		}catch(error){
+			        		}
 			   			 	refreshTree();
 			        	}
 			        	showMessage(result.data);
@@ -773,6 +776,13 @@
 		//$("#div_category_class_2").hide();
 		//$("#div_category_class_3").hide();
 	    classInfoHide();
+	}
+	
+	function doCancelAction(){
+		//getInstanceOfTree().select_node("#"+$("#groupId").val(),'false','false');
+		var tmpId=$("#groupId").val();
+		getInstanceOfTree().deselect_node("#"+tmpId,false,false);
+		getInstanceOfTree().select_node("#"+tmpId,false,false);
 	}
 
 	//check field and do save action
@@ -823,11 +833,8 @@
 	        	if (result.status==1){
 	   			 	$("#groupName").attr('readonly',true);
 	   			 	refreshTree();
-	   			 	openTreeNode();
+	   			 	//openTreeNode();
 	   			 	
-	   			 	//$("#div_category_class_1").hide();
-	   				//$("#div_category_class_2").hide();
-	   				//$("#div_category_class_3").hide();
 	   				classInfoHide();
 	   			 	$("#groupCategory").bootstrapSwitch('readonly', '[readonly]');
 	        	}

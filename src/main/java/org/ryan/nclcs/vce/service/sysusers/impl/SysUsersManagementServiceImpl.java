@@ -31,7 +31,7 @@ public class SysUsersManagementServiceImpl extends NclcsVceServiceBaseServiceImp
 	}
 	
 	@Override
-	public Map<String, Object> searchDataForAjax(int displayLength, int displayStart, int sEcho, Map<String, Object> parameters){
+	public Map<String, Object> searchDataForAjax(int displayLength, int displayStart, int sEcho, Map<String, Object> parameters, Integer currentUserId){
 		Map<String, Object> result=new HashMap<String, Object>();
 		List<ArrayList<String>> data=new ArrayList<ArrayList<String>>();
 		
@@ -41,6 +41,9 @@ public class SysUsersManagementServiceImpl extends NclcsVceServiceBaseServiceImp
 			ArrayList<String> tmp=null;
 			int idx=0;
 			for (SysUsers user : page.getRows()) {
+				if (user.getId()==currentUserId){
+					continue;
+				}
 				tmp=new ArrayList<String>();
 				tmp.add("<input type='checkbox' name='id[]' value='"+user.getId()+"'/>");
 				tmp.add(""+(++idx));

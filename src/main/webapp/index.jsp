@@ -4,6 +4,8 @@
 	String basePath = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort()
 			+ path + "/";
 	request.setAttribute("BasePath", basePath);
+	
+	String strErr=""+request.getAttribute("result");
 %>
 <!DOCTYPE html>
 <!-- 
@@ -70,7 +72,7 @@ License: You must have a valid license purchased only from themeforest(the above
 	<!-- BEGIN LOGIN FORM -->
 	<form class="login-form" action="<%=basePath%>sysusersmanagement/userlogin.do" method="post">
 		<h3 class="form-title">Login to your account</h3>
-		<div class="alert alert-danger display-hide">
+		<div class="alert alert-danger display-hide" id="div_alert_err">
 			<button class="close" data-close="alert"></button>
 			<span>
 			Enter any username and password. </span>
@@ -165,6 +167,12 @@ jQuery(document).ready(function() {
   Layout.init(); // init current layout
   Login.init();
   Demo.init();
+  
+  var err_notice="<%=strErr %>";
+  if (err_notice&&err_notice!="null"){
+	  $("#div_alert_err").html('<button class="close" data-close="alert"></button><span>错误的用户名或密码</span>');
+	  $("#div_alert_err").show();
+  }
 });
 </script>
 <!-- END JAVASCRIPTS -->

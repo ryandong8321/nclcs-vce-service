@@ -110,7 +110,7 @@ public class SysNotificationManagementDAOImpl extends NclcsVceServiceBaseDAOImpl
 			result.put("data", "Operation success.");
 		}catch(Exception ex){
 			ex.printStackTrace();
-			result.put("status", 1);
+			result.put("status", 0);
 			result.put("data", "Delete Notification failed, try again.");
 		}
 		

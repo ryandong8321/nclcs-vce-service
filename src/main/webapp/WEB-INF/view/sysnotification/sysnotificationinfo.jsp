@@ -540,9 +540,13 @@ function modifyInfo(){
 }
 
 function deleteInfo(){
-	if($("#deleteId").val()&&$("#deleteId").val()!=""){
-		$("#frmdeleteinfo").submit();
-	}
+	 bootbox.confirm("<font size='3'>此通知信息会被删除，此操作<font color='red'>不可恢复</font>，请确认</font>", function (result){
+		if (result==true){
+			if($("#deleteId").val()&&$("#deleteId").val()!=""){
+				$("#frmdeleteinfo").submit();
+			}
+		}
+	});
 }
 
 function showMessage(msg){

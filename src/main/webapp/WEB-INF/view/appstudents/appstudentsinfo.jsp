@@ -316,9 +316,9 @@ License: You must have a valid license purchased only from themeforest(the above
 									<a class="btn btn-circle btn-icon-only btn-default" href="javascript:modifyInfo();">
 									<i class="icon-wrench"></i>
 									</a>
-									<a class="btn btn-circle btn-icon-only btn-default" href="javascript:deleteInfo();">
+									<!-- <a class="btn btn-circle btn-icon-only btn-default" href="javascript:deleteInfo();">
 									<i class="icon-trash"></i>
-									</a>
+									</a> -->
 								</div>
 							</div>
 							<div class="portlet-body form">

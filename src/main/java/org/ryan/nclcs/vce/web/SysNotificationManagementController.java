@@ -396,9 +396,9 @@ public class SysNotificationManagementController {
 		if (deleteIds!=null&&!deleteIds.equals("")){
 			try {
 				logger.info("this is [deletemultiplesysnotification.do] ready to delete ...");
-				sysNotificationManagementService.deleteMultiple(deleteIds);
-				result.put("status", 1);
-				result.put("data", "operation success!");
+				result=sysNotificationManagementService.deleteMultiple(deleteIds);
+//				result.put("status", 1);
+//				result.put("data", "operation success!");
 				logger.info("this is [deletemultiplesysnotification.do] to delete done...");
 			} catch (Exception e) {
 				logger.info("this is [deletemultiplesysnotification.do] to trough exception when delete ...");

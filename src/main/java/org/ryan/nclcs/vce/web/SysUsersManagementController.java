@@ -74,6 +74,8 @@ public class SysUsersManagementController {
 				+ ",[englistName = {"+englishName+"},[mobilePhone = {"+mobilePhone+"}],[emailAddress = {"+emailAddress+"}]"
 				+ ",[sort = {"+sort+"}],[dir = {"+dir+"}]");
 		
+		int currentUserId=Integer.parseInt(""+request.getSession().getAttribute("u_id"));
+		
 		Map<String, Object> parameters=new HashMap<String, Object>();
 		if (userName!=null&&!userName.equals("")){
 			parameters.put("userName", userName);
@@ -101,7 +103,7 @@ public class SysUsersManagementController {
 			parameters.put("order", dir);
 		}
 		
-		Map<String,Object> returnData=sysUsersManagementService.searchDataForAjax(displayLength, displayStart, sEcho, parameters);
+		Map<String,Object> returnData=sysUsersManagementService.searchDataForAjax(displayLength, displayStart, sEcho, parameters, currentUserId);
 		
 		returnData.put("draw", sEcho);
 		
@@ -148,7 +150,7 @@ public class SysUsersManagementController {
 			parameters.put("userName", sysUsers.getUserName());
 			if (sysUsersManagementService.isExistByParameters(parameters)!=null){
 				result.put("status", 0);
-				result.put("data", "save failed because user_name has exist!");
+				result.put("data", "用户名已存在，请修改后重试!");
 			}
 		}
 		
@@ -349,7 +351,7 @@ public class SysUsersManagementController {
 		return parameters;
 	}
 	
-	@RequestMapping(value = "/sysuserspersonal.do", method=RequestMethod.GET)
+	@RequestMapping(value = "/sysuserspersonal.do")
 	@SystemUserLoginIsCheck
 	@SystemLogIsCheck(description="显示用户个人信息")
 	public String showPersonalInfo(HttpServletRequest request, Integer userId) {
@@ -379,5 +381,65 @@ public class SysUsersManagementController {
 		request.setAttribute("isStudent", isStudent);
 		logger.info("this is [sysuserspersonal.do] end ...");
 		return "sysusers/personalinfo";
+	}
+	
+	@RequestMapping(value = "/savepersonalinfo.do", method=RequestMethod.POST)
+	@SystemUserLoginIsCheck
+	@SystemLogIsCheck(description="保存学生信息")
+	public String savePersonalInfo(HttpServletRequest request, @ModelAttribute("sysuser") SysUsers sysUsers, Integer userId) {
+		logger.info("this is [savestudentinfo.do] start ...");
+		Map<String, Object> result=new HashMap<String, Object>();
+		
+		logger.info("this is [savestudentinfo.do] check is user_name exist...");
+		Map<String,Object> parameters=new HashMap<String,Object>();
+		if (userId==null||userId==0){
+			parameters.put("userName", sysUsers.getUserName());
+			if (sysUsersManagementService.isExistByParameters(parameters)!=null){
+				result.put("status", 0);
+				result.put("data", "save failed because user_name has exist!");
+			}
+		}
+		
+		if (result.isEmpty()){
+			SysUsers originalUser=null;
+			if (userId!=null&&userId!=0){
+//				sysUsers.setId(userId);
+				originalUser=sysUsersManagementService.get(userId);
+				
+				originalUser.setEnglishName(sysUsers.getEnglishName()==null?originalUser.getEnglishName():sysUsers.getEnglishName());
+				originalUser.setChineseName(sysUsers.getChineseName()==null?originalUser.getChineseName():sysUsers.getChineseName());
+				originalUser.setPinyin(sysUsers.getPinyin()==null?originalUser.getPinyin():sysUsers.getPinyin());
+				originalUser.setMobilePhone(sysUsers.getMobilePhone()==null?originalUser.getMobilePhone():sysUsers.getMobilePhone());
+				originalUser.setEmailAddress(sysUsers.getEmailAddress()==null?originalUser.getEmailAddress():sysUsers.getEmailAddress());
+				originalUser.setHomeAddress(sysUsers.getHomeAddress()==null?originalUser.getHomeAddress():sysUsers.getHomeAddress());
+				originalUser.setHomePhone(sysUsers.getHomePhone()==null?originalUser.getHomePhone():sysUsers.getHomePhone());
+				originalUser.setDaySchool(sysUsers.getDaySchool()==null?originalUser.getDaySchool():sysUsers.getDaySchool());
+				originalUser.setDaySchoolGrade(sysUsers.getDaySchoolGrade()==null?originalUser.getDaySchoolGrade():sysUsers.getDaySchoolGrade());
+				
+			}else if (userId==null||userId==0){
+				sysUsers.setPassword(MD5.string2MD5(MD5.string2MD5(sysUsers.getPassword())));
+			}
+			
+			try{
+				logger.info("this is [savestudentinfo.do] is saving ...");
+//				sysUsers.setCreateTime(new Date(Calendar.getInstance().getTimeInMillis()));
+				logger.info("this is [savestudentinfo.do] show sysUsers ["+originalUser+"] ...");
+				
+				sysUsersManagementService.save(originalUser);
+				result.put("status", 1);
+				result.put("data", "operation success!");
+				logger.info("this is [savestudentinfo.do] save sysUsers done ...");
+			}catch(Exception ex){
+				logger.info("this is [savestudentinfo.do] save sysUsers error ...");
+				result.put("status", 0);
+				result.put("data", "save failed, try again!");
+				ex.printStackTrace();
+			}
+			logger.info("this is [savestudentinfo.do] show result ["+result+"] ...");
+		}
+		
+		request.setAttribute("result", result.get("data"));
+		request.setAttribute("sysuser", sysUsers);
+		return "forward:/sysusersmanagement/sysuserspersonal.do";
 	}
 }

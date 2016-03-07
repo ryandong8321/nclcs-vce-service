@@ -167,77 +167,123 @@ public class SysRemoteServiceController {
 			}
 		}
 		
+//		try{
+//			JSONObject json=JSONObject.fromString(data);
+//			userId=0;
+//			if (json.has("userId")){
+//				userId=json.getInt("userId");
+//			}
+//			if (json.has("groupId")){
+//				groupId=json.getInt("groupId");
+//			}
+//			if (json.has("studentId")){
+//				studentId=json.getInt("studentId");
+//			}
+//			logger.info("this is [findstudentgroup.do] userId ["+userId+"] groupId ["+groupId+"] ...");
+//		}catch(Exception ex){
+//			logger.info("this is [findstudentgroup.do] get parameter error ...");
+//			result.put("status", -1);
+//			result.put("info", "parameters error");
+//			ex.printStackTrace();
+//		}
+		JSONObject json=null;
 		try{
-			JSONObject json=JSONObject.fromString(data);
-			userId=0;
-			if (json.has("userId")){
-				userId=json.getInt("userId");
-			}
-			if (json.has("groupId")){
-				groupId=json.getInt("groupId");
-			}
-			if (json.has("studentId")){
-				studentId=json.getInt("studentId");
-			}
-			logger.info("this is [findstudentgroup.do] userId ["+userId+"] groupId ["+groupId+"] ...");
+			json=JSONObject.fromString(data);
 		}catch(Exception ex){
-			logger.info("this is [findstudentgroup.do] get parameter error ...");
+			logger.info("this is [findstudentgroup.do] translation json error");
+			ex.printStackTrace();
 			result.put("status", -1);
 			result.put("info", "parameters error");
-			ex.printStackTrace();
 		}
 		
-		List<Map<String,Object>> groupsInfo=null;
-		Map<String, Object> parameters=new HashMap<String, Object>();
-		if (userId!=0){
-//			Integer currentUserId=Integer.parseInt(""+request.getSession().getAttribute("u_id"));
-			SysUsers currentUser=sysUsersManagementService.get(userId);
-			boolean isAssistant=false;//是否是校区助理
-			for (SysRoles tmp:currentUser.getSysRoles()){
-				if (tmp.getId()==1||tmp.getId()==2){//管理者或管理助理
-					isAssistant=false;
-					break;
-				}else if (tmp.getId()==3){//校区助理
-					isAssistant=true;
+		if (json!=null&&result.isEmpty()){
+			
+			try {
+				if (json.has("userId")){
+					userId=json.getInt("userId");
 				}
+			} catch (Exception e) {
+				logger.info("this is [findstudentgroup.do] get userId error");
+				userId=0;
+				e.printStackTrace();
 			}
 			
-			SysUsers student=sysUsersManagementService.get(studentId);//当前要维护的学生对象
-			SysGroups group=null;
-			if (isAssistant&&groupId==0){//是校区助理角色，又要查校区的时候，直接用学生的校区群组ID查就可以了，校区助理角色不可以跨校区给学生转班
-				group=student.getSysGroups().get(0);//学生只可能有一个组
-				if (group!=null&&group.getGroupCategory()!=null&&group.getGroupCategory()==1){//判断这个多啊，就是想知道得到的这个群组是不是班级，是班级就查他的父群组(只适用于当想的数据结构，校区下只有班级)
-					group=sysGroupsManagementService.get(group.getGroupParentId());
-					parameters.put("id", group.getId());//学生的校区群组ID
+			try {
+				if (json.has("groupId")){
+					groupId=json.getInt("groupId");
 				}
+			} catch (Exception e) {
+				logger.info("this is [findstudentgroup.do] get groupId error");
+				e.printStackTrace();
+				result.put("status", -1);
+				result.put("info", "parameters error");
 			}
+			try {
+				if (json.has("studentId")){
+					studentId=json.getInt("studentId");
+				}
+			} catch (Exception e) {
+				logger.info("this is [findstudentgroup.do] get studentId error");
+				e.printStackTrace();
+				result.put("status", -1);
+				result.put("info", "parameters error");
+			}
+		}
 			
-			parameters.put("groupParentId", !isAssistant&&groupId==0?1:groupId);//groupId==0说明是查校区，不是校区助理就让groupParentId=1，就是查全部
-			
-			groupsInfo=sysGroupsManagementService.findGroup(parameters,userId);
-			
-			if (student.getSysGroups()!=null&&!student.getSysGroups().isEmpty()){
-				group=group==null?student.getSysGroups().get(0):group;
-				if (group!=null&&group.getGroupCategory()!=null){
-					if (group.getGroupCategory()==1&&groupId==0){
-						group=sysGroupsManagementService.get(group.getGroupParentId());
+		if (result.isEmpty()){
+			List<Map<String,Object>> groupsInfo=null;
+			Map<String, Object> parameters=new HashMap<String, Object>();
+			if (userId!=0){
+//				Integer currentUserId=Integer.parseInt(""+request.getSession().getAttribute("u_id"));
+				SysUsers currentUser=sysUsersManagementService.get(userId);
+				boolean isAssistant=false;//是否是校区助理
+				for (SysRoles tmp:currentUser.getSysRoles()){
+					if (tmp.getId()==1||tmp.getId()==2){//管理者或管理助理
+						isAssistant=false;
+						break;
+					}else if (tmp.getId()==3){//校区助理
+						isAssistant=true;
 					}
-					
-					for(Map<String, Object> map:groupsInfo){
-						if (map.get("id").equals(group.getId())){
-							map.put("selected", "selected");
-							break;
+				}
+				
+				SysUsers student=sysUsersManagementService.get(studentId);//当前要维护的学生对象
+				SysGroups group=null;
+				if (isAssistant&&groupId==0){//是校区助理角色，又要查校区的时候，直接用学生的校区群组ID查就可以了，校区助理角色不可以跨校区给学生转班
+					group=student.getSysGroups().get(0);//学生只可能有一个组
+					if (group!=null&&group.getGroupCategory()!=null&&group.getGroupCategory()==1){//判断这个多啊，就是想知道得到的这个群组是不是班级，是班级就查他的父群组(只适用于当想的数据结构，校区下只有班级)
+						group=sysGroupsManagementService.get(group.getGroupParentId());
+						parameters.put("id", group.getId());//学生的校区群组ID
+					}
+				}
+				
+				parameters.put("groupParentId", !isAssistant&&groupId==0?1:groupId);//groupId==0说明是查校区，不是校区助理就让groupParentId=1，就是查全部
+				
+				groupsInfo=sysGroupsManagementService.findGroup(parameters,userId);
+				
+				if (student.getSysGroups()!=null&&!student.getSysGroups().isEmpty()){
+					group=group==null?student.getSysGroups().get(0):group;
+					if (group!=null&&group.getGroupCategory()!=null){
+						if (group.getGroupCategory()==1&&groupId==0){
+							group=sysGroupsManagementService.get(group.getGroupParentId());
+						}
+						
+						for(Map<String, Object> map:groupsInfo){
+							if (map.get("id").equals(group.getId())){
+								map.put("selected", "selected");
+								break;
+							}
 						}
 					}
 				}
+			}else{
+				parameters.put("groupParentId", groupId==0?1:groupId);//groupId==0说明是查校区，不是校区助理就让groupParentId=1，就是查全部
+				groupsInfo=sysGroupsManagementService.findGroup(parameters,null);
 			}
-		}else{
-			parameters.put("groupParentId", groupId==0?1:groupId);//groupId==0说明是查校区，不是校区助理就让groupParentId=1，就是查全部
-			groupsInfo=sysGroupsManagementService.findGroup(parameters,null);
+			
+			result.put("status", 1);
+			result.put("groupsInfo", groupsInfo);
+			
 		}
-		
-		result.put("status", 1);
-		result.put("groupsInfo", groupsInfo);
 		
 		String tmp=JSONObject.fromMap(result).toString();
 		logger.info("this is [findstudentgroup.do] return ["+tmp+"] ...");

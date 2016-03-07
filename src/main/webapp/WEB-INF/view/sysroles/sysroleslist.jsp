@@ -390,7 +390,7 @@
 										<div class="row">
 											<div class="col-md-offset-3 col-md-9">
 												<button type="button" class="btn blue" id="btnSubmit" onclick="javascript:saveRole();"><i class="fa fa-check"></i> 保存</button>
-												<button type="button" class="btn default" onclick="javascript:;" id="btnCancel">取消</button>
+												<button type="button" class="btn default"  onclick="javascript:doCancelAction();" id="btnCancel">取消</button>
 											</div>
 										</div>
 									</div>
@@ -584,10 +584,10 @@
 		var ref=getInstanceOfTable(), selections=ref.bootstrapTable('getSelections');
 		var m=[];
 		if(JSON.stringify(selections)=="[]"){
-			showMessage("Selecte row(s) that you want to delete.");
+			showMessage("请选择要删除的角色.");
 			return;
 		}
-		bootbox.confirm("<font size='3'>You selected row(s) will be deleted.</font>", function (result){
+		bootbox.confirm("<font size='3'>您选择的角色会被删除，此操作<font color='red'>不可恢复</font>，请确认</font>", function (result){
 			if (result==true){
 				$(selections).each(function(){
 					m.push(this.id);
@@ -678,6 +678,10 @@
  	    });
      }
      
+     function doCancelAction(){
+    	 cleanAllFields();
+     }
+     
      function showPrivilege(){
     	 if ($("#roleId").val()){
     		 $("#ajax").modal('show');
@@ -701,6 +705,7 @@
 			message = msg;
 		}
 		bootbox.alert("<font size='4'>"+message+"</font>"); 
+		message="";
 		/* alert(message); */
 	}
 </script>

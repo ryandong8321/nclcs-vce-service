@@ -3,6 +3,7 @@ package org.ryan.nclcs.vce.service;
 import java.io.Serializable;
 
 import org.ryan.nclcs.vce.dao.INclcsVceServiceBaseDAO;
+import org.springframework.transaction.annotation.Transactional;
 
 
 public abstract class NclcsVceServiceBaseServiceImpl <T, PK extends Serializable, K extends INclcsVceServiceBaseDAO<T,PK>> implements INclcsVceServiceBaseService<T, PK> {
@@ -31,7 +32,7 @@ public abstract class NclcsVceServiceBaseServiceImpl <T, PK extends Serializable
 		getCurrentDAO().delete(entity);
 	}
 	
-	
+	@Transactional(rollbackFor=Exception.class)
 	public void delete(final PK id) {
 		getCurrentDAO().delete(id);
 	}

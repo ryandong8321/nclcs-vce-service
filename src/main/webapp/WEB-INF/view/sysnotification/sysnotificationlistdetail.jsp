@@ -469,7 +469,7 @@
     		 showMessage("选择要删除的通知");
     		 return;
     	 }
-    	 bootbox.confirm("<font size='3'>你选择的通知将被删除.</font>", function (result){
+    	 bootbox.confirm("<font size='3'>您选择的通知信息会被删除，此操作<font color='red'>不可恢复</font>，请确认</font>", function (result){
 			if (result==true){
 				$("#deleteIds").val(selections);
 				$("#frmDeleteInfo").submit();

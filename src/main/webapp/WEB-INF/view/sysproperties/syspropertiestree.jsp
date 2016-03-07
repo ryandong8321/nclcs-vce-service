@@ -533,10 +533,10 @@
 	function deleteProperty() {
 		var ref=getInstanceOfTree();
 		if(!ref.get_checked()){
-			showMessage("select option you want to delete.");
+			showMessage("请选择要删除的系统属性信息");
 			return;
 		}
-		bootbox.confirm("<font size='3'>You checked option(s) will be deleted and all included subclass were deleted at the same time.</font>", function (result){
+		bootbox.confirm("<font size='3'>您选择的系统属性会被删除，此操作<font color='red'>不可恢复</font>，请确认</font>", function (result){
 			if (result==true){
 				$.ajax({
 					type : "POST",

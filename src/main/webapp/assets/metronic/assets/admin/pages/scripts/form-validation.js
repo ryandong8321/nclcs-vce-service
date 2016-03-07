@@ -208,7 +208,11 @@ var FormValidation = function () {
                     },
                     mobilePhone:{
                     	required: true,
-                    	digits: true
+                    	digits: true,
+                    	rangelength:[10,10]
+                    },
+                    chineseName: {
+                        required: true
                     }
                 },
 
@@ -219,6 +223,9 @@ var FormValidation = function () {
                     service: {
                         required: "Please select  at least 2 types of Service",
                         minlength: jQuery.validator.format("Please select  at least {0} types of Service")
+                    },
+                    mobilePhone: {
+                    	rangelength: $.validator.format( "Please enter a correct mobile phone number." )
                     }
                 },
 
@@ -309,8 +316,8 @@ var FormValidation = function () {
         init: function () {
 
             handleWysihtml5();
-            handleValidation1();
-            handleValidation2();
+            //handleValidation1();
+            //handleValidation2();
             handleValidation3();
 
         }
