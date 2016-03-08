@@ -1,7 +1,10 @@
 package org.ryan.nclcs.vce.web;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
@@ -13,6 +16,9 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.ryan.nclcs.vce.annotation.SystemLogIsCheck;
 import org.ryan.nclcs.vce.dao.Pagination;
 import org.ryan.nclcs.vce.entity.AppStudentUploadAssignment;
@@ -1950,7 +1956,7 @@ public class SysRemoteServiceController {
 	
 	@RequestMapping(value = "/saveuploadassignmentinfo.do", method=RequestMethod.POST)
 	@SystemLogIsCheck(description="保存学生上传作业信息")
-	public String saveUploadAssignmentInfo(HttpServletRequest request, @RequestParam("files") CommonsMultipartFile[] uploadFile) {
+	public String saveUploadAssignmentInfo(HttpServletRequest request, @RequestParam("uploadFile") CommonsMultipartFile[] uploadFile) {
 		logger.info("this is [saveuploadassignmentinfo.do] start ...");
 		Map<String, Object> result=new HashMap<String, Object>();
 		
@@ -1975,12 +1981,13 @@ public class SysRemoteServiceController {
 //			}
 			
 //			String _filePath=request.getServletContext().getRealPath("");
-			String _filePath="/usr/local/www/uploadfiles";
+//			String _filePath="/usr/local/www/uploadfiles";
+			String _filePath="/usr/local/vce-uploadfiles";
 			
 			Calendar now=new GregorianCalendar();
-			String year="/"+now.get(Calendar.YEAR);
-			String month=(now.get(Calendar.MONTH)+1)>9?"/"+(now.get(Calendar.MONTH)+1):"/0"+(now.get(Calendar.MONTH)+1);
-			String day=now.get(Calendar.DAY_OF_MONTH)>9?"/"+now.get(Calendar.DAY_OF_MONTH):"/0"+now.get(Calendar.DAY_OF_MONTH);
+			String year="/"+now.get(Calendar.YEAR)+"/";
+			String month=(now.get(Calendar.MONTH)+1)>9?"/"+(now.get(Calendar.MONTH)+1)+"/":"/0"+(now.get(Calendar.MONTH)+1)+"/";
+			String day=now.get(Calendar.DAY_OF_MONTH)>9?"/"+now.get(Calendar.DAY_OF_MONTH)+"/":"/0"+now.get(Calendar.DAY_OF_MONTH)+"/";
 			
 			String _localPath=year;
 			File directory=new File(_filePath+_localPath);
@@ -2075,6 +2082,170 @@ public class SysRemoteServiceController {
 			}
 		}else{
 			logger.info("this is [saveuploadassignmentinfo.do] save uploadAssignment error ...");
+			result.put("status", 0);
+			result.put("data", "save failed, try again!");
+		}
+		
+//		logger.info("this is [saveuploadassignmentinfo.do] show result ["+result+"] ...");
+//		request.setAttribute("result", result.get("data"));
+//		request.setAttribute("uploadassignment", uploadAssignment);
+//		return result.get("status").equals(1)?"forward:/appassignmentstudentmanagement/uploadassignmentlist.do":"forward:/appassignmentstudentmanagement/showuploadassignmentinfo.do";
+		return "";
+	}
+	
+	@RequestMapping(value = "/uploadassignmentinfo.do", method=RequestMethod.POST)
+	@SystemLogIsCheck(description="保存学生上传作业信息")
+	public String uploadAssignmentInfo(HttpServletRequest request) {
+		logger.info("this is [uploadassignmentinfo.do] start ...");
+		Map<String, Object> result=new HashMap<String, Object>();
+		
+		logger.info("this is [uploadassignmentinfo.do] get page parameters ...");
+		Integer uploadAssignmentId=-1,currentStudentId=0;
+		String uploadAssignmentName=null;
+		AppStudentUploadAssignment uploadAssignment=null;
+		try {
+			uploadAssignmentId=ServletRequestUtils.getIntParameter(request, "uploadAssignmentId", -1);
+			uploadAssignmentName=ServletRequestUtils.getRequiredStringParameter(request, "assignmentName");
+			currentStudentId=Integer.parseInt(""+request.getSession().getAttribute("u_id"));
+		} catch (ServletRequestBindingException e1) {
+			logger.info("this is [uploadassignmentinfo.do] get page parameters occur exception...");
+			e1.printStackTrace();
+		}
+		
+		if (currentStudentId!=-1){
+//			if (uploadAssignmentId==-1){
+//				uploadAssignment=new AppStudentUploadAssignment();
+//			}else{
+//				uploadAssignment=appStudentUploadAssignmentSerivce.get(uploadAssignmentId);
+//			}
+			
+			//server
+			String _filePath="/var/www/vce-uploadfiles";
+			
+			//local
+//			String _filePath="/usr/local/vce-uploadfiles";
+			
+			Calendar now=new GregorianCalendar();
+			String year="/"+now.get(Calendar.YEAR)+"/";
+			String month=(now.get(Calendar.MONTH)+1)>9?"/"+(now.get(Calendar.MONTH)+1)+"/":"/0"+(now.get(Calendar.MONTH)+1)+"/";
+			String day=now.get(Calendar.DAY_OF_MONTH)>9?"/"+now.get(Calendar.DAY_OF_MONTH)+"/":"/0"+now.get(Calendar.DAY_OF_MONTH)+"/";
+			
+			String _localPath=year;
+			File directory=new File(_filePath+_localPath);
+			if (!directory.exists()){
+				directory.mkdir();
+				logger.info("this is [uploadassignmentinfo.do] create directory ["+directory+"] success...");
+			}
+			
+			_localPath+=month;
+			directory=new File(_filePath+_localPath);
+			if (!directory.exists()){
+				directory.mkdir();
+				logger.info("this is [uploadassignmentinfo.do] create directory ["+directory+"] success...");
+			}
+			
+			_localPath+=day;
+			directory=new File(_filePath+_localPath);
+			if (!directory.exists()){
+				directory.mkdir();
+				logger.info("this is [uploadassignmentinfo.do] create directory ["+directory+"] success...");
+			}
+			
+			_localPath+=File.separator+"student_"+currentStudentId;
+			directory=new File(_filePath+_localPath);
+			logger.info("this is [uploadassignmentinfo.do] show directory name ["+directory+"]");
+			if (!directory.exists()){
+				directory.mkdir();
+				logger.info("this is [uploadassignmentinfo.do] create directory ["+directory+"] success...");
+			}
+			
+			File file=null;
+			String strFileName=null;
+			String strSuffix=null;
+			String strPrefix=null;
+			int dotPosition=-1;
+			
+			DiskFileItemFactory factory = new DiskFileItemFactory();
+			// 获取系统默认的临时文件保存路径，该路径为Tomcat根目录下的temp文件夹
+			String temp = System.getProperty("java.io.tmpdir");
+			// 设置缓冲区大小为 5M
+			factory.setSizeThreshold(1024 * 1024 * 5);
+			// 设置临时文件夹为temp
+			factory.setRepository(new File(temp));
+			// 用工厂实例化上传组件,ServletFileUpload 用来解析文件上传请求
+			ServletFileUpload servletFileUpload=new ServletFileUpload(factory);
+			try{
+				List<FileItem> lstFile=servletFileUpload.parseRequest(request);
+				if (lstFile!=null&&!lstFile.isEmpty()){
+					int idx=1;
+					InputStream is=null;
+					for (FileItem item:lstFile){
+						strFileName=item.getFieldName();
+						logger.info("this is [uploadassignmentinfo.do] show file name ["+strFileName+"]");
+						
+						logger.info("this is [uploadassignmentinfo.do] get InputStream");
+						is=item.getInputStream();
+						logger.info("this is [uploadassignmentinfo.do] get InputStream done");
+						
+						dotPosition=strFileName.lastIndexOf(".");
+						strSuffix=strFileName.substring(dotPosition);
+						strPrefix=strFileName.substring(0, dotPosition);
+						
+						if (strSuffix!=null&&!strSuffix.equals("")&&(strSuffix.equals(".doc")||strSuffix.equals(".docx"))){
+							file=new File(directory+File.separator+strFileName);
+							
+							while(file.exists()){
+								logger.info("this is [uploadassignmentinfo.do] file ["+file+"] exist...");
+								file=new File(directory+File.separator+strPrefix+"("+(idx++)+")"+strSuffix);
+								logger.info("this is [uploadassignmentinfo.do] change file name ["+file+"]...");
+							}
+						}
+						
+						if (!file.exists()){
+							logger.info("this is [uploadassignmentinfo.do] file ["+file.getAbsolutePath()+"] do not exist...");
+							BufferedInputStream fis=null;
+							FileOutputStream fos=null;
+							try {
+								//file.createNewFile();
+								logger.info("this is [uploadassignmentinfo.do] create file ["+file.getAbsolutePath()+"] success...");
+								
+								fis=new BufferedInputStream(is);
+								fos=new FileOutputStream(file);
+								
+								int f;
+								while ((f = fis.read()) != -1){
+									fos.write(f);
+								}
+								fos.flush();
+								logger.info("this is [uploadassignmentinfo.do] file ["+file.getAbsolutePath()+"] transfer...");
+							} catch (IOException e) {
+								logger.info("this is [uploadassignmentinfo.do] create file ["+file.getAbsolutePath()+"] failed...");
+								e.printStackTrace();
+							}finally{
+								if(fos!=null){
+									fos.close();
+								}
+								if(fis!=null){
+									fis.close();
+								}
+								if(is!=null){
+									is.close();
+								}
+							}
+						}
+						result.put("status", 1);
+						result.put("data", "operation success!");
+						logger.info("this is [uploadassignmentinfo.do] save uploadAssignment done ...");
+					}
+				}
+				
+			}catch(Exception ex){
+				result.put("status", 0);
+				result.put("data", "operation failed!");
+				logger.info("this is [uploadassignmentinfo.do] save uploadAssignment error ...");
+			}
+		}else{
+			logger.info("this is [uploadassignmentinfo.do] save uploadAssignment error ...");
 			result.put("status", 0);
 			result.put("data", "save failed, try again!");
 		}
