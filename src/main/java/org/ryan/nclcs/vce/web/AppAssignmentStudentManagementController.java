@@ -55,8 +55,8 @@ public class AppAssignmentStudentManagementController {
 //	@Autowired
 //	private ISysGroupsManagementService sysGroupsManagementService;
 	
-	protected final String _filePath="/usr/local/vce-uploadfiles";
-//	protected final String _filePath="/usr/local/www/uploadfiles";
+//	protected final String _filePath="/usr/local/vce-uploadfiles";
+	protected final String _filePath="/usr/local/www/vce-uploadfiles";
 	
 	@RequestMapping(value = "/uploadassignmentlist.do")
 	@SystemUserLoginIsCheck

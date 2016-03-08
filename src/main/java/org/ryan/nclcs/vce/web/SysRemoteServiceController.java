@@ -1,4 +1,3 @@
-
 package org.ryan.nclcs.vce.web;
 
 import java.io.File;
@@ -15,10 +14,10 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import org.ryan.nclcs.vce.annotation.SystemLogIsCheck;
-import org.ryan.nclcs.vce.annotation.SystemUserLoginIsCheck;
 import org.ryan.nclcs.vce.dao.Pagination;
 import org.ryan.nclcs.vce.entity.AppStudentUploadAssignment;
 import org.ryan.nclcs.vce.entity.AppStudentsScores;
+import org.ryan.nclcs.vce.entity.AppTutorAppointmentAssignmentToStudent;
 import org.ryan.nclcs.vce.entity.SysDeviceToken;
 import org.ryan.nclcs.vce.entity.SysGroups;
 import org.ryan.nclcs.vce.entity.SysNotification;
@@ -26,6 +25,7 @@ import org.ryan.nclcs.vce.entity.SysNotificationDetail;
 import org.ryan.nclcs.vce.entity.SysProperties;
 import org.ryan.nclcs.vce.entity.SysRoles;
 import org.ryan.nclcs.vce.entity.SysUsers;
+import org.ryan.nclcs.vce.service.appassignment.IAppTutorAppointmentToStudentService;
 import org.ryan.nclcs.vce.service.appstudents.IAppStudentsManagementService;
 import org.ryan.nclcs.vce.service.devicetoken.ISysDeviceTokenManagementService;
 import org.ryan.nclcs.vce.service.sysgroups.ISysGroupsManagementService;
@@ -81,8 +81,8 @@ public class SysRemoteServiceController {
 	@Autowired
 	private ISysDeviceTokenManagementService sysDeviceTokenManagementService;
 	
-//	@Autowired
-//	private IAppTutorAppointmentToStudentService appTutorAppointmentToStudentService;
+	@Autowired
+	private IAppTutorAppointmentToStudentService appTutorAppointmentToStudentService;
 	
 	@RequestMapping(value = "/userlogin.do", method=RequestMethod.POST)
 	@ResponseBody
@@ -1865,88 +1865,88 @@ public class SysRemoteServiceController {
 	
 	//--------------------------学生作业管理---------------------------------//
 	
-//	@RequestMapping(value = "/initdownloadassignmentlist.do", method=RequestMethod.POST)
-//	@ResponseBody
-//	@SystemLogIsCheck(description="查询学生下载作业列表")
-//	public String initDownloadAssignmentList(HttpServletRequest request, @RequestBody String data) {
-//		logger.info("this is [initdownloadassignmentlist.do] start ...");
-//		Map<String, Object> result=new HashMap<String, Object>();
-//		logger.info("this is [initdownloadassignmentlist.do] is decoding ...");
-//		JSONObject json=JSONObject.fromString(this.decodeParameters(data));
-//		logger.info("this is [initdownloadassignmentlist.do] decode done ...");
-//		
-//		Integer userId=-1;//studentId
-//		String token=null;
-//		if (!json.has("userId")||!json.has("token")){
-//			result.put("status", -1);
-//			result.put("info", "the lack of parameter");
-//			logger.info("this is [initdownloadassignmentlist.do] the lack of parameter ...");
-//		}
-//		
-//		if (result.isEmpty()){
-//			try{
-//				userId=json.getInt("userId");
-//				token=json.getString("token");
-//				String localToken=WebApplicationUtils.getToken(userId);
-//				
-//				logger.info("this is [initdownloadassignmentlist.do] studentId ["+userId+"] ...");
-////				if (localToken!=null&&localToken.equals(token)){
-//					//每页大小
-//					int displayLength=Integer.parseInt(json.has("displayLength")?json.getString("displayLength"):"10");
-//					//起始值
-//					int displayStart=Integer.parseInt(json.has("displayStart")?json.getString("displayStart"):"0");
-//					//查询条件
-//					String param=json.has("param")?json.getString("param"):"";
-//					
-//					logger.info("this is [initdownloadassignmentlist.do] requset parameters [displayLength = {"+displayLength+"}],[displayStart = {"+displayStart+"}],[param = {"+param+"}]");
-//					
-//					Map<String, Object> parameters=new HashMap<String, Object>();
-//					if (param!=null&&!param.equals("")){
-//						parameters.put("assignmentName", param);
-//					}
-////					parameters.put("sort", 3);
-////					parameters.put("order", "desc");
-////					parameters.put("snd.detailReceiveUserInfo.id", userId);
-//					
-//					logger.info("this is [initdownloadassignmentlist.do] finding assignment ...");
-//					Pagination<AppTutorAppointmentAssignmentToStudent> page=appTutorAppointmentToStudentService.searchDataToStudent(displayLength, displayStart, parameters,userId);
-//					
-//					List<Map<String, Object>> resultData=new ArrayList<Map<String, Object>>();
-//					Map<String, Object> map=null;
-//					for (AppTutorAppointmentAssignmentToStudent toStudent:page.getRows()){
-//						map=new HashMap<String, Object>();
-//						map.put("assignmentId", toStudent.getId());
-//						map.put("assignmentName", toStudent.getAssignmentName());
-//						map.put("assignmentUploadTime", toStudent.getUploadTime().toString());
-//						map.put("assignmentPath", toStudent.getFilePath());
-//						map.put("assignmentFileName", toStudent.getFileName());
-//						resultData.add(map);
-//					}
-//					
-//					result.put("data", resultData);
-//					result.put("status", 1);
-//					result.put("info", "operation success!");
-//					result.put("recordsTotal", page.getTotal());
-//					result.put("displayLength", displayLength);
-//					result.put("displayStart", displayStart+displayLength);
-//					result.put("param", param);
-//					logger.info("this is [initdownloadassignmentlist.do] finding assignment done...");
-////				}else{
-////					result.put("status", -2);
-////					result.put("info", "illegal user");
-////					logger.info("this is [initdownloadassignmentlist.do] illegal user ...");
-////				}
-//			}catch(Exception ex){
-//				ex.printStackTrace();
-//				result.put("status", 0);
-//				result.put("info", "find user info error");
-//				logger.info("this is [initdownloadassignmentlist.do] exception ...");
-//			}
-//		}
-//		String tmp=JSONObject.fromMap(result).toString();
-//		logger.info("this is [initdownloadassignmentlist.do] return ["+tmp+"] ...");
-//		return tmp;
-//	}
+	@RequestMapping(value = "/initdownloadassignmentlist.do", method=RequestMethod.POST)
+	@ResponseBody
+	@SystemLogIsCheck(description="查询学生下载作业列表")
+	public String initDownloadAssignmentList(HttpServletRequest request, @RequestBody String data) {
+		logger.info("this is [initdownloadassignmentlist.do] start ...");
+		Map<String, Object> result=new HashMap<String, Object>();
+		logger.info("this is [initdownloadassignmentlist.do] is decoding ...");
+		JSONObject json=JSONObject.fromString(this.decodeParameters(data));
+		logger.info("this is [initdownloadassignmentlist.do] decode done ...");
+		
+		Integer userId=-1;//studentId
+		String token=null;
+		if (!json.has("userId")||!json.has("token")){
+			result.put("status", -1);
+			result.put("info", "the lack of parameter");
+			logger.info("this is [initdownloadassignmentlist.do] the lack of parameter ...");
+		}
+		
+		if (result.isEmpty()){
+			try{
+				userId=json.getInt("userId");
+				token=json.getString("token");
+				String localToken=WebApplicationUtils.getToken(userId);
+				
+				logger.info("this is [initdownloadassignmentlist.do] studentId ["+userId+"] ...");
+//				if (localToken!=null&&localToken.equals(token)){
+					//每页大小
+					int displayLength=Integer.parseInt(json.has("displayLength")?json.getString("displayLength"):"10");
+					//起始值
+					int displayStart=Integer.parseInt(json.has("displayStart")?json.getString("displayStart"):"0");
+					//查询条件
+					String param=json.has("param")?json.getString("param"):"";
+					
+					logger.info("this is [initdownloadassignmentlist.do] requset parameters [displayLength = {"+displayLength+"}],[displayStart = {"+displayStart+"}],[param = {"+param+"}]");
+					
+					Map<String, Object> parameters=new HashMap<String, Object>();
+					if (param!=null&&!param.equals("")){
+						parameters.put("assignmentName", param);
+					}
+//					parameters.put("sort", 3);
+//					parameters.put("order", "desc");
+//					parameters.put("snd.detailReceiveUserInfo.id", userId);
+					
+					logger.info("this is [initdownloadassignmentlist.do] finding assignment ...");
+					Pagination<AppTutorAppointmentAssignmentToStudent> page=appTutorAppointmentToStudentService.searchDataToStudent(displayLength, displayStart, parameters,userId);
+					
+					List<Map<String, Object>> resultData=new ArrayList<Map<String, Object>>();
+					Map<String, Object> map=null;
+					for (AppTutorAppointmentAssignmentToStudent toStudent:page.getRows()){
+						map=new HashMap<String, Object>();
+						map.put("assignmentId", toStudent.getId());
+						map.put("assignmentName", toStudent.getAssignmentName());
+						map.put("assignmentUploadTime", toStudent.getUploadTime().toString());
+						map.put("assignmentPath", toStudent.getFilePath());
+						map.put("assignmentFileName", toStudent.getFileName());
+						resultData.add(map);
+					}
+					
+					result.put("data", resultData);
+					result.put("status", 1);
+					result.put("info", "operation success!");
+					result.put("recordsTotal", page.getTotal());
+					result.put("displayLength", displayLength);
+					result.put("displayStart", displayStart+displayLength);
+					result.put("param", param);
+					logger.info("this is [initdownloadassignmentlist.do] finding assignment done...");
+//				}else{
+//					result.put("status", -2);
+//					result.put("info", "illegal user");
+//					logger.info("this is [initdownloadassignmentlist.do] illegal user ...");
+//				}
+			}catch(Exception ex){
+				ex.printStackTrace();
+				result.put("status", 0);
+				result.put("info", "find user info error");
+				logger.info("this is [initdownloadassignmentlist.do] exception ...");
+			}
+		}
+		String tmp=JSONObject.fromMap(result).toString();
+		logger.info("this is [initdownloadassignmentlist.do] return ["+tmp+"] ...");
+		return tmp;
+	}
 	
 	@RequestMapping(value = "/saveuploadassignmentinfo.do", method=RequestMethod.POST)
 	@SystemLogIsCheck(description="保存学生上传作业信息")
