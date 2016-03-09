@@ -130,7 +130,7 @@
 								<i class="icon-lock"></i> Lock Screen </a>
 							</li> -->
 							<li>
-								<a href="<%=basePath%>sysusersmanagement/userlogout.do">
+								<a href="javascript:dologout();">
 								<i class="icon-key"></i> Log Out </a>
 							</li>
 						</ul>
@@ -409,7 +409,7 @@
 										<div class="row">
 											<div class="col-md-offset-3 col-md-9">
 												<button type="button" class="btn blue" id="btnSubmit" onclick="javascript:saveProperty();"><i class="fa fa-check"></i> 保存</button>
-												<button type="button" class="btn default" onclick="javascript:;" id="btnCancel">取消</button>
+												<button type="button" class="btn default" onclick="javascript:doCancelAction();" id="btnCancel">取消</button>
 											</div>
 										</div>
 									</div>
@@ -509,6 +509,8 @@
 		    $("#propertyName").val(data.instance.get_node(data.selected).text);
 		    $("#propertyId").val(data.selected);
 		    $("#propertyParentId").val(data.instance.get_parent(data.selected));
+		    
+		    $("#propertyName").attr('readonly', true);
 		});
 		
 		var result="${result}";
@@ -651,6 +653,20 @@
 			ref.open_node(operationNode,false,0);
 		}
 	}
+	
+	function doCancelAction(){
+		var tmpId=$("#propertyId").val()?$("#propertyId").val():$("#propertyParentId").val();
+		getInstanceOfTree().deselect_node("#"+tmpId,false,false);
+		getInstanceOfTree().select_node("#"+tmpId,false,false);
+	}
+	
+	function dologout(){
+ 		 bootbox.confirm("<font size='3'>您即将退出系统，请确认</font>", function (result){
+ 				if (result==true){
+ 					window.location="<%=basePath%>sysusersmanagement/userlogout.do";
+ 				}
+ 			});
+    }
 
 	var message;
 	function constructAlertMessage(msg){

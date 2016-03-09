@@ -13,8 +13,12 @@ import javax.servlet.http.HttpServletResponse;
 import org.ryan.nclcs.vce.annotation.SystemLogIsCheck;
 import org.ryan.nclcs.vce.annotation.SystemUserLoginIsCheck;
 import org.ryan.nclcs.vce.entity.SysGroups;
+import org.ryan.nclcs.vce.entity.SysProperties;
 import org.ryan.nclcs.vce.entity.SysRoles;
 import org.ryan.nclcs.vce.entity.SysUsers;
+import org.ryan.nclcs.vce.service.sysgroups.ISysGroupsManagementService;
+import org.ryan.nclcs.vce.service.sysproperties.ISysPropertiesManagementService;
+import org.ryan.nclcs.vce.service.sysroles.ISysRolesManagementService;
 import org.ryan.nclcs.vce.service.sysusers.ISysUsersManagementService;
 import org.ryan.nclcs.vce.web.util.MD5;
 import org.slf4j.Logger;
@@ -39,6 +43,15 @@ public class SysUsersManagementController {
 	
 	@Autowired
 	private ISysUsersManagementService sysUsersManagementService;
+	
+	@Autowired
+	private ISysPropertiesManagementService sysPropertiesManagementService;
+	
+	@Autowired
+	private ISysGroupsManagementService sysGroupsManagementService;
+	
+	@Autowired
+	private ISysRolesManagementService sysRolesManagementService;
 	
 	@RequestMapping(value = "/sysuserslist.do")
 	@SystemUserLoginIsCheck
@@ -132,7 +145,9 @@ public class SysUsersManagementController {
 		
 		logger.info("this is [showsysusersinfo.do] data ["+user+"] ...");
 		
-		request.setAttribute("sysuser", user);
+		if (user!=null){
+			request.setAttribute("sysuser", user);
+		}
 		logger.info("this is [showsysusersinfo.do] end ...");
 		return "sysusers/sysusersinfo";
 	}
@@ -385,12 +400,12 @@ public class SysUsersManagementController {
 	
 	@RequestMapping(value = "/savepersonalinfo.do", method=RequestMethod.POST)
 	@SystemUserLoginIsCheck
-	@SystemLogIsCheck(description="保存学生信息")
+	@SystemLogIsCheck(description="保存个人信息")
 	public String savePersonalInfo(HttpServletRequest request, @ModelAttribute("sysuser") SysUsers sysUsers, Integer userId) {
-		logger.info("this is [savestudentinfo.do] start ...");
+		logger.info("this is [savepersonalinfo.do] start ...");
 		Map<String, Object> result=new HashMap<String, Object>();
 		
-		logger.info("this is [savestudentinfo.do] check is user_name exist...");
+		logger.info("this is [savepersonalinfo.do] check is user_name exist...");
 		Map<String,Object> parameters=new HashMap<String,Object>();
 		if (userId==null||userId==0){
 			parameters.put("userName", sysUsers.getUserName());
@@ -421,25 +436,87 @@ public class SysUsersManagementController {
 			}
 			
 			try{
-				logger.info("this is [savestudentinfo.do] is saving ...");
+				logger.info("this is [savepersonalinfo.do] is saving ...");
 //				sysUsers.setCreateTime(new Date(Calendar.getInstance().getTimeInMillis()));
-				logger.info("this is [savestudentinfo.do] show sysUsers ["+originalUser+"] ...");
+				logger.info("this is [savepersonalinfo.do] show sysUsers ["+originalUser+"] ...");
 				
 				sysUsersManagementService.save(originalUser);
 				result.put("status", 1);
 				result.put("data", "operation success!");
-				logger.info("this is [savestudentinfo.do] save sysUsers done ...");
+				logger.info("this is [savepersonalinfo.do] save sysUsers done ...");
 			}catch(Exception ex){
-				logger.info("this is [savestudentinfo.do] save sysUsers error ...");
+				logger.info("this is [savepersonalinfo.do] save sysUsers error ...");
 				result.put("status", 0);
 				result.put("data", "save failed, try again!");
 				ex.printStackTrace();
 			}
-			logger.info("this is [savestudentinfo.do] show result ["+result+"] ...");
+			logger.info("this is [savepersonalinfo.do] show result ["+result+"] ...");
 		}
 		
 		request.setAttribute("result", result.get("data"));
 		request.setAttribute("sysuser", sysUsers);
 		return "forward:/sysusersmanagement/sysuserspersonal.do";
+	}
+	
+	@RequestMapping(value = "/sysuserregister.do")
+	public String sysUserRegister(HttpServletRequest request, HttpServletResponse response, ModelMap modelMap) {
+		logger.info("this is [sysuserregister.do] start ...");
+		logger.info("this is [sysuserregister.do] end ...");
+		return "sysusers/appstudentregister";
+	}
+	
+	@RequestMapping(value = "/saveuserregister.do", method=RequestMethod.POST)
+	public String saveUserRegister(HttpServletRequest request, @ModelAttribute("sysuser") SysUsers sysUsers, Integer userId, Integer propertyIsLearnChineseId, Integer studentGroupId, Integer studentGroupClassId) {
+		logger.info("this is [saveuserregister.do] start ...");
+		Map<String, Object> result=new HashMap<String, Object>();
+		
+		try {
+			
+			logger.info("this is [saveuserregister.do] check is user_name exist...");
+			Map<String,Object> parameters=new HashMap<String,Object>();
+			
+			parameters.put("userName", sysUsers.getUserName());
+			if (sysUsersManagementService.isExistByParameters(parameters)!=null){
+				request.setAttribute("sysuser", sysUsers);
+				result.put("status", 2);
+				result.put("data", "用户名已存在，请重试!");
+			}
+			
+			if (propertyIsLearnChineseId==null||propertyIsLearnChineseId==null||studentGroupClassId==null){
+				result.put("status", 0);
+				result.put("data", "save failed because lack of parameters!");
+			}
+			
+			if (result.isEmpty()){//not exist
+				sysUsers.setPassword(MD5.string2MD5(MD5.string2MD5(sysUsers.getPassword())));
+				
+				//是否在日校学中文
+				SysProperties property=sysPropertiesManagementService.get(propertyIsLearnChineseId);
+				sysUsers.setPropertyIsLearnChinese(property);
+				
+				SysGroups groupNewCampus=sysGroupsManagementService.get(studentGroupId);
+				sysUsers.setVceSchoolName(groupNewCampus.getGroupName());
+				
+				SysGroups groupNewClass=sysGroupsManagementService.get(studentGroupClassId);
+				sysUsers.setVceClassName(groupNewClass.getGroupName());
+				
+				logger.info("this is [saveuserregister.do] is saving user ...");
+				this.sysUsersManagementService.saveRegisterUser(sysUsers, groupNewClass, sysRolesManagementService.get(5));
+				logger.info("this is [saveuserregister.do] save user done...");
+				
+				result.put("status", 1);
+				result.put("data", "register success!");
+				logger.info("this is [saveuserregister.do] register success ...");
+			}
+		} catch (NumberFormatException e) {
+			result.put("status", 0);
+			result.put("data", "register failed, try again!");
+			e.printStackTrace();
+		}
+		
+		request.setAttribute("result", result.get("data"));
+		request.setAttribute("status", result.get("status"));
+		
+		return "forward:/sysusersmanagement/sysuserregister.do";
 	}
 }

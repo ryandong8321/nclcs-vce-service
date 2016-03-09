@@ -190,25 +190,6 @@ public class SysRemoteServiceController {
 			}
 		}
 		
-//		try{
-//			JSONObject json=JSONObject.fromString(data);
-//			userId=0;
-//			if (json.has("userId")){
-//				userId=json.getInt("userId");
-//			}
-//			if (json.has("groupId")){
-//				groupId=json.getInt("groupId");
-//			}
-//			if (json.has("studentId")){
-//				studentId=json.getInt("studentId");
-//			}
-//			logger.info("this is [findstudentgroup.do] userId ["+userId+"] groupId ["+groupId+"] ...");
-//		}catch(Exception ex){
-//			logger.info("this is [findstudentgroup.do] get parameter error ...");
-//			result.put("status", -1);
-//			result.put("info", "parameters error");
-//			ex.printStackTrace();
-//		}
 		JSONObject json=null;
 		try{
 			json=JSONObject.fromString(data);
@@ -220,7 +201,6 @@ public class SysRemoteServiceController {
 		}
 		
 		if (json!=null&&result.isEmpty()){
-			
 			try {
 				if (json.has("userId")){
 					userId=json.getInt("userId");
@@ -230,7 +210,6 @@ public class SysRemoteServiceController {
 				userId=0;
 				e.printStackTrace();
 			}
-			
 			try {
 				if (json.has("groupId")){
 					groupId=json.getInt("groupId");
@@ -238,8 +217,6 @@ public class SysRemoteServiceController {
 			} catch (Exception e) {
 				logger.info("this is [findstudentgroup.do] get groupId error");
 				e.printStackTrace();
-				result.put("status", -1);
-				result.put("info", "parameters error");
 			}
 			try {
 				if (json.has("studentId")){
@@ -248,8 +225,6 @@ public class SysRemoteServiceController {
 			} catch (Exception e) {
 				logger.info("this is [findstudentgroup.do] get studentId error");
 				e.printStackTrace();
-				result.put("status", -1);
-				result.put("info", "parameters error");
 			}
 		}
 			

@@ -146,7 +146,7 @@ License: You must have a valid license purchased only from themeforest(the above
 								<i class="icon-lock"></i> Lock Screen </a>
 							</li> -->
 							<li>
-								<a href="<%=basePath%>sysusersmanagement/userlogout.do">
+								<a href="javascript:dologout();">
 								<i class="icon-key"></i> Log Out </a>
 							</li>
 						</ul>
@@ -546,9 +546,9 @@ License: You must have a valid license purchased only from themeforest(the above
 										<div class="row">
 											<div class="col-md-6">
 												<div class="row">
-													<div class="col-md-offset-3 col-md-9">
+													<div class="col-md-offset-3 col-md-9" id="div_operation">
 														<button type="submit" class="btn blue"><i class="fa fa-check"></i> 保存</button>
-														<button type="button" class="btn default" onclick="javascript:history.back();">取消</button>
+														<button type="button" class="btn default" onclick="javascript:doCancelAction();">取消</button>
 													</div>
 												</div>
 											</div>
@@ -668,6 +668,8 @@ jQuery(document).ready(function() {
 	Layout.init(); // init current layout
 	Demo.init(); // init demo features
    	//FormValidation.init();
+	
+	$("#div_operation").hide();
 	
 	addValidation();
    
@@ -928,6 +930,8 @@ function modifyInfo(){
    
    	$("#daySchool").attr("readOnly",false);
    	$("#daySchoolGrade").attr("readOnly",false);
+   	
+   	$("#div_operation").show();
 }
 
 function deleteInfo(){
@@ -974,6 +978,18 @@ function saveNewPWD(){
 		      	}
 		      }
 	});
+}
+
+function doCancelAction(){
+	history.go();
+}
+
+function dologout(){
+		 bootbox.confirm("<font size='3'>您即将退出系统，请确认</font>", function (result){
+				if (result==true){
+					window.location="<%=basePath%>sysusersmanagement/userlogout.do";
+				}
+			});
 }
 
 var message;

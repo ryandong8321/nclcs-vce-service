@@ -145,7 +145,7 @@ License: You must have a valid license purchased only from themeforest(the above
 								<i class="icon-lock"></i> Lock Screen </a>
 							</li> -->
 							<li>
-								<a href="<%=basePath%>sysusersmanagement/userlogout.do">
+								<a href="javascript:dologout();">
 								<i class="icon-key"></i> Log Out </a>
 							</li>
 						</ul>
@@ -603,6 +603,14 @@ function deleteInfo(){
 			}
 		}
 	});
+}
+
+function dologout(){
+		 bootbox.confirm("<font size='3'>您即将退出系统，请确认</font>", function (result){
+				if (result==true){
+					window.location="<%=basePath%>sysusersmanagement/userlogout.do";
+				}
+			});
 }
 
 function showMessage(msg){

@@ -255,10 +255,10 @@ public class Demo {
 		// TODO Set your alias and alias_type here, and use comma to split them if there are multiple alias.
 		// And if you have many alias, you can also upload a file containing these alias, then 
 		// use file_id to send customized notification.
-		customizedcast.setAlias("alias", "alias_type");
-		customizedcast.setAlert("IOS 个性化测试");
+		customizedcast.setAlias("tutor1,lzp,assistant", "kUMessageAliasTypeVCE");
+		customizedcast.setAlert("IOS个性化测试");
 		customizedcast.setBadge( 0);
-		customizedcast.setSound( "default");
+		customizedcast.setSound("default");
 		// TODO set 'production_mode' to 'true' if your app is under production mode
 		customizedcast.setTestMode();
 		client.send(customizedcast);
@@ -279,11 +279,16 @@ public class Demo {
 	
 	public static void main(String[] args) {
 		// TODO set your appkey and master secret here
-		Demo demo = new Demo("56c5b57be0f55ae0750026dc", "shcs79qzeaoroyv3i4iyh4mid1f2akkz");
+		
+		//android
+//		Demo demo = new Demo("56c5b57be0f55ae0750026dc", "shcs79qzeaoroyv3i4iyh4mid1f2akkz");
+		
+		Demo demo = new Demo("56c3cc8867e58efdb6000e35", "cm9g9gzj8pcp5t1fawhxex7xu7joyyzd");
 		try {
 			//demo.sendAndroidUnicast();
-			demo.sendIOSUnicast();
+			//demo.sendIOSUnicast();
 			//demo.sendAndroidListcast();
+			demo.sendIOSCustomizedcast();
 			/* TODO these methods are all available, just fill in some fields and do the test
 			 * demo.sendAndroidCustomizedcastFile();
 			 * demo.sendAndroidBroadcast();

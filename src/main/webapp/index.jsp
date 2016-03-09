@@ -98,6 +98,7 @@ License: You must have a valid license purchased only from themeforest(the above
 			<button type="submit" class="btn green-haze pull-right">
 			Login <i class="m-icon-swapright m-icon-white"></i>
 			</button>
+			<a href="<%=basePath%>sysusersmanagement/sysuserregister.do">学生注册</a>
 		</div>
 		<div class="forget-password">
 			<h4>Forgot your password ?</h4>

@@ -39,13 +39,11 @@ License: You must have a valid license purchased only from themeforest(the above
 <link href="<%=basePath%>assets/metronic/assets/global/plugins/simple-line-icons/simple-line-icons.min.css" rel="stylesheet" type="text/css">
 <link href="<%=basePath%>assets/metronic/assets/global/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css">
 <link href="<%=basePath%>assets/metronic/assets/global/plugins/uniform/css/uniform.default.css" rel="stylesheet" type="text/css">
-<link href="<%=basePath%>assets/metronic/assets/global/plugins/bootstrap-switch/css/bootstrap-switch.min.css" rel="stylesheet" type="text/css"/>
 <!-- END GLOBAL MANDATORY STYLES -->
 <!-- BEGIN PAGE LEVEL STYLES -->
-<link rel="stylesheet" type="text/css" href="<%=basePath%>assets/metronic/assets/global/plugins/select2/select2.css"/>
+<link href="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.1/css/select2.min.css" rel="stylesheet" />
 <link rel="stylesheet" type="text/css" href="<%=basePath%>assets/metronic/assets/global/plugins/bootstrap-wysihtml5/bootstrap-wysihtml5.css"/>
 <link rel="stylesheet" type="text/css" href="<%=basePath%>assets/metronic/assets/global/plugins/bootstrap-markdown/css/bootstrap-markdown.min.css">
-<link rel="stylesheet" type="text/css" href="<%=basePath%>assets/metronic/assets/global/plugins/bootstrap-datepicker/css/bootstrap-datepicker3.min.css"/>
 <!-- END PAGE LEVEL SCRIPTS -->
 <!-- BEGIN THEME STYLES -->
 <link href="<%=basePath%>assets/metronic/assets/global/css/components-rounded.css" id="style_components" rel="stylesheet" type="text/css"/>
@@ -117,7 +115,7 @@ License: You must have a valid license purchased only from themeforest(the above
 					<li class="dropdown dropdown-user dropdown-dark">
 						<a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown" data-hover="dropdown" data-close-others="true">
 						<span class="username username-hide-on-mobile">
-						<%=userName %> </span>
+						</span>
 						<!-- DOC: Do not remove below empty space(&nbsp;) as its purposely used -->
 						<img alt="" class="img-circle" src="<%=basePath%>assets/image/logo_image_only_1.png"/>
 						</a>
@@ -125,32 +123,32 @@ License: You must have a valid license purchased only from themeforest(the above
 							<!-- <li>
 								<a href="extra_profile.html">
 								<i class="icon-user"></i> My Profile </a>
-							</li>
-							<li>
+							</li> -->
+							<!-- <li>
 								<a href="page_calendar.html">
 								<i class="icon-calendar"></i> My Calendar </a>
 							</li> -->
-							<li>
+							<%-- <li>
 								<a href="<%=basePath%>sysnotificationmanagement/sysnotificationdetail.do">
 								<i class="icon-envelope-open"></i> My Inbox 
 								</a>
-							</li>
+							</li> --%>
 							<!-- <li>
 								<a href="page_todo.html">
 								<i class="icon-rocket"></i> My Tasks <span class="badge badge-success">
 								7 </span>
 								</a>
 							</li> -->
-							<li class="divider">
-							</li>
+							<!-- <li class="divider">
+							</li> -->
 							<!-- <li>
 								<a href="extra_lock.html">
 								<i class="icon-lock"></i> Lock Screen </a>
 							</li> -->
-							<li>
+							<%-- <li>
 								<a href="javascript:dologout();">
 								<i class="icon-key"></i> Log Out </a>
-							</li>
+							</li> --%>
 						</ul>
 					</li>
 					<!-- END USER LOGIN DROPDOWN -->
@@ -186,99 +184,6 @@ License: You must have a valid license purchased only from themeforest(the above
 					<span class="title">我的通知</span>
 					</a>
 				</li>
-				<c:if test="${_sys_privilege eq 1 || _sys_privilege eq 2 }">
-				<li class="active open">
-					<a href="javascript:;">
-					<i class="icon-settings"></i>
-					<span class="title">系统服务</span>
-					<span class="arrow open"></span>
-					</a>
-					<ul class="sub-menu">
-						<li class="active">
-							<a href="<%=basePath%>sysusersmanagement/sysuserslist.do">
-							<i class="icon-user"></i>
-							<span class="title">用户管理</span>
-							</a>
-						</li>
-						<li class="">
-							<a href="<%=basePath%>sysrolesmanagement/sysroleslist.do">
-							<i class="icon-user-following"></i>
-							<span class="title">角色管理</span>
-							</a>
-						</li>
-						<li class="">
-							<a href="<%=basePath%>sysgroupsmanagement/sysgroupstree.do">
-							<i class="icon-users"></i>
-							<span class="title">群组管理</span>
-							</a>
-						</li>
-						<li class="">
-							<a href="<%=basePath%>syspropertiesmanagement/syspropertiestree.do">
-							<i class="icon-docs"></i>
-							<span class="title">系统属性管理</span>
-							</a>
-						</li>
-					</ul>
-				</li>
-				</c:if>
-				<c:if test="${_sys_privilege eq 1 || _sys_privilege eq 2 || _sys_privilege eq 3 || _sys_privilege eq 4}">
-				<li>
-					<a href="javascript:;">
-					<i class="icon-graduation"></i>
-					<span class="title">学生学级管理</span>
-					<span class="arrow "></span>
-					</a>
-					<ul class="sub-menu">
-						<li class="">
-							<a href="<%=basePath%>appstudentsinfomanagement/appstudentsinfolist.do">
-							<i class="icon-pencil"></i>
-							<span class="title">学生信息管理</span>
-							</a>
-						</li>
-						<li class="">
-							<a href="<%=basePath%>appstudentsinfomanagement/appstudentsscorelist.do">
-							<i class="icon-bar-chart"></i>
-							<span class="title">学生成绩管理</span>
-							</a>
-						</li>
-					</ul>
-				</li>
-				<li class="">
-					<a href="<%=basePath%>sysnotificationmanagement/sysnotificationlist.do">
-					<i class="icon-envelope-letter"></i>
-					<span class="title">通知管理</span>
-					</a>
-				</li>
-				</c:if>
-				<c:if test="${_sys_privilege eq 5}">
-				<li>
-					<a href="javascript:;">
-					<i class="icon-book-open"></i>
-					<span class="title">学生作业管理</span>
-					<span class="arrow "></span>
-					</a>
-					<ul class="sub-menu">
-						<li class="">
-							<a href="<%=basePath%>appassignmentstudentmanagement/uploadassignmentlist.do">
-							<i class="icon-arrow-up"></i>
-							<span class="title">上传作业</span>
-							</a>
-						</li>
-						<li class="">
-							<a href="<%=basePath%>appassignmentstudentmanagement/downloadassignmentlist.do">
-							<i class="icon-arrow-down"></i>
-							<span class="title">下载作业</span>
-							</a>
-						</li>
-					</ul>
-				</li>
-				</c:if>
-				<li class="">
-					<a href="<%=basePath%>sysusersmanagement/sysuserspersonal.do">
-					<i class="icon-user-follow"></i>
-					<span class="title">个人信息</span>
-					</a>
-				</li>
 			</ul>
 			<!-- END SIDEBAR MENU -->
 		</div>
@@ -288,25 +193,6 @@ License: You must have a valid license purchased only from themeforest(the above
 	<div class="page-content-wrapper">
 		<div class="page-content">
 			<!-- BEGIN SAMPLE PORTLET CONFIGURATION MODAL FORM-->
-			<div class="modal fade" id="portlet-config" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-				<div class="modal-dialog">
-					<div class="modal-content">
-						<div class="modal-header">
-							<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
-							<h4 class="modal-title">Modal title</h4>
-						</div>
-						<div class="modal-body">
-							 Widget settings form goes here
-						</div>
-						<div class="modal-footer">
-							<button type="button" class="btn blue">保存</button>
-							<button type="button" class="btn default" data-dismiss="modal">取消</button>
-						</div>
-					</div>
-					<!-- /.modal-content -->
-				</div>
-				<!-- /.modal-dialog -->
-			</div>
 			<!-- /.modal -->
 			<!-- END SAMPLE PORTLET CONFIGURATION MODAL FORM-->
 			<!-- BEGIN PAGE HEADER-->
@@ -314,7 +200,7 @@ License: You must have a valid license purchased only from themeforest(the above
 			<div class="page-head">
 				<!-- BEGIN PAGE TITLE -->
 				<div class="page-title">
-					<h1>VCE课程管理系统-用户管理</h1>
+					<h1>VCE课程管理系统-学生注册</h1>
 				</div>
 				<!-- END PAGE TITLE -->
 				<!-- BEGIN PAGE TOOLBAR -->
@@ -332,28 +218,23 @@ License: You must have a valid license purchased only from themeforest(the above
 							<div class="portlet-title">
 								<div class="caption">
 									<i class="icon-user font-blue-hoki"></i>
-									<span class="caption-subject font-blue-hoki bold uppercase">用户信息</span>
+									<span class="caption-subject font-blue-hoki bold uppercase">学生注册</span>
 								</div>
 								<div class="actions">
 									<!-- <a class="btn btn-circle btn-icon-only btn-default" href="javascript:;">
 									<i class="icon-cloud-upload"></i>
 									</a> -->
-									<c:if test="${not empty sysuser.id}">
-									<a class="btn btn-circle btn-icon-only btn-default" href="javascript:modifyInfo();">
+									<!-- <a class="btn btn-circle btn-icon-only btn-default" href="javascript:modifyInfo();">
 									<i class="icon-wrench"></i>
-									</a>
-									<a class="btn btn-circle btn-icon-only btn-default" href="javascript:changePassword();">
-									<i class="fa fa-gears"></i>
-									</a>
-									<a class="btn btn-circle btn-icon-only btn-default" href="javascript:deleteInfo();">
+									</a> -->
+									<!-- <a class="btn btn-circle btn-icon-only btn-default" href="javascript:deleteInfo();">
 									<i class="icon-trash"></i>
-									</a>
-									</c:if>
+									</a> -->
 								</div>
 							</div>
 							<div class="portlet-body form">
 								<!-- BEGIN FORM-->
-								<form action="<%=basePath%>sysusersmanagement/savesysusers.do" Method="POST" class="form-horizontal form-bordered form-label-stripped" id="frmsysuserinfo">
+								<form action="<%=basePath%>/sysusersmanagement/saveuserregister.do" class="form-horizontal" Method="POST" id="frmsysstudentinfo">
 									<div class="form-body">
 										<div class="alert alert-danger display-hide">
 											<button class="close" data-close="alert"></button>
@@ -363,119 +244,196 @@ License: You must have a valid license purchased only from themeforest(the above
 											<button class="close" data-close="alert"></button>
 											Your form validation is successful!
 										</div>
-										<div class="form-group">
-											<label class="control-label col-md-3">用户名<span class="required">*</span></label>
-											<div class="col-md-9">
-												<input type="text" name="userName" placeholder="用户名" class="form-control" id="userName" value="${sysuser.userName }"/>
-											</div>
-										</div>
-										<div class="form-group">
-											<label class="control-label col-md-3">密码<span class="required">*</span></label>
-											<div class="col-md-9">
-												<input type="password" name="password" class="form-control" placeholder="密码" id="password" value="${sysuser.password }">
-											</div>
-										</div>
-										<div class="form-group">
-											<label class="control-label col-md-3">确认密码<span class="required">*</span></label>
-											<div class="col-md-9">
-												<input type="password" name="confirmPWD" class="form-control" placeholder="确认密码" id="confirmPWD" value="${sysuser.password }">
-											</div>
-										</div>
-										<div class="form-group">
-											<label class="control-label col-md-3">中文姓名<span class="required">*</span></label>
-											<div class="col-md-9">
-												<input type="text" name="chineseName" placeholder="中文姓名" class="form-control" id="chineseName" value="${sysuser.chineseName }"/>
-											</div>
-										</div>
-										<div class="form-group">
-											<label class="control-label col-md-3">英文姓名</label>
-											<div class="col-md-9">
-												<input type="text" name="englishName" placeholder="英文姓名" class="form-control" id="englishName" value="${sysuser.englishName }"/>
-											</div>
-										</div>
-										<div class="form-group">
-											<label class="control-label col-md-3">移动电话<span class="required">*</span></label>
-											<div class="col-md-9">
-												<input type="text" name="mobilePhone" placeholder="移动电话" class="form-control" id="mobilePhone" value="${sysuser.mobilePhone }"/>
-											</div>
-										</div>
-										<div class="form-group">
-											<label class="col-md-3 control-label">Email地址<span class="required">*</span>
-											</label>
-											<div class="col-md-4">
-												<div class="input-group">
-													<span class="input-group-addon">
-													<i class="fa fa-envelope"></i>
-													</span>
-													<input type="email" name="emailAddress" class="form-control" placeholder="Email地址" id="emailAddress" value="${sysuser.emailAddress }">
+										<div class="row">
+											<div class="col-md-6">
+												<div class="form-group">
+													<label class="control-label col-md-3">用户名<span class="required">*</span></label>
+													<div class="col-md-9">
+														<input type="text" name="userName" placeholder="用户名" class="form-control" id="userName" value="${sysuser.userName }"/>
+													</div>
 												</div>
 											</div>
+											<!--/span-->
+											<div class="col-md-6">
+												<div class="form-group">
+													<label class="control-label col-md-3">英文姓名<span class="required">*</span></label>
+													<div class="col-md-9">
+														<input type="text" name="englishName" placeholder="英文姓名" class="form-control" id="englishName" value="${sysuser.englishName }"/>
+													</div>
+												</div>
+											</div>
+											<!--/span-->
+										</div>
+										<!--/row-->
+										<div class="row">
+											<div class="col-md-6">
+												<div class="form-group">
+													<label class="control-label col-md-3">中文姓名<span class="required">*</span></label>
+													<div class="col-md-9">
+														<input type="text" name="chineseName" placeholder="中文姓名" class="form-control" id="chineseName" value="${sysuser.chineseName }"/>
+													</div>
+												</div>
+											</div>
+											<!--/span-->
+											<div class="col-md-6">
+												<div class="form-group">
+													<label class="control-label col-md-3">中文姓名拼音</label>
+													<div class="col-md-9">
+														<input type="text" name="pinyin" placeholder="中文姓名拼音" class="form-control" id="pinyin" value="${sysuser.pinyin }"/>
+													</div>
+												</div>
+											</div>
+											<!--/span-->
+										</div>
+										<!--/row-->
+										<div class="row">
+											<div class="col-md-6">
+												<div class="form-group">
+													<label class="control-label col-md-3">登录密码<span class="required">*</span></label>
+													<div class="col-md-9">
+														<input type="password" name="password" class="form-control" placeholder="登录密码" id="password" />
+													</div>
+												</div>
+											</div>
+											<!--/span-->
+											<div class="col-md-6">
+												<div class="form-group">
+													<label class="control-label col-md-3">确认密码<span class="required">*</span></label>
+													<div class="col-md-9">
+														<input type="password" name="confirmPWD" class="form-control" placeholder="确认密码" id="confirmPWD" />
+													</div>
+												</div>
+											</div>
+											<!--/span-->
+										</div>
+										<!--/row-->
+										<div class="row">
+											<div class="col-md-6">
+												<div class="form-group">
+													<label class="control-label col-md-3">移动电话<span class="required">*</span></label>
+													<div class="col-md-9">
+														<input type="text" name="mobilePhone" placeholder="移动电话" class="form-control" id="mobilePhone" value="${sysuser.mobilePhone }"/>
+													</div>
+												</div>
+											</div>
+											<!--/span-->
+											<div class="col-md-6">
+												<div class="form-group">
+													<label class="col-md-3 control-label">Email地址<span class="required">*</span>
+													</label>
+													<div class="col-md-9">
+														<div class="input-group">
+															<span class="input-group-addon">
+															<i class="fa fa-envelope"></i>
+															</span>
+															<input type="email" name="emailAddress" class="form-control" placeholder="Email地址" id="emailAddress" value="${sysuser.emailAddress }">
+														</div>
+													</div>
+												</div>
+											</div>
+											<!--/span-->
+										</div>
+										<!--/row-->
+										<div class="row">
+											<div class="col-md-6">
+												<div class="form-group">
+													<label class="control-label col-md-3">家庭住址</label>
+													<div class="col-md-9">
+														<input type="text" name="homeAddress" placeholder="家庭住址" class="form-control" id="homeAddress" value="${sysuser.homeAddress }"/>
+													</div>
+												</div>
+											</div>
+											<div class="col-md-6">
+												<div class="form-group">
+													<label class="control-label col-md-3">家庭电话</label>
+													<div class="col-md-9">
+														<input type="text" name="homePhone" placeholder="家庭电话" class="form-control" id="homePhone" value="${sysuser.homePhone }"/>
+													</div>
+												</div>
+											</div>
+										</div>
+										<div class="row">
+											<div class="col-md-6">
+												<div class="form-group">
+													<label class="control-label col-md-3">日校名称</label>
+													<div class="col-md-9">
+														<input type="text" name="daySchool" placeholder="日校名称" class="form-control" id="daySchool" value="${sysuser.daySchool }"/>
+													</div>
+												</div>
+											</div>
+											<!--/span-->
+											<div class="col-md-6">
+												<div class="form-group">
+													<label class="control-label col-md-3">日校年级</label>
+													<div class="col-md-9">
+														<input type="text" name="daySchoolGrade" placeholder="日校年级" class="form-control" id="daySchoolGrade" value="${sysuser.daySchoolGrade }"/>
+													</div>
+												</div>
+											</div>
+											<!--/span-->
+										</div>
+										<!--/row-->
+										<div class="row">
+											<div class="col-md-6">
+												<div class="form-group">
+													<label class="control-label col-md-3">在日校学习中文<span class="required">*</span></label>
+													<div class="col-md-9">
+														<select class="js-states form-control" id="propertyIsLearnChineseId" name="propertyIsLearnChineseId"></select>
+													</div>
+												</div>
+											</div>
+											<!--/span-->
+											<div class="col-md-6">
+												<div class="form-group">
+													<label class="control-label col-md-3"></label>
+													<div class="col-md-9">
+													</div>
+												</div>
+											</div>
+											<!--/span-->
+										</div>
+										<!--/row-->
+										<div class="row">
+											<div class="col-md-6">
+												<div class="form-group">
+													<label class="control-label col-md-3">校区<span class="required">*</span></label>
+													<div class="col-md-9">
+														<select class="js-states form-control" id="studentGroupId" name="studentGroupId"></select>
+													</div>
+												</div>
+											</div>
+											<!--/span-->
+											<div class="col-md-6" id="div_select2_parent">
+												<div class="form-group" id="div_select2_destroy">
+													<label class="control-label col-md-3">班级<span class="required">*</span></label>
+													<div class="col-md-9">
+														<select class="js-states form-control" id="studentGroupClassId" name="studentGroupClassId"></select>
+													</div>
+												</div>
+											</div>
+											<!--/span-->
 										</div>
 									</div>
 									<div class="form-actions">
 										<div class="row">
-											<div class="col-md-offset-3 col-md-9">
-												<button type="submit" class="btn blue"><i class="fa fa-check"></i> 保存</button>
-												<button type="button" class="btn default" onclick="javascript:history.back();">取消</button>
+											<div class="col-md-6">
+												<div class="row">
+													<div class="col-md-offset-3 col-md-9">
+														<button type="submit" class="btn blue"><i class="fa fa-check"></i> 保存</button>
+														<button type="button" class="btn default" onclick="javascript:doCancelAction();">取消</button>
+													</div>
+												</div>
+											</div>
+											<div class="col-md-6">
 											</div>
 										</div>
 									</div>
-									<input type="hidden" name="userId" value="${sysuser.id }" id="userId" />
-								</form>
-								<form action="<%=basePath%>sysusersmanagement/deletesysusers.do" Method="POST" id="frmdeleteinfo">
-									<input type="hidden" name="deleteId" value="${sysuser.id }" id="deleteId" />
 								</form>
 								<!-- END FORM-->
 							</div>
 						</div>
 					</div>
 				</div>
-				<!-- modal -->
-				<div class="modal fade" id="ajax" role="basic" aria-hidden="true">
-					<div class="modal-dialog">
-						<div class="modal-content">
-							<div class="row">
-								<div class="col-md-12">
-									<div class="modal-header">
-										<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
-										<h4 class="modal-title">密码修改</h4>
-									</div>
-									<div class="modal-body">
-										<div class="scroller" style="height:200px" data-always-visible="1" data-rail-visible1="1">
-											<div class="row">
-												<div id="div_show_info" class="alert alert-danger display-hide">
-												</div>
-												<div class="form-group">
-													<label class="control-label col-md-3">原始密码<span class="required">*</span></label>
-													<div class="col-md-9">
-														<input type="password" name="opassword" class="form-control" placeholder="密码" id="opassword" value="">
-													</div>
-												</div>
-												<div class="form-group">
-													<label class="control-label col-md-3">新密码<span class="required">*</span></label>
-													<div class="col-md-9">
-														<input type="password" name="newPassword" class="form-control" placeholder="新密码" id="newPassword" value="">
-													</div>
-												</div>
-												<div class="form-group">
-													<label class="control-label col-md-3">确认新密码<span class="required">*</span></label>
-													<div class="col-md-9">
-														<input type="password" name="confirmNewPWD" class="form-control" placeholder="确认新密码" id="confirmNewPWD" value="">
-													</div>
-												</div>
-											</div>
-										</div>
-									</div>
-									<div class="modal-footer">
-										<button type="button" data-dismiss="modal" class="btn default">取消</button>
-										<button type="button" class="btn blue" onclick="javascript:saveNewPWD()">保存</button>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-				<!-- modal end -->
 			</div>
 			<!-- END PAGE CONTENT-->
 		</div>
@@ -508,20 +466,15 @@ License: You must have a valid license purchased only from themeforest(the above
 <script src="<%=basePath%>assets/metronic/assets/global/plugins/jquery.blockui.min.js" type="text/javascript"></script>
 <script src="<%=basePath%>assets/metronic/assets/global/plugins/jquery.cokie.min.js" type="text/javascript"></script>
 <script src="<%=basePath%>assets/metronic/assets/global/plugins/uniform/jquery.uniform.min.js" type="text/javascript"></script>
-<script src="<%=basePath%>assets/metronic/assets/global/plugins/bootstrap-switch/js/bootstrap-switch.min.js" type="text/javascript"></script>
 <!-- END CORE PLUGINS -->
 <!-- BEGIN PAGE LEVEL PLUGINS -->
 <script type="text/javascript" src="<%=basePath%>assets/metronic/assets/global/plugins/jquery-validation/js/jquery.validate.min.js"></script>
 <script type="text/javascript" src="<%=basePath%>assets/metronic/assets/global/plugins/jquery-validation/js/additional-methods.min.js"></script>
-<script type="text/javascript" src="<%=basePath%>assets/metronic/assets/global/plugins/select2/select2.min.js"></script>
-<script type="text/javascript" src="<%=basePath%>assets/metronic/assets/global/plugins/bootstrap-datepicker/js/bootstrap-datepicker.min.js"></script>
-<script type="text/javascript" src="<%=basePath%>assets/metronic/assets/global/plugins/bootstrap-wysihtml5/wysihtml5-0.3.0.js"></script>
-<script type="text/javascript" src="<%=basePath%>assets/metronic/assets/global/plugins/bootstrap-wysihtml5/bootstrap-wysihtml5.js"></script>
-<script type="text/javascript" src="<%=basePath%>assets/metronic/assets/global/plugins/ckeditor/ckeditor.js"></script>
-<script type="text/javascript" src="<%=basePath%>assets/metronic/assets/global/plugins/bootstrap-markdown/js/bootstrap-markdown.js"></script>
-<script type="text/javascript" src="<%=basePath%>assets/metronic/assets/global/plugins/bootstrap-markdown/lib/markdown.js"></script>
 <script type="text/javascript" src="<%=basePath%>assets/metronic/assets/global/plugins/bootbox/bootbox.min.js"></script>
 <!-- END PAGE LEVEL PLUGINS -->
+<!-- BEGIN SELECT2 -->
+<script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.1/js/select2.min.js"></script>
+<!-- END SELECT2 -->
 <!-- BEGIN PAGE LEVEL SCRIPTS -->
 <script src="<%=basePath%>assets/metronic/assets/global/scripts/metronic.js" type="text/javascript"></script>
 <script src="<%=basePath%>assets/metronic/assets/admin/layout4/scripts/layout.js" type="text/javascript"></script>
@@ -529,119 +482,237 @@ License: You must have a valid license purchased only from themeforest(the above
 <script src="<%=basePath%>assets/metronic/assets/admin/pages/scripts/form-validation.js"></script>
 <!-- END PAGE LEVEL SCRIPTS -->
 <script>
+var $isLearnChinese, $studentGroup, $studentGroupClass;
+var isLearnChineseData, propertyIsLearnChineseId, studentGroupData, studentGroupClassData;
 jQuery(document).ready(function() {    
    // initiate layout and plugins
    	Metronic.init(); // init metronic core components
 	Layout.init(); // init current layout
 	Demo.init(); // init demo features
-   	FormValidation.init();
+   	//FormValidation.init();
 	
-   	
+	addValidation();
    
-   if ($("#userId").val()&&$("#userId").val()!=""){
-	   $("#userName").attr("readOnly",true);
-	   $("#password").attr("readOnly",true);
-	   $("#confirmPWD").attr("readOnly",true);
-	   $("#chineseName").attr("readOnly",true);
-	   $("#englishName").attr("readOnly",true);
-	   $("#mobilePhone").attr("readOnly",true);
-	   $("#emailAddress").attr("readOnly",true);
-   }
-   
-  
-   
-   if ($("#userId").val()==""){
-	   $("#btnChangePWD").hide();
-   }
-   
-   	$('#ajax').on('show.bs.modal', function (){
-   		$("#div_show_info").hide();
-   		$("#div_show_info").text("");
-   		$("#opassword").val("");
-   		$("#newPassword").val("");
-   		$("#confirmNewPWD").val("");
+ 	//initiate select2
+	$isLearnChinese=$("#propertyIsLearnChineseId");
+	$studentGroup=$("#studentGroupId");
+	$studentGroupClass=$("#studentGroupClassId");
+	
+	//changing property id here
+	propertyIsLearnChineseId=5;
+	
+	isLearnChineseData=[{ id: 10, text: '是' }, { id: 11, text: '否' }];
+	
+	$isLearnChinese.select2({
+		data:isLearnChineseData,
+		placeholder: "是否在日校学习中文"
 	});
-   	
-   	var result="${result}";
+	$isLearnChinese.val(null).trigger("change");
+
+	$.ajax({
+       type: "POST",
+       async:false,
+       contentType: "application/json; charset=utf-8",
+       url: "<%=basePath%>sysremoteservice/findstudentgroup.do",
+       data: "{'userId':'"+$("#userId").val()+"'}",
+       dataType: 'json',
+       success: function(result) {
+    	   studentGroupData=result.groupsInfo;
+       }
+   });
+	
+	$studentGroup.select2({
+		data:studentGroupData,
+		placeholder: "选择学生所在校区"
+	});
+	
+	$studentGroup.val(null).trigger("change");
+	//add select2 event listener
+	$studentGroup.on("select2:select", function (e) { changeGroupClassData($studentGroup.val()); });
+
+	$studentGroupClass.select2({
+		//data:studentGroupClassData,
+		placeholder: "选择学生所在班级"
+	});
+		
+   var result="${result}";
 	try{
 		if (result){
 			showMessage(result);
+			var status="${status}";
+			if (status==1){
+				window.location="<%=basePath%>index.jsp";
+			}
 		}
 	}catch(error){
 	}
 });
 
-function modifyInfo(){
-	$("#chineseName").attr("readOnly",false);
-	$("#englishName").attr("readOnly",false);
-	$("#mobilePhone").attr("readOnly",false);
-	$("#emailAddress").attr("readOnly",false);
+function addValidation(){
+	var form3 = $('#frmsysstudentinfo');
+    var error3 = $('.alert-danger', form3);
+    var success3 = $('.alert-success', form3);
+
+    form3.validate({
+        errorElement: 'span', //default input error message container
+        errorClass: 'help-block help-block-error', // default input error message class
+        focusInvalid: false, // do not focus the last invalid input
+        ignore: "", // validate all fields including form hidden input
+        rules: {
+        	userName:{
+        		required:true
+        	},
+        	chineseName:{
+        		required:true
+        	},
+        	englishName:{
+        		required:true
+        	},
+        	emailAddress: {
+                required: true,
+                email: true
+            },
+            mobilePhone:{
+            	required: true,
+            	digits: true,
+            	rangelength:[10,10]
+            },
+            homePhone:{
+            	digits: true
+            },
+            password: {
+            	required: true
+            },
+            confirmPWD:{
+            	required: true,
+            	equalTo:"#password"
+            }
+        },
+
+        messages: { // custom messages for radio buttons and checkboxes
+            membership: {
+                required: "Please select a Membership type"
+            },
+            service: {
+                required: "Please select  at least 2 types of Service",
+                minlength: jQuery.validator.format("Please select  at least {0} types of Service")
+            },
+            mobilePhone: {
+            	rangelength: $.validator.format( "Please enter a correct mobile phone number." )
+            }
+        },
+
+        errorPlacement: function (error, element) { // render error placement for each input type
+            if (element.parent(".input-group").size() > 0) {
+                error.insertAfter(element.parent(".input-group"));
+            } else {
+                error.insertAfter(element); // for other inputs, just perform default behavior
+            }
+        },
+
+        invalidHandler: function (event, validator) { //display error alert on form submit   
+            success3.hide();
+            error3.show();
+            Metronic.scrollTo(error3, -200);
+        },
+
+        highlight: function (element) { // hightlight error inputs
+           $(element).closest('.form-group').addClass('has-error'); // set error class to the control group
+        },
+
+        unhighlight: function (element) { // revert the change done by hightlight
+            $(element).closest('.form-group').removeClass('has-error'); // set error class to the control group
+        },
+
+        success: function (label) {
+            label.closest('.form-group').removeClass('has-error'); // set success class to the control group
+        },
+
+        submitHandler: function (form) {
+            success3.show();
+            error3.hide();
+            
+            var canSubmit=true;
+            if (!$("#propertyIsLearnChineseId").val()){
+            	success3.hide();
+                error3.show();
+                Metronic.scrollTo(error3, -200);
+                alert("请选择学生是否在日校学习中文");
+                canSubmit=false;
+            }
+            if (!$("#studentGroupId").val()){
+            	success3.hide();
+                error3.show();
+                Metronic.scrollTo(error3, -200);
+                alert("请选择学生所在校区");
+                canSubmit=false;
+            }
+            if (!$("#studentGroupClassId").val()){
+            	success3.hide();
+                error3.show();
+                Metronic.scrollTo(error3, -200);
+                alert("请选择学生所在班级");
+                canSubmit=false;
+            }
+            if (canSubmit){
+            	form[0].submit(); // submit the form
+            }
+        }
+    });
 }
 
-function deleteInfo(){
-	if($("#deleteId").val()&&$("#deleteId").val()!=""){
-		bootbox.confirm("<font size='3'>此用户将会被删除，此操作<font color='red'>不可恢复</font>，请确认</font>", function (result){
-			if (result==true){
-				$("#frmdeleteinfo").submit();
-			}
-		});
-	}
-}
-
-function changePassword(){
-	 $("#ajax").modal('show');
-}
-
-function saveNewPWD(){
-	$("#div_show_info").hide();
-	if ($("#opassword").val()==""){
-		$("#div_show_info").html("<span><font color='red'>请输入原始密码！</font></span>");
-		$("#div_show_info").show();
-		return;
-	}
-	if ($("#newPassword").val()==""){
-		$("#div_show_info").text("请输入新密码！");
-		$("#div_show_info").show();
-		return;
-	}else if($("#newPassword").val()!=$("#confirmNewPWD").val()){
-		$("#div_show_info").text("确认新密码与新密码不同！");
-		$("#div_show_info").show();
-		return;
-	}
+function changeGroupClassData(gid){
+	$("#div_select2_destroy").remove();
+	$("#div_select2_parent").append('<div class="form-group" id="div_select2_destroy"><label class="control-label col-md-3">班级<span class="required">*</span></label><div class="col-md-9"><select class="js-states form-control" id="studentGroupClassId" name="studentGroupClassId"></select></div>');
 	
 	$.ajax({
-		type : "POST",
-		async : false,
-		contentType : "application/json; charset=utf-8",
-		url : "<%=basePath%>sysusersmanagement/changepassword.do",
-		      data: "{'op':'"+$("#opassword").val()+"' , 'np':'"+$("#newPassword").val()+"','ud':'"+$("#userId").val()+"'}",
-		      dataType: 'json',
-		      success: function(result) {
-		      	if (result.status==1){
-		      		$("#ajax").modal('hide');
-		      		alert(result.data);
-		      	}else if (result.status==0){
-		      		$("#div_show_info").text(result.data);
-		    		$("#div_show_info").show();
-		      	}
-		      }
+       type: "POST",
+       async:false,
+       contentType: "application/json; charset=utf-8",
+       url: "<%=basePath%>sysremoteservice/findstudentgroup.do",
+       data: "{'userId':'"+$("#userId").val()+"','groupId':'"+gid+"'}",
+       dataType: 'json',
+       success: function(result) {
+    	   studentGroupClassData=result.groupsInfo;
+       }
+  	});
+	
+	$("#studentGroupClassId").select2({
+		data:studentGroupClassData,
+		placeholder: "选择学生所在班级"
 	});
+	
+	var flag=false;
+	$.each(studentGroupClassData,function(idx,item){
+		if (item.selected&&item.selected==="selected"){
+			flag=true;
+		}
+	});
+	if (!flag){
+		$("#studentGroupClassId").val(null).trigger("change");
+	}
+	
+	$("#studentGroupClassId").attr("disabled", $("#studentGroupId").attr("disabled"));
+}
+
+function doCancelAction(){
+	window.location="<%=basePath%>index.jsp";
 }
 
 function dologout(){
-		 bootbox.confirm("<font size='3'>您即将退出系统，请确认</font>", function (result){
-				if (result==true){
-					window.location="<%=basePath%>sysusersmanagement/userlogout.do";
-				}
-			});
+	 bootbox.confirm("<font size='3'>您即将退出系统，请确认</font>", function (result){
+			if (result==true){
+				window.location="<%=basePath%>sysusersmanagement/userlogout.do";
+			}
+		});
 }
 
-function showMessage(msg) {
-	if (msg) {
-		message = msg;
+var message;
+function showMessage(msg){
+	if (msg){
+		message=msg;
 	}
-	bootbox.alert("<font size='4'>"+message+"</font>"); 
-	/* alert(message); */
+	bootbox.alert("<font size='4'>"+message+"</font>");
 }
 </script>
 <!-- END JAVASCRIPTS -->
