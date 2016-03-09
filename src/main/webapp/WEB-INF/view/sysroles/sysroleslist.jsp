@@ -510,7 +510,7 @@
 		$('#ajax').on('show.bs.modal', function (){
 			
 			$("#div_multi_select").remove();
-			$("#div_multi_select_parent").append('<div class="col-md-6" id="div_multi_select"><select multiple="multiple" class="multi-select" id="sys_users_roles" name="sys_users_roles"></select></div>"');
+			$("#div_multi_select_parent").append('<div class="col-md-6" id="div_multi_select"><select multiple="multiple" class="multi-select" id="sys_users_roles" name="sys_users_roles"></select></div>');
 			
 			//$('#sys_users_roles').multiSelect('deselect_all');
 			var sysRoleUsers;

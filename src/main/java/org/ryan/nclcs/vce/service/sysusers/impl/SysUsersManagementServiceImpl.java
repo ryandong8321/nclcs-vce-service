@@ -118,7 +118,7 @@ public class SysUsersManagementServiceImpl extends NclcsVceServiceBaseServiceImp
 				map=new HashMap<String, Object>();
 				map.put("value", user.getId());
 //				map.put("text", user.getUserName());
-				map.put("text", user.getChineseName());
+				map.put("text", user.getChineseName()+"["+(user.getEmailAddress()==null?"":user.getEmailAddress())+"]");
 				result.add(map);
 			}
 		}
@@ -159,7 +159,8 @@ public class SysUsersManagementServiceImpl extends NclcsVceServiceBaseServiceImp
 				map=new HashMap<String, Object>();
 				map.put("value", user.getId());
 //				map.put("text", user.getUserName()+"["+getUserRolesName(user.getSysRoles())+"]");
-				map.put("text", user.getUserName()+"["+user.getChineseName()+"|"+getUserRolesName(user.getSysRoles())+"]");
+//				map.put("text", user.getUserName()+"["+user.getChineseName()+"|"+getUserRolesName(user.getSysRoles())+"]");
+				map.put("text", user.getChineseName()+"["+(user.getEmailAddress()==null?"":user.getEmailAddress())+"]");
 				for (SysUsers haveUsers:sysGroup.getSysGroupsUsers()){
 					 if (user.getId().equals(haveUsers.getId())){
 						 map.put("isSelected", true);
@@ -176,18 +177,18 @@ public class SysUsersManagementServiceImpl extends NclcsVceServiceBaseServiceImp
 		return this.getCurrentDAO().saveRegisterUser(user, group, role);
 	}
 	
-	private String getUserRolesName(List<SysRoles> lst){
-		StringBuffer buf=new StringBuffer();
-		SysRoles role=null;
-		for (int i=0;i<lst.size();i++){
-			role=lst.get(i);
-			if (i!=0){
-				buf.append("|");
-			}
-			buf.append(role.getRoleName());
-		}
-		return buf.toString();
-	}
+//	private String getUserRolesName(List<SysRoles> lst){
+//		StringBuffer buf=new StringBuffer();
+//		SysRoles role=null;
+//		for (int i=0;i<lst.size();i++){
+//			role=lst.get(i);
+//			if (i!=0){
+//				buf.append("|");
+//			}
+//			buf.append(role.getRoleName());
+//		}
+//		return buf.toString();
+//	}
 
 	@Override
 	public List<Map<String, Object>> findAllSysUsersByParameters(Map<String, Object> parameters) {

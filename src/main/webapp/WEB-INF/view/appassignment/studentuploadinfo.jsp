@@ -486,6 +486,11 @@ function saveUploadAssignment(){
 	var msg="";
 	if ($("#files").val()==""){
 		msg+="请选择要上传的作业。";
+	}else{
+		var fileName=$("#files").val().toLowerCase();
+		if (fileName.indexOf(".pdf")<0&&(fileName.indexOf(".doc")<0||fileName.indexOf(".docx")<0)){
+			msg+="上传作业的文件格式不正确！</br>请上传<font color='red'>PDF</font>或<font color='red'>WORD</font>文件";
+		}
 	}
 	if (msg==""){
 		if ($("#assignmentName").val()==""){

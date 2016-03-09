@@ -129,4 +129,66 @@ public class AppStudentUploadAssignmentServiceImpl extends NclcsVceServiceBaseSe
 		return this.getCurrentDAO().deleteUploadAssignment(deleteIds);
 	}
 
+	@Override
+	public Map<String, Object> searchDataForApp(int displayLength, int displayStart, Map<String, Object> parameters,
+			Integer userId) {
+		Map<String, Object> result=new HashMap<String, Object>();
+		List<Map<String, Object>> data=new ArrayList<Map<String, Object>>();
+		
+		Pagination<AppStudentUploadAssignment> page=this.getCurrentDAO().searchDataForStudents(displayLength, displayStart, 0, parameters, userId);
+		
+		if (page.getRows() != null && !page.getRows().isEmpty()) {
+			Map<String, Object> tmp=null;
+			for (AppStudentUploadAssignment uploadAssignment : page.getRows()) {
+				tmp=new HashMap<String, Object>();
+				tmp.put("assignmentId", uploadAssignment.getId());
+				tmp.put("assignmentName", uploadAssignment.getAssignmentName());
+				tmp.put("filePath", uploadAssignment.getFilePath());
+				tmp.put("fileName", uploadAssignment.getFileName());
+				tmp.put("uploadTime", uploadAssignment.getUploadTime().toString());
+				tmp.put("hasDownloaded", uploadAssignment.getDownloadTime()==null?true:false);
+				data.add(tmp);
+			}
+		}
+		
+		result.put("data", data);
+		result.put("recordsTotal", page.getTotal());
+		result.put("recordsFiltered", "");
+		return result;
+	}
+
+	@Override
+	public Map<String, Object> searchDataForApp(int displayLength, int displayStart, Map<String, Object> parameters,
+			String groupIds) {
+		Map<String, Object> result=new HashMap<String, Object>();
+		List<Map<String, Object>> data=new ArrayList<Map<String, Object>>();
+		
+		Pagination<AppStudentUploadAssignment> page=this.getCurrentDAO().searchDataForTutors(displayLength, displayStart, 0, parameters, groupIds);
+		
+		if (page.getRows() != null && !page.getRows().isEmpty()) {
+			Map<String, Object> tmp=null;
+			SysUsers student=null;
+			for (AppStudentUploadAssignment uploadAssignment : page.getRows()) {
+				student=uploadAssignment.getStudent();
+				tmp=new HashMap<String, Object>();
+				tmp.put("assignmentId", uploadAssignment.getId());
+				tmp.put("studentName", (student==null||student.getChineseName()==null)?"":student.getChineseName());
+				tmp.put("studentCampus", (student==null||student.getVceSchoolName()==null)?"":student.getVceSchoolName());
+				tmp.put("studentClass", (student==null||student.getVceClassName()==null)?"":student.getVceClassName());
+				tmp.put("assignmentName", uploadAssignment.getAssignmentName());
+				tmp.put("filePath", uploadAssignment.getFilePath());
+				tmp.put("fileName", uploadAssignment.getFileName());
+				tmp.put("uploadTime", uploadAssignment.getUploadTime().toString());
+				tmp.put("downloadTime", uploadAssignment.getDownloadTime()==null?"":uploadAssignment.getDownloadTime().toString());
+				tmp.put("hasAppointment", (uploadAssignment.getHasAppointment()!=null&&uploadAssignment.getHasAppointment()==1)?true:false);
+				data.add(tmp);
+			}
+		}
+		
+		result.put("data", data);
+		result.put("recordsTotal", page.getTotal());
+		result.put("recordsFiltered", "");
+		return result;
+	}
+
 }

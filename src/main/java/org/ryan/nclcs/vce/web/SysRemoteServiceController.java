@@ -31,6 +31,7 @@ import org.ryan.nclcs.vce.entity.SysNotificationDetail;
 import org.ryan.nclcs.vce.entity.SysProperties;
 import org.ryan.nclcs.vce.entity.SysRoles;
 import org.ryan.nclcs.vce.entity.SysUsers;
+import org.ryan.nclcs.vce.service.appassignment.IAppStudentUploadAssignmentSerivce;
 import org.ryan.nclcs.vce.service.appassignment.IAppTutorAppointmentToStudentService;
 import org.ryan.nclcs.vce.service.appstudents.IAppStudentsManagementService;
 import org.ryan.nclcs.vce.service.devicetoken.ISysDeviceTokenManagementService;
@@ -86,6 +87,9 @@ public class SysRemoteServiceController {
 	
 	@Autowired
 	private ISysDeviceTokenManagementService sysDeviceTokenManagementService;
+	
+	@Autowired
+	private IAppStudentUploadAssignmentSerivce appStudentUploadAssignmentSerivce;
 	
 	@Autowired
 	private IAppTutorAppointmentToStudentService appTutorAppointmentToStudentService;
@@ -1870,6 +1874,85 @@ public class SysRemoteServiceController {
 	}
 	
 	//--------------------------学生作业管理---------------------------------//
+	
+	@RequestMapping(value = "/initstudentuploadassignmentlist.do", method=RequestMethod.POST)
+	@ResponseBody
+	@SystemLogIsCheck(description="查询学生上传作业列表")
+	public String initStudentUploadAssignmentList(HttpServletRequest request, @RequestBody String data) {
+		logger.info("this is [initstudentuploadassignmentlist.do] start ...");
+		Map<String, Object> result=new HashMap<String, Object>();
+		logger.info("this is [initstudentuploadassignmentlist.do] is decoding ...");
+		JSONObject json=JSONObject.fromString(this.decodeParameters(data));
+		logger.info("this is [initstudentuploadassignmentlist.do] decode done ...");
+		
+		Integer userId=-1;
+		String token=null;
+		if (!json.has("userId")||!json.has("token")){
+			result.put("status", -1);
+			result.put("info", "the lack of parameter");
+			logger.info("this is [initstudentuploadassignmentlist.do] the lack of parameter ...");
+		}
+		
+		if (result.isEmpty()){
+			try{
+				userId=json.getInt("userId");
+			}catch(Exception ex){
+				result.put("status", 0);
+				result.put("info", "wrong parameter is userId");
+				logger.info("this is [initstudentuploadassignmentlist.do] wrong parameter is userId ...");
+			}
+			
+			try{
+				token=json.getString("token");
+			}catch(Exception ex){
+				result.put("status", 0);
+				result.put("info", "wrong parameter is token");
+				logger.info("this is [initstudentuploadassignmentlist.do] wrong parameter is token ...");
+			}
+			
+			if (result.isEmpty()){
+				try {
+					String localToken=WebApplicationUtils.getToken(userId);
+					
+					if (localToken!=null&&localToken.equals(token)){
+						//每页大小
+						int displayLength=Integer.parseInt(json.has("displayLength")?json.getString("displayLength"):"10");
+						//起始值
+						int displayStart=Integer.parseInt(json.has("displayStart")?json.getString("displayStart"):"0");
+						//查询条件
+						String param=json.has("param")?json.getString("param"):"";
+						
+						logger.info("this is [initstudentuploadassignmentlist.do] requset parameters [displayLength = {"+displayLength+"}],[displayStart = {"+displayStart+"}],[param = {"+param+"}]");
+						
+						Map<String, Object> parameters=new HashMap<String, Object>();
+						if (param!=null&&!param.equals("")){
+							parameters.put("assignmentName", param);
+							parameters.put("sort", 3);
+							parameters.put("order", "desc");
+						}
+						
+						result=appStudentUploadAssignmentSerivce.searchDataForApp(displayLength, displayStart, parameters, userId);
+						result.put("status", 1);
+						result.put("info", "operation success");
+						result.put("displayLength", displayLength);
+						result.put("displayStart", displayStart+displayLength);
+						result.put("param", param);
+						logger.info("this is [initstudentuploadassignmentlist.do] find assignment list done ...");
+					}else{
+						result.put("status", -2);
+						result.put("info", "illegal user");
+						logger.info("this is [initstudentuploadassignmentlist.do] illegal user ...");
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+					logger.info("this is [initstudentuploadassignmentlist.do] occur error ...");
+				}
+			}
+		}
+		String tmp=JSONObject.fromMap(result).toString();
+		logger.info("this is [initstudentuploadassignmentlist.do] return ["+tmp+"] ...");
+		return tmp;
+	}
 	
 	@RequestMapping(value = "/initdownloadassignmentlist.do", method=RequestMethod.POST)
 	@ResponseBody

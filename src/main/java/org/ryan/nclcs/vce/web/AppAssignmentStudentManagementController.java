@@ -55,7 +55,10 @@ public class AppAssignmentStudentManagementController {
 //	@Autowired
 //	private ISysGroupsManagementService sysGroupsManagementService;
 	
+	//local
 //	protected final String _filePath="/usr/local/vce-uploadfiles";
+	
+	//server
 	protected final String _filePath="/var/www/vce-uploadfiles";
 	
 	@RequestMapping(value = "/uploadassignmentlist.do")
@@ -189,8 +192,6 @@ public class AppAssignmentStudentManagementController {
 				uploadAssignment=appStudentUploadAssignmentSerivce.get(uploadAssignmentId);
 			}
 			
-//			String _filePath=request.getServletContext().getRealPath("");
-			
 			Calendar now=new GregorianCalendar();
 			String year="/"+now.get(Calendar.YEAR);
 			String month=(now.get(Calendar.MONTH)+1)>9?"/"+(now.get(Calendar.MONTH)+1):"/0"+(now.get(Calendar.MONTH)+1);
@@ -228,59 +229,64 @@ public class AppAssignmentStudentManagementController {
 			File file=null;
 			String strFileName=null;
 			String strSuffix=null;
-			String strPrefix=null;
+//			String strPrefix=null;
 			int dotPosition=-1;
 			
 			for (int i=0;i<uploadFile.length;i++){
 				if (!uploadFile[i].isEmpty()){
-					int idx=1;
+//					int idx=1;
 					
 					strFileName=uploadFile[i].getOriginalFilename();
 					logger.info("this is [saveuploadassignmentinfo.do] show file name ["+strFileName+"]");
 					
 					dotPosition=strFileName.lastIndexOf(".");
 					strSuffix=strFileName.substring(dotPosition);
-					strPrefix=strFileName.substring(0, dotPosition);
+//					strPrefix=strFileName.substring(0, dotPosition);
 					
-					if (strSuffix!=null&&!strSuffix.equals("")&&(strSuffix.equals(".doc")||strSuffix.equals(".docx"))){
-						file=new File(directory+File.separator+strFileName);
+					if (strSuffix!=null&&!strSuffix.equals("")&&(strSuffix.equals(".doc")||strSuffix.equals(".docx")||strSuffix.equals(".pdf"))){
+//						file=new File(directory+File.separator+strFileName);
+						file=new File(directory+File.separator+Calendar.getInstance().getTimeInMillis());
 						
 						while(file.exists()){
 							logger.info("this is [saveuploadassignmentinfo.do] file ["+file+"] exist...");
-							file=new File(directory+File.separator+strPrefix+"("+(idx++)+")"+strSuffix);
+							file=new File(directory+File.separator+Calendar.getInstance().getTimeInMillis());
 							logger.info("this is [saveuploadassignmentinfo.do] change file name ["+file+"]...");
 						}
-					}
-					
-					if (!file.exists()){
-						logger.info("this is [saveuploadassignmentinfo.do] file ["+file.getAbsolutePath()+"] do not exist...");
-						try {
-							file.createNewFile();
-							logger.info("this is [saveuploadassignmentinfo.do] create file ["+file.getAbsolutePath()+"] success...");
-							uploadFile[i].transferTo(file);
-							logger.info("this is [saveuploadassignmentinfo.do] file ["+file.getAbsolutePath()+"] transfer...");
-						} catch (IOException e) {
-							logger.info("this is [saveuploadassignmentinfo.do] create file ["+file.getAbsolutePath()+"] failed...");
-							e.printStackTrace();
+						
+						if (!file.exists()){
+							logger.info("this is [saveuploadassignmentinfo.do] file ["+file.getAbsolutePath()+"] do not exist...");
+							try {
+								file.createNewFile();
+								logger.info("this is [saveuploadassignmentinfo.do] create file ["+file.getAbsolutePath()+"] success...");
+								uploadFile[i].transferTo(file);
+								logger.info("this is [saveuploadassignmentinfo.do] file ["+file.getAbsolutePath()+"] transfer...");
+							} catch (IOException e) {
+								logger.info("this is [saveuploadassignmentinfo.do] create file ["+file.getAbsolutePath()+"] failed...");
+								e.printStackTrace();
+							}
 						}
+						
+						uploadAssignment.setAssignmentName((uploadAssignmentName==null||uploadAssignmentName.equals(""))?strFileName:uploadAssignmentName);
+//						uploadAssignment.setFilePath(file.getAbsolutePath());
+						uploadAssignment.setFilePath(_localPath+File.separator+file.getName());
+						uploadAssignment.setFileName(strFileName);
+						
+						SysUsers student=sysUsersManagementService.get(currentStudentId);
+						uploadAssignment.setStudent(student);
+						SysGroups classGroup=student.getSysGroups().get(0);
+						uploadAssignment.setTutor(sysUsersManagementService.findATutorFromGroup(classGroup.getId()));
+						
+						logger.info("this is [saveuploadassignmentinfo.do] is saving ...");
+						appStudentUploadAssignmentSerivce.save(uploadAssignment);
+						
+						result.put("status", 1);
+						result.put("data", "operation success!");
+						logger.info("this is [saveuploadassignmentinfo.do] save uploadAssignment done ...");
+					}else{
+						result.put("status", 0);
+						result.put("data", "wrong file suffix");
+						logger.info("this is [saveuploadassignmentinfo.do] wrong file suffix ...");
 					}
-					
-					uploadAssignment.setAssignmentName((uploadAssignmentName==null||uploadAssignmentName.equals(""))?strFileName:uploadAssignmentName);
-//					uploadAssignment.setFilePath(file.getAbsolutePath());
-					uploadAssignment.setFilePath(_localPath+File.separator+file.getName());
-					uploadAssignment.setFileName(strFileName);
-					
-					SysUsers student=sysUsersManagementService.get(currentStudentId);
-					uploadAssignment.setStudent(student);
-					SysGroups classGroup=student.getSysGroups().get(0);
-					uploadAssignment.setTutor(sysUsersManagementService.findATutorFromGroup(classGroup.getId()));
-					
-					logger.info("this is [saveuploadassignmentinfo.do] is saving ...");
-					appStudentUploadAssignmentSerivce.save(uploadAssignment);
-					
-					result.put("status", 1);
-					result.put("data", "operation success!");
-					logger.info("this is [saveuploadassignmentinfo.do] save uploadAssignment done ...");
 				}else{
 					logger.info("this is [saveuploadassignmentinfo.do] save uploadAssignment error ...");
 					result.put("status", 0);

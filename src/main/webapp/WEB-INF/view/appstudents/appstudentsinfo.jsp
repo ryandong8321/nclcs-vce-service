@@ -725,7 +725,8 @@ function addValidation(){
             },
             mobilePhone:{
             	required: true,
-            	digits: true
+            	digits: true,
+            	rangelength:[10,10]
             }
         },
 
@@ -736,6 +737,9 @@ function addValidation(){
             service: {
                 required: "Please select  at least 2 types of Service",
                 minlength: jQuery.validator.format("Please select  at least {0} types of Service")
+            },
+            mobilePhone: {
+            	rangelength: $.validator.format( "Please enter a correct mobile phone number." )
             }
         },
 
@@ -844,9 +848,12 @@ function modifyInfo(){
    	$("#daySchool").attr("readOnly",false);
    	$("#daySchoolGrade").attr("readOnly",false);
    
-   	$("#studentGroupId").attr("disabled",false);
-   	$("#studentGroupClassId").attr("disabled",false);
-	$("#propertyIsLearnChineseId").attr("disabled",false);
+   	var rolePivilege="${_sys_privilege}";
+   	if (rolePivilege=="1"||rolePivilege=="2"||rolePivilege=="3"){
+   		$("#studentGroupId").attr("disabled",false);
+   	   	$("#studentGroupClassId").attr("disabled",false);
+   		$("#propertyIsLearnChineseId").attr("disabled",false);
+   	}
 }
 
 function deleteInfo(){

@@ -9,7 +9,7 @@ import org.ryan.nclcs.vce.service.INclcsVceServiceBaseService;
 public interface IAppStudentUploadAssignmentSerivce extends INclcsVceServiceBaseService<AppStudentUploadAssignment, Integer>{
 	
 	/**
-	 * 查找学生上传作业数据，为学生作业管理使用，可分页
+	 * 查找学生上传作业数据，为学生作业管理-上传作业使用，可分页
 	 * @param displayLength 每页数据条数
 	 * @param displayStart 数据起启位置
 	 * @param sEcho
@@ -19,8 +19,10 @@ public interface IAppStudentUploadAssignmentSerivce extends INclcsVceServiceBase
 	 */
 	public Map<String, Object> searchDataForAjax(int displayLength, int displayStart, int sEcho, Map<String, Object> parameters, Integer userId);
 	
+	public Map<String, Object> searchDataForApp(int displayLength, int displayStart, Map<String, Object> parameters, Integer userId);
+	
 	/**
-	 * 查找学生上传作业数据，为教师作来管理使用，可分页
+	 * 查找学生上传作业数据，为教师作业管理-下载学生作业使用，可分页
 	 * @param displayLength 每页数据条数
 	 * @param displayStart 数据起启位置
 	 * @param sEcho
@@ -29,6 +31,8 @@ public interface IAppStudentUploadAssignmentSerivce extends INclcsVceServiceBase
 	 * @return
 	 */
 	public Map<String, Object> searchDataForAjax(int displayLength, int displayStart, int sEcho, Map<String, Object> parameters, String groupIds);
+	
+	public Map<String, Object> searchDataForApp(int displayLength, int displayStart, Map<String, Object> parameters, String groupIds);
 	
 	/**
 	 * 查询上传过作业的学生
