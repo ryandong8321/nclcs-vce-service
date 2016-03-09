@@ -181,7 +181,7 @@ License: You must have a valid license purchased only from themeforest(the above
 				<li class="start ">
 					<a href="<%=basePath%>sysnotificationmanagement/sysnotificationdetail.do">
 					<i class="icon-home"></i>
-					<span class="title">我的通知</span>
+					<span class="title">学生注册</span>
 					</a>
 				</li>
 			</ul>
