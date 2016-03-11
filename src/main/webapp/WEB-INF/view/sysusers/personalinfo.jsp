@@ -878,6 +878,21 @@ function addValidation(){
                 alert("请选择学生所在班级");
                 canSubmit=false;
             } */
+            
+            //只能输入中文判断
+            var reg=/^[\u4e00-\u9fa5]+$/;
+            if (!reg.test($("#chineseName").val())){
+            	success3.hide();
+                error3.show();
+                Metronic.scrollTo(error3, -200);
+                alert("请输入正确的中文姓名");
+                canSubmit=false;
+            }
+            /* else {
+            	alert( "全是中文" );
+            	return true ;
+            } */
+            
             if (canSubmit){
             	form[0].submit(); // submit the form
             }

@@ -5,8 +5,6 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
-import org.hibernate.Session;
-import org.hibernate.Transaction;
 import org.ryan.nclcs.vce.dao.NclcsVceServiceBaseDAOImpl;
 import org.ryan.nclcs.vce.dao.Pagination;
 import org.ryan.nclcs.vce.dao.sysgroups.ISysGroupsManagementDAO;
@@ -17,6 +15,7 @@ import org.ryan.nclcs.vce.entity.SysRoles;
 import org.ryan.nclcs.vce.entity.SysUsers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 @Repository("sysUsersManagementDAO")
 public class SysUsersManagementDAOImpl extends NclcsVceServiceBaseDAOImpl<SysUsers, Integer> implements ISysUsersManagementDAO {
@@ -437,27 +436,18 @@ public class SysUsersManagementDAOImpl extends NclcsVceServiceBaseDAOImpl<SysUse
 	}
 
 	@Override
+	@Transactional(rollbackFor=Exception.class)
 	public boolean saveRegisterUser(SysUsers user, SysGroups group, SysRoles role) {
 		boolean result=true;
-		Session session=null;
-		Transaction tran=null;
 		try{
-			session=this.sessionFactory.openSession();
-			tran=session.beginTransaction();
 			this.save(user);
 			role.getSysRolesUsers().add(user);
 			this.sysRolesManagementDAO.save(role);
 			group.getSysGroupsUsers().add(user);
 			this.sysGroupsManagementDAO.save(group);
-			tran.commit();
 		}catch(Exception ex){
 			ex.printStackTrace();
 			result=false;
-		}finally{
-			if (session!=null){
-				session.flush();
-				session.close();
-			}
 		}
 		return result;
 	}

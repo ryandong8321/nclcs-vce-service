@@ -17,6 +17,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.ryan.nclcs.vce.annotation.SystemLogIsCheck;
 import org.ryan.nclcs.vce.annotation.SystemUserLoginIsCheck;
 import org.ryan.nclcs.vce.entity.AppStudentUploadAssignment;
@@ -840,7 +841,9 @@ public class AppAssignmentTutorManagementController {
 							}
 						}
 						
-						uploadAssignment.setAssignmentName((uploadAssignmentName==null||uploadAssignmentName.equals(""))?strFileName:uploadAssignmentName);
+						String assignmentName=(uploadAssignmentName==null||uploadAssignmentName.equals(""))?strFileName:uploadAssignmentName;
+						
+						uploadAssignment.setAssignmentName(StringEscapeUtils.escapeHtml(StringEscapeUtils.escapeJavaScript(assignmentName)));
 //						uploadAssignment.setFilePath(file.getAbsolutePath());
 						uploadAssignment.setFilePath(_localPath+File.separator+file.getName());
 						uploadAssignment.setFileName(strFileName);
@@ -1082,8 +1085,8 @@ public class AppAssignmentTutorManagementController {
 								e.printStackTrace();
 							}
 						}
-						
-						uploadAssignment.setAssignmentName((uploadAssignmentName==null||uploadAssignmentName.equals(""))?strFileName:uploadAssignmentName);
+						String assignmentName=(uploadAssignmentName==null||uploadAssignmentName.equals(""))?strFileName:uploadAssignmentName;
+						uploadAssignment.setAssignmentName(StringEscapeUtils.escapeHtml(StringEscapeUtils.escapeJavaScript(assignmentName)));
 //						uploadAssignment.setFilePath(file.getAbsolutePath());
 						uploadAssignment.setFilePath(_localPath+File.separator+file.getName());
 						uploadAssignment.setFileName(strFileName);

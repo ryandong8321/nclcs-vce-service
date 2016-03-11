@@ -10,6 +10,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.ryan.nclcs.vce.annotation.SystemLogIsCheck;
 import org.ryan.nclcs.vce.annotation.SystemUserLoginIsCheck;
 import org.ryan.nclcs.vce.entity.SysDeviceToken;
@@ -179,26 +180,44 @@ public class SysNotificationManagementController {
 	public String saveSysNotification(HttpServletRequest request, @ModelAttribute("sysnotification") SysNotification sysNotification, Integer notificationId) {
 		logger.info("this is [savesysnotification.do] start ...");
 		Map<String, Object> result=new HashMap<String, Object>();
+		SysNotification originalNotification=null;
 		if (notificationId!=null&&notificationId!=0){
-			sysNotification.setId(notificationId);
+			originalNotification=sysNotificationManagementService.get(notificationId);
 		}
 			
 		try{
 			logger.info("this is [savesysnotification.do] is saving ...");
 			
-			if (request.getSession().getAttribute("u_id")==null||request.getSession().getAttribute("u_sr")==null||request.getSession().getAttribute("u_sg")==null){
-				logger.info("this is [savesysnotification.do] there is no login info ...");
-				return "redirect:/index.jsp";
-			}else{
-				SysUsers user=new SysUsers();
-				user.setId(Integer.parseInt(""+request.getSession().getAttribute("u_id")));
+//			if (request.getSession().getAttribute("u_id")==null||request.getSession().getAttribute("u_sr")==null||request.getSession().getAttribute("u_sg")==null){
+//				logger.info("this is [savesysnotification.do] there is no login info ...");
+//				return "redirect:/index.jsp";
+//			}else{
+			SysUsers user=new SysUsers();
+			user.setId(Integer.parseInt(""+request.getSession().getAttribute("u_id")));
+			
+			if (originalNotification==null){
 				sysNotification.setNotificationUserInfo(user);
+				
+				sysNotification.setNotificationTitle(StringEscapeUtils.escapeHtml(StringEscapeUtils.escapeJavaScript(sysNotification.getNotificationTitle())));
+				sysNotification.setNotificationMessage(StringEscapeUtils.escapeHtml(StringEscapeUtils.escapeJavaScript(sysNotification.getNotificationMessage())));
 				
 				logger.info("this is [savesysnotification.do] is saving...");
 				sysNotificationManagementService.save(sysNotification);
 				result.put("status", 1);
 				result.put("data", "operation success!");
 				logger.info("this is [savesysnotification.do] save sysNotification done ...");
+			}else{
+				originalNotification.setNotificationUserInfo(user==null?originalNotification.getNotificationUserInfo():user);
+				String title=StringEscapeUtils.unescapeJavaScript(StringEscapeUtils.unescapeHtml(sysNotification.getNotificationTitle()));
+				String message=StringEscapeUtils.unescapeJavaScript(StringEscapeUtils.unescapeHtml(sysNotification.getNotificationMessage()));
+				originalNotification.setNotificationTitle(StringEscapeUtils.escapeHtml(StringEscapeUtils.escapeJavaScript(title)));
+				originalNotification.setNotificationMessage(StringEscapeUtils.escapeHtml(StringEscapeUtils.escapeJavaScript(message)));
+				logger.info("this is [savesysnotification.do] is saving...");
+				sysNotificationManagementService.save(originalNotification);
+				result.put("status", 1);
+				result.put("data", "operation success!");
+				logger.info("this is [savesysnotification.do] save sysNotification done ...");
+			}
 				
 //				if (sysNotification.getNotificationReceiveGroupIds()!=null&&!sysNotification.getNotificationReceiveGroupIds().equals("")){
 //					logger.info("this is [savesysnotification.do] get [u_sr] ...");
@@ -249,7 +268,7 @@ public class SysNotificationManagementController {
 //					result.put("data", "operation success!");
 //					logger.info("this is [savesysnotification.do] save sysNotification done ...");
 //				}
-			}
+//			}
 		}catch(Exception ex){
 			logger.info("this is [savesysnotification.do] save sysNotification error ...");
 			result.put("status", 0);

@@ -1,10 +1,7 @@
 package org.ryan.nclcs.vce.web;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
@@ -16,14 +13,12 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.ryan.nclcs.vce.annotation.SystemLogIsCheck;
 import org.ryan.nclcs.vce.dao.Pagination;
 import org.ryan.nclcs.vce.entity.AppStudentUploadAssignment;
 import org.ryan.nclcs.vce.entity.AppStudentsScores;
 import org.ryan.nclcs.vce.entity.AppTutorAppointmentAssignmentToStudent;
+import org.ryan.nclcs.vce.entity.AppTutorAppointmentAssignmentToTutor;
 import org.ryan.nclcs.vce.entity.SysDeviceToken;
 import org.ryan.nclcs.vce.entity.SysGroups;
 import org.ryan.nclcs.vce.entity.SysNotification;
@@ -93,6 +88,12 @@ public class SysRemoteServiceController {
 	
 	@Autowired
 	private IAppTutorAppointmentToStudentService appTutorAppointmentToStudentService;
+	
+	//local
+//	protected final String _filePath="/usr/local/vce-uploadfiles";
+	
+	//server
+	protected final String _filePath="/usr/www/vce-uploadfiles";
 	
 	@RequestMapping(value = "/userlogin.do", method=RequestMethod.POST)
 	@ResponseBody
@@ -376,25 +377,29 @@ public class SysRemoteServiceController {
 				user.setVceClassName(groupNewClass.getGroupName());
 				
 				logger.info("this is [saveuserregister.do] is saving user ...");
-				this.sysUsersManagementService.saveRegisterUser(user, groupNewClass, sysRolesManagementService.get(5));
-				logger.info("this is [saveuserregister.do] save user done...");
-				
-				user=sysUsersManagementService.isExistByParameters(parameters);
-				if (user!=null){
-					result.put("status", 1);
-					result.put("info", "register success!");
-					logger.info("this is [saveuserregister.do] register success ...");
+				if (this.sysUsersManagementService.saveRegisterUser(user, groupNewClass, sysRolesManagementService.get(5))){
+					logger.info("this is [saveuserregister.do] save user done...");
 					
-					WebApplicationUtils.setNewToken(user.getId(), user.getUserName()+user.getPassword());
-					result.put("token", WebApplicationUtils.getToken(user.getId()));
-					result.put("userid", user.getId());
-					result.put("username", user.getUserName());
-					result.put("chinesename", user.getChineseName());
-					
-					logger.info("this is [saveuserregister.do] set value to session...");
-					request.getSession().setAttribute("u_id", user.getId());
-					request.getSession().setAttribute("u_name", user.getUserName());
-					
+					user=sysUsersManagementService.isExistByParameters(parameters);
+					if (user!=null){
+						result.put("status", 1);
+						result.put("info", "register success!");
+						logger.info("this is [saveuserregister.do] register success ...");
+						
+						WebApplicationUtils.setNewToken(user.getId(), user.getUserName()+user.getPassword());
+						result.put("token", WebApplicationUtils.getToken(user.getId()));
+						result.put("userid", user.getId());
+						result.put("username", user.getUserName());
+						result.put("chinesename", user.getChineseName());
+						
+						logger.info("this is [saveuserregister.do] set value to session...");
+						request.getSession().setAttribute("u_id", user.getId());
+						request.getSession().setAttribute("u_name", user.getUserName());
+					}else{
+						result.put("status", 0);
+						result.put("info", "register failed, try again!");
+						logger.info("this is [saveuserregister.do] register failed ...");
+					}
 				}else{
 					result.put("status", 0);
 					result.put("info", "register failed, try again!");
@@ -406,9 +411,10 @@ public class SysRemoteServiceController {
 				logger.info("this is [saveuserregister.do] register failed for username is exist ...");
 			}
 			
-		} catch (NumberFormatException e) {
+		} catch (Exception e) {
 			result.put("status", 0);
 			result.put("info", "register failed, try again!");
+			logger.info("this is [saveuserregister.do] register failed for occur exception ...");
 			e.printStackTrace();
 		}
 		String tmp=JSONObject.fromMap(result).toString();
@@ -1902,9 +1908,9 @@ public class SysRemoteServiceController {
 						Map<String, Object> parameters=new HashMap<String, Object>();
 						if (param!=null&&!param.equals("")){
 							parameters.put("assignmentName", param);
-							parameters.put("sort", 3);
-							parameters.put("order", "desc");
 						}
+						parameters.put("sort", 3);
+						parameters.put("order", "desc");
 						
 						result=appStudentUploadAssignmentSerivce.searchDataForApp(displayLength, displayStart, parameters, userId);
 						result.put("status", 1);
@@ -1920,6 +1926,8 @@ public class SysRemoteServiceController {
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
+					result.put("status", 0);
+					result.put("info", "operation failed");
 					logger.info("this is [initstudentuploadassignmentlist.do] occur error ...");
 				}
 			}
@@ -1929,118 +1937,30 @@ public class SysRemoteServiceController {
 		return tmp;
 	}
 	
-	@RequestMapping(value = "/initdownloadassignmentlist.do", method=RequestMethod.POST)
+	@RequestMapping(value = "/savestudentuploadassignmentinfo.do", method=RequestMethod.POST)
 	@ResponseBody
-	@SystemLogIsCheck(description="查询学生下载作业列表")
-	public String initDownloadAssignmentList(HttpServletRequest request, @RequestBody String data) {
-		logger.info("this is [initdownloadassignmentlist.do] start ...");
-		Map<String, Object> result=new HashMap<String, Object>();
-		logger.info("this is [initdownloadassignmentlist.do] is decoding ...");
-		JSONObject json=JSONObject.fromString(this.decodeParameters(data));
-		logger.info("this is [initdownloadassignmentlist.do] decode done ...");
-		
-		Integer userId=-1;//studentId
-		String token=null;
-		if (!json.has("userId")||!json.has("token")){
-			result.put("status", -1);
-			result.put("info", "the lack of parameter");
-			logger.info("this is [initdownloadassignmentlist.do] the lack of parameter ...");
-		}
-		
-		if (result.isEmpty()){
-			try{
-				userId=json.getInt("userId");
-				token=json.getString("token");
-				String localToken=WebApplicationUtils.getToken(userId);
-				
-				logger.info("this is [initdownloadassignmentlist.do] studentId ["+userId+"] ...");
-//				if (localToken!=null&&localToken.equals(token)){
-					//每页大小
-					int displayLength=Integer.parseInt(json.has("displayLength")?json.getString("displayLength"):"10");
-					//起始值
-					int displayStart=Integer.parseInt(json.has("displayStart")?json.getString("displayStart"):"0");
-					//查询条件
-					String param=json.has("param")?json.getString("param"):"";
-					
-					logger.info("this is [initdownloadassignmentlist.do] requset parameters [displayLength = {"+displayLength+"}],[displayStart = {"+displayStart+"}],[param = {"+param+"}]");
-					
-					Map<String, Object> parameters=new HashMap<String, Object>();
-					if (param!=null&&!param.equals("")){
-						parameters.put("assignmentName", param);
-					}
-//					parameters.put("sort", 3);
-//					parameters.put("order", "desc");
-//					parameters.put("snd.detailReceiveUserInfo.id", userId);
-					
-					logger.info("this is [initdownloadassignmentlist.do] finding assignment ...");
-					Pagination<AppTutorAppointmentAssignmentToStudent> page=appTutorAppointmentToStudentService.searchDataToStudent(displayLength, displayStart, parameters,userId);
-					
-					List<Map<String, Object>> resultData=new ArrayList<Map<String, Object>>();
-					Map<String, Object> map=null;
-					for (AppTutorAppointmentAssignmentToStudent toStudent:page.getRows()){
-						map=new HashMap<String, Object>();
-						map.put("assignmentId", toStudent.getId());
-						map.put("assignmentName", toStudent.getAssignmentName());
-						map.put("assignmentUploadTime", toStudent.getUploadTime().toString());
-						map.put("assignmentPath", toStudent.getFilePath());
-						map.put("assignmentFileName", toStudent.getFileName());
-						resultData.add(map);
-					}
-					
-					result.put("data", resultData);
-					result.put("status", 1);
-					result.put("info", "operation success!");
-					result.put("recordsTotal", page.getTotal());
-					result.put("displayLength", displayLength);
-					result.put("displayStart", displayStart+displayLength);
-					result.put("param", param);
-					logger.info("this is [initdownloadassignmentlist.do] finding assignment done...");
-//				}else{
-//					result.put("status", -2);
-//					result.put("info", "illegal user");
-//					logger.info("this is [initdownloadassignmentlist.do] illegal user ...");
-//				}
-			}catch(Exception ex){
-				ex.printStackTrace();
-				result.put("status", 0);
-				result.put("info", "find user info error");
-				logger.info("this is [initdownloadassignmentlist.do] exception ...");
-			}
-		}
-		String tmp=JSONObject.fromMap(result).toString();
-		logger.info("this is [initdownloadassignmentlist.do] return ["+tmp+"] ...");
-		return tmp;
-	}
-	
-	@RequestMapping(value = "/saveuploadassignmentinfo.do", method=RequestMethod.POST)
 	@SystemLogIsCheck(description="保存学生上传作业信息")
-	public String saveUploadAssignmentInfo(HttpServletRequest request, @RequestParam("uploadFile") CommonsMultipartFile[] uploadFile) {
-		logger.info("this is [saveuploadassignmentinfo.do] start ...");
+	public String saveStudentUploadAssignmentInfo(HttpServletRequest request, @RequestParam("uploadFile") CommonsMultipartFile[] uploadFile) {
+		logger.info("this is [savestudentuploadassignmentinfo.do] start ...");
 		Map<String, Object> result=new HashMap<String, Object>();
 		
-		logger.info("this is [saveuploadassignmentinfo.do] get page parameters ...");
-		Integer uploadAssignmentId=-1,currentStudentId=0;
-		String uploadAssignmentName=null;
+		logger.info("this is [savestudentuploadassignmentinfo.do] get page parameters ...");
+		Integer currentStudentId=0;
+		String uploadAssignmentName=null, token=null;
 		AppStudentUploadAssignment uploadAssignment=null;
 		try {
-			uploadAssignmentId=ServletRequestUtils.getIntParameter(request, "uploadAssignmentId", -1);
 			uploadAssignmentName=ServletRequestUtils.getRequiredStringParameter(request, "assignmentName");
-			currentStudentId=Integer.parseInt(""+request.getSession().getAttribute("u_id"));
+			currentStudentId=ServletRequestUtils.getRequiredIntParameter(request, "userId");
+			token=ServletRequestUtils.getRequiredStringParameter(request, "token");
 		} catch (ServletRequestBindingException e1) {
-			logger.info("this is [saveuploadassignmentinfo.do] get page parameters occur exception...");
 			e1.printStackTrace();
+			result.put("status", -1);
+			result.put("info", "the lack of parameter");
+			logger.info("this is [savestudentuploadassignmentinfo.do] the lack of parameter ...");
 		}
 		
-		if (currentStudentId!=-1){
-//			if (uploadAssignmentId==-1){
-//				uploadAssignment=new AppStudentUploadAssignment();
-//			}else{
-//				uploadAssignment=appStudentUploadAssignmentSerivce.get(uploadAssignmentId);
-//			}
-			
-//			String _filePath=request.getServletContext().getRealPath("");
-//			String _filePath="/usr/local/www/uploadfiles";
-			String _filePath="/usr/local/vce-uploadfiles";
+		String localToken=WebApplicationUtils.getToken(currentStudentId);
+		if (localToken!=null&&localToken.equals(token)){
 			
 			Calendar now=new GregorianCalendar();
 			String year="/"+now.get(Calendar.YEAR)+"/";
@@ -2051,87 +1971,92 @@ public class SysRemoteServiceController {
 			File directory=new File(_filePath+_localPath);
 			if (!directory.exists()){
 				directory.mkdir();
-				logger.info("this is [saveuploadassignmentinfo.do] create directory ["+directory+"] success...");
+				logger.info("this is [savestudentuploadassignmentinfo.do] create directory ["+directory+"] success...");
 			}
 			
 			_localPath+=month;
 			directory=new File(_filePath+_localPath);
 			if (!directory.exists()){
 				directory.mkdir();
-				logger.info("this is [saveuploadassignmentinfo.do] create directory ["+directory+"] success...");
+				logger.info("this is [savestudentuploadassignmentinfo.do] create directory ["+directory+"] success...");
 			}
 			
 			_localPath+=day;
 			directory=new File(_filePath+_localPath);
 			if (!directory.exists()){
 				directory.mkdir();
-				logger.info("this is [saveuploadassignmentinfo.do] create directory ["+directory+"] success...");
+				logger.info("this is [savestudentuploadassignmentinfo.do] create directory ["+directory+"] success...");
 			}
 			
 			_localPath+=File.separator+"student_"+currentStudentId;
 			directory=new File(_filePath+_localPath);
-			logger.info("this is [saveuploadassignmentinfo.do] show directory name ["+directory+"]");
+			logger.info("this is [savestudentuploadassignmentinfo.do] show directory name ["+directory+"]");
 			if (!directory.exists()){
 				directory.mkdir();
-				logger.info("this is [saveuploadassignmentinfo.do] create directory ["+directory+"] success...");
+				logger.info("this is [savestudentuploadassignmentinfo.do] create directory ["+directory+"] success...");
 			}
 			
 			File file=null;
 			String strFileName=null;
 			String strSuffix=null;
-			String strPrefix=null;
 			int dotPosition=-1;
 			
 			for (int i=0;i<uploadFile.length;i++){
 				if (!uploadFile[i].isEmpty()){
-					int idx=1;
-					
 					strFileName=uploadFile[i].getOriginalFilename();
-					logger.info("this is [saveuploadassignmentinfo.do] show file name ["+strFileName+"]");
+					logger.info("this is [savestudentuploadassignmentinfo.do] show file name ["+strFileName+"]");
 					
 					dotPosition=strFileName.lastIndexOf(".");
 					strSuffix=strFileName.substring(dotPosition);
-					strPrefix=strFileName.substring(0, dotPosition);
 					
 					if (strSuffix!=null&&!strSuffix.equals("")&&(strSuffix.equals(".doc")||strSuffix.equals(".docx"))){
-						file=new File(directory+File.separator+strFileName);
+						file=new File(directory+File.separator+Calendar.getInstance().getTimeInMillis());
 						
 						while(file.exists()){
-							logger.info("this is [saveuploadassignmentinfo.do] file ["+file+"] exist...");
-							file=new File(directory+File.separator+strPrefix+"("+(idx++)+")"+strSuffix);
-							logger.info("this is [saveuploadassignmentinfo.do] change file name ["+file+"]...");
+							logger.info("this is [savestudentuploadassignmentinfo.do] file ["+file.getName()+"] exist...");
+							file=new File(directory+File.separator+Calendar.getInstance().getTimeInMillis());
+							logger.info("this is [savestudentuploadassignmentinfo.do] change file name ["+file.getName()+"]...");
 						}
 					}
 					
 					if (!file.exists()){
-						logger.info("this is [saveuploadassignmentinfo.do] file ["+file.getAbsolutePath()+"] do not exist...");
+						logger.info("this is [savestudentuploadassignmentinfo.do] file ["+file.getName()+"] do not exist...");
 						try {
 							file.createNewFile();
-							logger.info("this is [saveuploadassignmentinfo.do] create file ["+file.getAbsolutePath()+"] success...");
+							logger.info("this is [savestudentuploadassignmentinfo.do] create file ["+file.getName()+"] success...");
 							uploadFile[i].transferTo(file);
-							logger.info("this is [saveuploadassignmentinfo.do] file ["+file.getAbsolutePath()+"] transfer...");
+							logger.info("this is [savestudentuploadassignmentinfo.do] file ["+file.getName()+"] transfer...");
 						} catch (IOException e) {
-							logger.info("this is [saveuploadassignmentinfo.do] create file ["+file.getAbsolutePath()+"] failed...");
+							logger.info("this is [savestudentuploadassignmentinfo.do] create file ["+file.getName()+"] failed...");
+							result.put("status", 0);
+							result.put("data", "save failed, try again!");
 							e.printStackTrace();
 						}
 					}
 					
-//					uploadAssignment.setAssignmentName((uploadAssignmentName==null||uploadAssignmentName.equals(""))?strFileName:uploadAssignmentName);
-////					uploadAssignment.setFilePath(file.getAbsolutePath());
-//					uploadAssignment.setFilePath(_localPath+File.separator+file.getName());
-//					uploadAssignment.setFileName(strFileName);
-//					
-//					SysUsers student=sysUsersManagementService.get(currentStudentId);
-//					uploadAssignment.setStudent(student);
-//					SysGroups classGroup=student.getSysGroups().get(0);
-//					uploadAssignment.setTutor(sysUsersManagementService.findATutorFromGroup(classGroup.getId()));
-//					
-//					logger.info("this is [saveuploadassignmentinfo.do] is saving ...");
-//					appStudentUploadAssignmentSerivce.save(uploadAssignment);
-					
-					result.put("status", 1);
-					result.put("data", "operation success!");
-					logger.info("this is [saveuploadassignmentinfo.do] save uploadAssignment done ...");
+					if (result.isEmpty()){
+						uploadAssignment=new AppStudentUploadAssignment();
+						uploadAssignment.setAssignmentName((uploadAssignmentName==null||uploadAssignmentName.equals(""))?strFileName:uploadAssignmentName);
+						logger.info("this is [savestudentuploadassignmentinfo.do] set assignment name ["+uploadAssignment.getAssignmentName()+"]...");
+						uploadAssignment.setFilePath(_localPath+File.separator+file.getName());
+						uploadAssignment.setFileName(strFileName);
+						logger.info("this is [savestudentuploadassignmentinfo.do] set file name ["+strFileName+"]...");
+						
+						logger.info("this is [savestudentuploadassignmentinfo.do] find student ["+currentStudentId+"]...");
+						SysUsers student=sysUsersManagementService.get(currentStudentId);
+						uploadAssignment.setStudent(student);
+						
+						logger.info("this is [savestudentuploadassignmentinfo.do] find tutor...");
+						SysGroups classGroup=student.getSysGroups().get(0);
+						uploadAssignment.setTutor(sysUsersManagementService.findATutorFromGroup(classGroup.getId()));
+						logger.info("this is [savestudentuploadassignmentinfo.do] find tutor done...");
+						
+						logger.info("this is [saveuploadassignmentinfo.do] is saving ...");
+						appStudentUploadAssignmentSerivce.save(uploadAssignment);
+						result.put("status", 1);
+						result.put("data", "operation success!");
+						logger.info("this is [saveuploadassignmentinfo.do] save uploadAssignment done ...");
+					}
 				}else{
 					logger.info("this is [saveuploadassignmentinfo.do] save uploadAssignment error ...");
 					result.put("status", 0);
@@ -2139,179 +2064,318 @@ public class SysRemoteServiceController {
 				}
 			}
 		}else{
-			logger.info("this is [saveuploadassignmentinfo.do] save uploadAssignment error ...");
-			result.put("status", 0);
-			result.put("data", "save failed, try again!");
+			result.put("status", -2);
+			result.put("info", "illegal user");
+			logger.info("this is [initstudentuploadassignmentlist.do] illegal user ...");
 		}
 		
-//		logger.info("this is [saveuploadassignmentinfo.do] show result ["+result+"] ...");
-//		request.setAttribute("result", result.get("data"));
-//		request.setAttribute("uploadassignment", uploadAssignment);
-//		return result.get("status").equals(1)?"forward:/appassignmentstudentmanagement/uploadassignmentlist.do":"forward:/appassignmentstudentmanagement/showuploadassignmentinfo.do";
-		return "";
+		String tmp=JSONObject.fromMap(result).toString();
+		logger.info("this is [initstudentuploadassignmentlist.do] return ["+tmp+"] ...");
+		return tmp;
 	}
 	
-	@RequestMapping(value = "/uploadassignmentinfo.do", method=RequestMethod.POST)
-	@SystemLogIsCheck(description="保存学生上传作业信息")
-	public String uploadAssignmentInfo(HttpServletRequest request) {
-		logger.info("this is [uploadassignmentinfo.do] start ...");
+	@RequestMapping(value = "/initstudentdownloadassignmentlist.do", method=RequestMethod.POST)
+	@ResponseBody
+	@SystemLogIsCheck(description="查询学生下载作业列表")
+	public String initStudentDownloadAssignmentList(HttpServletRequest request, @RequestBody String data) {
+		logger.info("this is [initstudentdownloadassignmentlist.do] start ...");
 		Map<String, Object> result=new HashMap<String, Object>();
+		logger.info("this is [initstudentdownloadassignmentlist.do] is decoding ...");
+		JSONObject json=JSONObject.fromString(this.decodeParameters(data));
+		logger.info("this is [initstudentdownloadassignmentlist.do] decode done ...");
 		
-		logger.info("this is [uploadassignmentinfo.do] get page parameters ...");
-		Integer uploadAssignmentId=-1,currentStudentId=0;
-		String uploadAssignmentName=null;
-		AppStudentUploadAssignment uploadAssignment=null;
-		try {
-			uploadAssignmentId=ServletRequestUtils.getIntParameter(request, "uploadAssignmentId", -1);
-			uploadAssignmentName=ServletRequestUtils.getRequiredStringParameter(request, "assignmentName");
-			currentStudentId=Integer.parseInt(""+request.getSession().getAttribute("u_id"));
-		} catch (ServletRequestBindingException e1) {
-			logger.info("this is [uploadassignmentinfo.do] get page parameters occur exception...");
-			e1.printStackTrace();
+		Integer userId=-1;//studentId
+		String token=null;
+		if (!json.has("userId")||!json.has("token")){
+			result.put("status", -1);
+			result.put("info", "the lack of parameter");
+			logger.info("this is [initstudentdownloadassignmentlist.do] the lack of parameter ...");
 		}
 		
-		if (currentStudentId!=-1){
-//			if (uploadAssignmentId==-1){
-//				uploadAssignment=new AppStudentUploadAssignment();
-//			}else{
-//				uploadAssignment=appStudentUploadAssignmentSerivce.get(uploadAssignmentId);
-//			}
-			
-			//server
-			String _filePath="/var/www/vce-uploadfiles";
-			
-			//local
-//			String _filePath="/usr/local/vce-uploadfiles";
-			
-			Calendar now=new GregorianCalendar();
-			String year="/"+now.get(Calendar.YEAR)+"/";
-			String month=(now.get(Calendar.MONTH)+1)>9?"/"+(now.get(Calendar.MONTH)+1)+"/":"/0"+(now.get(Calendar.MONTH)+1)+"/";
-			String day=now.get(Calendar.DAY_OF_MONTH)>9?"/"+now.get(Calendar.DAY_OF_MONTH)+"/":"/0"+now.get(Calendar.DAY_OF_MONTH)+"/";
-			
-			String _localPath=year;
-			File directory=new File(_filePath+_localPath);
-			if (!directory.exists()){
-				directory.mkdir();
-				logger.info("this is [uploadassignmentinfo.do] create directory ["+directory+"] success...");
-			}
-			
-			_localPath+=month;
-			directory=new File(_filePath+_localPath);
-			if (!directory.exists()){
-				directory.mkdir();
-				logger.info("this is [uploadassignmentinfo.do] create directory ["+directory+"] success...");
-			}
-			
-			_localPath+=day;
-			directory=new File(_filePath+_localPath);
-			if (!directory.exists()){
-				directory.mkdir();
-				logger.info("this is [uploadassignmentinfo.do] create directory ["+directory+"] success...");
-			}
-			
-			_localPath+=File.separator+"student_"+currentStudentId;
-			directory=new File(_filePath+_localPath);
-			logger.info("this is [uploadassignmentinfo.do] show directory name ["+directory+"]");
-			if (!directory.exists()){
-				directory.mkdir();
-				logger.info("this is [uploadassignmentinfo.do] create directory ["+directory+"] success...");
-			}
-			
-			File file=null;
-			String strFileName=null;
-			String strSuffix=null;
-			String strPrefix=null;
-			int dotPosition=-1;
-			
-			DiskFileItemFactory factory = new DiskFileItemFactory();
-			// 获取系统默认的临时文件保存路径，该路径为Tomcat根目录下的temp文件夹
-			String temp = System.getProperty("java.io.tmpdir");
-			// 设置缓冲区大小为 5M
-			factory.setSizeThreshold(1024 * 1024 * 5);
-			// 设置临时文件夹为temp
-			factory.setRepository(new File(temp));
-			// 用工厂实例化上传组件,ServletFileUpload 用来解析文件上传请求
-			ServletFileUpload servletFileUpload=new ServletFileUpload(factory);
+		if (result.isEmpty()){
 			try{
-				List<FileItem> lstFile=servletFileUpload.parseRequest(request);
-				if (lstFile!=null&&!lstFile.isEmpty()){
-					int idx=1;
-					InputStream is=null;
-					for (FileItem item:lstFile){
-						strFileName=item.getFieldName();
-						logger.info("this is [uploadassignmentinfo.do] show file name ["+strFileName+"]");
-						
-						logger.info("this is [uploadassignmentinfo.do] get InputStream");
-						is=item.getInputStream();
-						logger.info("this is [uploadassignmentinfo.do] get InputStream done");
-						
-						dotPosition=strFileName.lastIndexOf(".");
-						strSuffix=strFileName.substring(dotPosition);
-						strPrefix=strFileName.substring(0, dotPosition);
-						
-						if (strSuffix!=null&&!strSuffix.equals("")&&(strSuffix.equals(".doc")||strSuffix.equals(".docx"))){
-							file=new File(directory+File.separator+strFileName);
-							
-							while(file.exists()){
-								logger.info("this is [uploadassignmentinfo.do] file ["+file+"] exist...");
-								file=new File(directory+File.separator+strPrefix+"("+(idx++)+")"+strSuffix);
-								logger.info("this is [uploadassignmentinfo.do] change file name ["+file+"]...");
-							}
-						}
-						
-						if (!file.exists()){
-							logger.info("this is [uploadassignmentinfo.do] file ["+file.getAbsolutePath()+"] do not exist...");
-							BufferedInputStream fis=null;
-							FileOutputStream fos=null;
-							try {
-								//file.createNewFile();
-								logger.info("this is [uploadassignmentinfo.do] create file ["+file.getAbsolutePath()+"] success...");
-								
-								fis=new BufferedInputStream(is);
-								fos=new FileOutputStream(file);
-								
-								int f;
-								while ((f = fis.read()) != -1){
-									fos.write(f);
-								}
-								fos.flush();
-								logger.info("this is [uploadassignmentinfo.do] file ["+file.getAbsolutePath()+"] transfer...");
-							} catch (IOException e) {
-								logger.info("this is [uploadassignmentinfo.do] create file ["+file.getAbsolutePath()+"] failed...");
-								e.printStackTrace();
-							}finally{
-								if(fos!=null){
-									fos.close();
-								}
-								if(fis!=null){
-									fis.close();
-								}
-								if(is!=null){
-									is.close();
-								}
-							}
-						}
-						result.put("status", 1);
-						result.put("data", "operation success!");
-						logger.info("this is [uploadassignmentinfo.do] save uploadAssignment done ...");
-					}
+				try {
+					userId=json.getInt("userId");
+				} catch (Exception e) {
+					result.put("status", -1);
+					result.put("info", "the lack of parameter");
+					logger.info("this is [initstudentdownloadassignmentlist.do] get userId error ...");
+					e.printStackTrace();
+				}
+				try {
+					token=json.getString("token");
+				} catch (Exception e) {
+					result.put("status", -1);
+					result.put("info", "the lack of parameter");
+					logger.info("this is [initstudentdownloadassignmentlist.do] get token error ...");
+					e.printStackTrace();
 				}
 				
+				if (result.isEmpty()){
+					String localToken=WebApplicationUtils.getToken(userId);
+					logger.info("this is [initstudentdownloadassignmentlist.do] studentId ["+userId+"] ...");
+					if (localToken!=null&&localToken.equals(token)){
+						//每页大小
+						int displayLength=Integer.parseInt(json.has("displayLength")?json.getString("displayLength"):"10");
+						//起始值
+						int displayStart=Integer.parseInt(json.has("displayStart")?json.getString("displayStart"):"0");
+						//查询条件
+						String param=json.has("param")?json.getString("param"):"";
+						
+						logger.info("this is [initstudentdownloadassignmentlist.do] requset parameters [displayLength = {"+displayLength+"}],[displayStart = {"+displayStart+"}],[param = {"+param+"}]");
+						
+						Map<String, Object> parameters=new HashMap<String, Object>();
+						if (param!=null&&!param.equals("")){
+							parameters.put("assignmentName", param);
+						}
+						parameters.put("sort", 3);
+						parameters.put("order", "desc");
+						
+						logger.info("this is [initstudentdownloadassignmentlist.do] finding assignment ...");
+						Pagination<AppTutorAppointmentAssignmentToStudent> page=appTutorAppointmentToStudentService.searchDataToStudent(displayLength, displayStart, parameters,userId);
+						
+						List<Map<String, Object>> resultData=new ArrayList<Map<String, Object>>();
+						Map<String, Object> map=null;
+						for (AppTutorAppointmentAssignmentToStudent toStudent:page.getRows()){
+							map=new HashMap<String, Object>();
+							map.put("assignmentId", toStudent.getId());
+							map.put("assignmentName", toStudent.getAssignmentName());
+							map.put("assignmentUploadTime", toStudent.getUploadTime().toString());
+							map.put("assignmentPath", toStudent.getFilePath());
+							map.put("assignmentFileName", toStudent.getFileName());
+							map.put("tutorName", toStudent.getSourceTutor()==null?"":toStudent.getSourceTutor().getChineseName());
+							resultData.add(map);
+						}
+						
+						result.put("data", resultData);
+						result.put("status", 1);
+						result.put("info", "operation success!");
+						result.put("recordsTotal", page.getTotal());
+						result.put("displayLength", displayLength);
+						result.put("displayStart", displayStart+displayLength);
+						result.put("param", param);
+						logger.info("this is [initstudentdownloadassignmentlist.do] finding assignment done...");
+					}else{
+						result.put("status", -2);
+						result.put("info", "illegal user");
+						logger.info("this is [initstudentdownloadassignmentlist.do] illegal user ...");
+					}
+				}
 			}catch(Exception ex){
+				ex.printStackTrace();
 				result.put("status", 0);
-				result.put("data", "operation failed!");
-				logger.info("this is [uploadassignmentinfo.do] save uploadAssignment error ...");
+				result.put("info", "find user info error");
+				logger.info("this is [initstudentdownloadassignmentlist.do] exception ...");
 			}
-		}else{
-			logger.info("this is [uploadassignmentinfo.do] save uploadAssignment error ...");
-			result.put("status", 0);
-			result.put("data", "save failed, try again!");
+		}
+		String tmp=JSONObject.fromMap(result).toString();
+		logger.info("this is [initstudentdownloadassignmentlist.do] return ["+tmp+"] ...");
+		return tmp;
+	}
+	
+	@RequestMapping(value = "/inittutordownloadassignmentlist.do", method=RequestMethod.POST)
+	@ResponseBody
+	@SystemLogIsCheck(description="初始化教师下载学生作业列表")
+	public String initTutorDownloadAssignmentList(HttpServletRequest request, @RequestBody String data) {
+		logger.info("this is [inittutordownloadassignmentlist.do] start ...");
+		Map<String, Object> result=new HashMap<String, Object>();
+		logger.info("this is [inittutordownloadassignmentlist.do] is decoding ...");
+		JSONObject json=JSONObject.fromString(this.decodeParameters(data));
+		logger.info("this is [inittutordownloadassignmentlist.do] decode done ...");
+		
+		Integer currentTutorId=-1;
+		String token=null;
+		if (!json.has("userId")||!json.has("token")){
+			result.put("status", -1);
+			result.put("info", "the lack of parameter");
+			logger.info("this is [inittutordownloadassignmentlist.do] the lack of parameter ...");
 		}
 		
-//		logger.info("this is [saveuploadassignmentinfo.do] show result ["+result+"] ...");
-//		request.setAttribute("result", result.get("data"));
-//		request.setAttribute("uploadassignment", uploadAssignment);
-//		return result.get("status").equals(1)?"forward:/appassignmentstudentmanagement/uploadassignmentlist.do":"forward:/appassignmentstudentmanagement/showuploadassignmentinfo.do";
-		return "";
+		if (result.isEmpty()){
+			try{
+				try {
+					currentTutorId=json.getInt("userId");
+				} catch (Exception e) {
+					result.put("status", -1);
+					result.put("info", "the lack of parameter");
+					logger.info("this is [inittutordownloadassignmentlist.do] get userId error ...");
+					e.printStackTrace();
+				}
+				try {
+					token=json.getString("token");
+				} catch (Exception e) {
+					result.put("status", -1);
+					result.put("info", "the lack of parameter");
+					logger.info("this is [inittutordownloadassignmentlist.do] get token error ...");
+					e.printStackTrace();
+				}
+				
+				if (result.isEmpty()){
+					String localToken=WebApplicationUtils.getToken(currentTutorId);
+					logger.info("this is [inittutordownloadassignmentlist.do] currentTutorId ["+currentTutorId+"] ...");
+					if (localToken!=null&&localToken.equals(token)){
+						//每页大小
+						int displayLength=Integer.parseInt(json.has("displayLength")?json.getString("displayLength"):"10");
+						//起始值
+						int displayStart=Integer.parseInt(json.has("displayStart")?json.getString("displayStart"):"0");
+						//查询条件
+						String param=json.has("param")?json.getString("param"):"";
+						
+						logger.info("this is [inittutordownloadassignmentlist.do] requset parameters [displayLength = {"+displayLength+"}],[displayStart = {"+displayStart+"}],[param = {"+param+"}]");
+						
+						Map<String, Object> parameters=new HashMap<String, Object>();
+						if (param!=null&&!param.equals("")){
+							parameters.put("assignmentName", param);
+							parameters.put("campusName", param);
+							parameters.put("studentName", param);
+						}
+						parameters.put("sort", 6);
+						parameters.put("order", "desc");
+						
+						SysUsers currentTutor=sysUsersManagementService.get(currentTutorId);
+						if (currentTutor!=null&&currentTutor.getSysGroups()!=null){
+							StringBuffer groupIds=new StringBuffer();
+							List<SysGroups> groups=currentTutor.getSysGroups();
+							if (!groups.isEmpty()){
+								for (SysGroups group:groups){
+									if (group.getGroupCategory()==1){
+										if (groupIds.length()==0){
+											groupIds.append(group.getId());
+										}else{
+											groupIds.append(",");
+											groupIds.append(group.getId());
+										}
+									}
+								}
+							}
+							
+							logger.info("this is [inittutordownloadassignmentlist.do] finding assignment ...");
+							result=appStudentUploadAssignmentSerivce.searchDataForApp(displayLength, displayStart, parameters, groupIds.toString());
+							result.put("status", 1);
+							result.put("info", "operation success!");
+							result.put("displayLength", displayLength);
+							result.put("displayStart", displayStart+displayLength);
+							result.put("param", param);
+							logger.info("this is [inittutordownloadassignmentlist.do] finding assignment done...");
+						}else{
+							result.put("status", 0);
+							result.put("info", "find user info error");
+							logger.info("this is [inittutordownloadassignmentlist.do] find user info error ...");
+						}
+					}else{
+						result.put("status", -2);
+						result.put("info", "illegal user");
+						logger.info("this is [inittutordownloadassignmentlist.do] illegal user ...");
+					}
+				}
+			}catch(Exception ex){
+				ex.printStackTrace();
+				result.put("status", 0);
+				result.put("info", "occur exception");
+				logger.info("this is [inittutordownloadassignmentlist.do] exception ...");
+			}
+		}
+		String tmp=JSONObject.fromMap(result).toString();
+		logger.info("this is [inittutordownloadassignmentlist.do] return ["+tmp+"] ...");
+		return tmp;
+	}
+	
+	@RequestMapping(value = "/appointmenttotutor.do", method=RequestMethod.POST)
+	@ResponseBody
+	@SystemLogIsCheck(description="保存指派教师代审作业")
+	public String appointmentToTutor(HttpServletRequest request, @RequestBody String data) {
+		logger.info("this is [appointmenttotutor.do] start ...");
+		Map<String, Object> result=new HashMap<String, Object>();
+		logger.info("this is [appointmenttotutor.do] is decoding ...");
+		JSONObject json=JSONObject.fromString(this.decodeParameters(data));
+		logger.info("this is [appointmenttotutor.do] decode done ...");
+		
+		Integer currentTutorId=-1,assignmentId=-1,toTutorId=-1;
+		String token=null;
+		if (!json.has("userId")||!json.has("token")||!json.has("assignmentId")||!json.has("toTutorId")){
+			result.put("status", -1);
+			result.put("info", "the lack of parameter");
+			logger.info("this is [appointmenttotutor.do] the lack of parameter ...");
+		}
+		
+		if (result.isEmpty()){
+			try {
+				currentTutorId=json.getInt("userId");
+			} catch (Exception e) {
+				result.put("status", -1);
+				result.put("info", "the lack of parameter");
+				logger.info("this is [appointmenttotutor.do] get userId error ...");
+				e.printStackTrace();
+			}
+			try {
+				token=json.getString("token");
+			} catch (Exception e) {
+				result.put("status", -1);
+				result.put("info", "the lack of parameter");
+				logger.info("this is [appointmenttotutor.do] get token error ...");
+				e.printStackTrace();
+			}
+			try {
+				assignmentId=json.getInt("assignmentId");
+			} catch (Exception e) {
+				result.put("status", -1);
+				result.put("info", "the lack of parameter");
+				logger.info("this is [appointmenttotutor.do] get assignmentId error ...");
+				e.printStackTrace();
+			}
+			try {
+				toTutorId=json.getInt("toTutorId");
+			} catch (Exception e) {
+				result.put("status", -1);
+				result.put("info", "the lack of parameter");
+				logger.info("this is [appointmenttotutor.do] get toTutorId error ...");
+				e.printStackTrace();
+			}
+			
+			if (result.isEmpty()){
+				try {
+					String localToken=WebApplicationUtils.getToken(currentTutorId);
+					logger.info("this is [appointmenttotutor.do] currentTutorId ["+currentTutorId+"] ...");
+					if (localToken!=null&&localToken.equals(token)){
+						logger.info("this is [appointmenttotutor.do] find assignment ["+assignmentId+"] ...");
+						AppStudentUploadAssignment assignment=appStudentUploadAssignmentSerivce.get(assignmentId);
+						assignment.setHasAppointment(1);
+						
+						logger.info("this is [appointmenttotutor.do] create AppTutorAppointmentAssignmentToTutor ...");
+						AppTutorAppointmentAssignmentToTutor toTutor=new AppTutorAppointmentAssignmentToTutor();
+						toTutor.setAssignmentName(assignment.getAssignmentName());
+						toTutor.setFilePath(assignment.getFilePath());
+						toTutor.setFileName(assignment.getFileName());
+						
+						toTutor.setStudent(assignment.getStudent());
+						logger.info("this is [appointmenttotutor.do] create AppTutorAppointmentAssignmentToTutor currentTutor ["+currentTutorId+"] ...");
+						toTutor.setOriginalTutor(sysUsersManagementService.get(currentTutorId));
+						logger.info("this is [appointmenttotutor.do] create AppTutorAppointmentAssignmentToTutor toTutor ["+toTutorId+"] ...");
+						toTutor.setTargetTutor(sysUsersManagementService.get(toTutorId));
+						logger.info("this is [appointmenttotutor.do] create AppTutorAppointmentAssignmentToTutor ...");
+						
+						assignment.setAssignmentToTutor(toTutor);
+						toTutor.setUploadAssignment(assignment);
+						logger.info("this is [appointmenttotutor.do] save AppTutorAppointmentAssignmentToTutor ...");
+						appStudentUploadAssignmentSerivce.save(assignment);
+						result.put("status", 1);
+						result.put("data", "operation success!");
+						logger.info("this is [appointmenttotutor.do] save AppTutorAppointmentAssignmentToTutor done ...");
+					}else{
+						result.put("status", -2);
+						result.put("info", "illegal user");
+						logger.info("this is [appointmenttotutor.do] illegal user ...");
+					}
+				} catch (Exception e) {
+					result.put("status", 0);
+					result.put("info", "occur exception");
+					logger.info("this is [appointmenttotutor.do] exception ...");
+					e.printStackTrace();
+				}
+			}
+		}
+		String tmp=JSONObject.fromMap(result).toString();
+		logger.info("this is [appointmenttotutor.do] return ["+tmp+"] ...");
+		return tmp;
 	}
 }
