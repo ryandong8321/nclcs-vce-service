@@ -233,43 +233,60 @@ public class SysRemoteServiceController {
 			List<Map<String,Object>> groupsInfo=null;
 			Map<String, Object> parameters=new HashMap<String, Object>();
 			if (userId!=0){
-//				Integer currentUserId=Integer.parseInt(""+request.getSession().getAttribute("u_id"));
 				SysUsers currentUser=sysUsersManagementService.get(userId);
 				boolean isAssistant=false;//是否是校区助理
+				boolean isTutor=false;
 				for (SysRoles tmp:currentUser.getSysRoles()){
 					if (tmp.getId()==1||tmp.getId()==2){//管理者或管理助理
 						isAssistant=false;
 						break;
 					}else if (tmp.getId()==3){//校区助理
 						isAssistant=true;
+					}else if (tmp.getId()==4&&!isAssistant){//tutor
+						isTutor=true;
 					}
 				}
 				
-				SysUsers student=sysUsersManagementService.get(studentId);//当前要维护的学生对象
+				SysUsers student=null;
 				SysGroups group=null;
-				if (isAssistant&&groupId==0){//是校区助理角色，又要查校区的时候，直接用学生的校区群组ID查就可以了，校区助理角色不可以跨校区给学生转班
+				
+				if (isTutor&&!isAssistant){
+					groupsInfo=new ArrayList<Map<String,Object>>();
+					student=sysUsersManagementService.get(studentId);//当前要维护的学生对象
 					group=student.getSysGroups().get(0);//学生只可能有一个组
-					if (group!=null&&group.getGroupCategory()!=null&&group.getGroupCategory()==1){//判断这个多啊，就是想知道得到的这个群组是不是班级，是班级就查他的父群组(只适用于当想的数据结构，校区下只有班级)
+					Map<String, Object> map=new HashMap<String, Object>();
+					if (groupId==0){
 						group=sysGroupsManagementService.get(group.getGroupParentId());
-						parameters.put("id", group.getId());//学生的校区群组ID
 					}
-				}
-				
-				parameters.put("groupParentId", !isAssistant&&groupId==0?1:groupId);//groupId==0说明是查校区，不是校区助理就让groupParentId=1，就是查全部
-				
-				groupsInfo=sysGroupsManagementService.findGroup(parameters,userId);
-				
-				if (student.getSysGroups()!=null&&!student.getSysGroups().isEmpty()){
-					group=group==null?student.getSysGroups().get(0):group;
-					if (group!=null&&group.getGroupCategory()!=null){
-						if (group.getGroupCategory()==1&&groupId==0){
+					map.put("id",group.getId());
+					map.put("text",group.getGroupName());
+					groupsInfo.add(map);
+				}else{
+					student=sysUsersManagementService.get(studentId);//当前要维护的学生对象
+					if (isAssistant&&groupId==0){//是校区助理角色，又要查校区的时候，直接用学生的校区群组ID查就可以了，校区助理角色不可以跨校区给学生转班
+						group=student.getSysGroups().get(0);//学生只可能有一个组
+						if (group!=null&&group.getGroupCategory()!=null&&group.getGroupCategory()==1){//判断这个多啊，就是想知道得到的这个群组是不是班级，是班级就查他的父群组(只适用于当想的数据结构，校区下只有班级)
 							group=sysGroupsManagementService.get(group.getGroupParentId());
+							parameters.put("id", group.getId());//学生的校区群组ID
 						}
-						
-						for(Map<String, Object> map:groupsInfo){
-							if (map.get("id").equals(group.getId())){
-								map.put("selected", "selected");
-								break;
+					}
+					
+					parameters.put("groupParentId", !isAssistant&&groupId==0?1:groupId);//groupId==0说明是查校区，不是校区助理就让groupParentId=1，就是查全部
+					
+					groupsInfo=sysGroupsManagementService.findGroup(parameters,userId);
+					
+					if (student.getSysGroups()!=null&&!student.getSysGroups().isEmpty()){
+						group=group==null?student.getSysGroups().get(0):group;
+						if (group!=null&&group.getGroupCategory()!=null){
+							if (group.getGroupCategory()==1&&groupId==0){
+								group=sysGroupsManagementService.get(group.getGroupParentId());
+							}
+							
+							for(Map<String, Object> map:groupsInfo){
+								if (map.get("id").equals(group.getId())){
+									map.put("selected", "selected");
+									break;
+								}
 							}
 						}
 					}

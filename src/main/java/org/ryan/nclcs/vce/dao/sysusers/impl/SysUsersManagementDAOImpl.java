@@ -364,7 +364,9 @@ public class SysUsersManagementDAOImpl extends NclcsVceServiceBaseDAOImpl<SysUse
 		StringBuffer hql_4 = new StringBuffer();
 		List<Object> param_4=new ArrayList<Object>();
 		for (SysRoles role:lstRoles){
-			if (role.getId()==3){//当前用户是校区助理，查找校区下的所有班级
+			if (role.getId()==1||role.getId()==2){
+				break;
+			}else if (role.getId()==3){//当前用户是校区助理，查找校区下的所有班级
 				for (int i=0;i<lstGroups.size();i++){
 					group=lstGroups.get(i);
 					if (group.getGroupCategory()==0){
