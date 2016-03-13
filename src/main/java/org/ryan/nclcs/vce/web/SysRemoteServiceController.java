@@ -13,6 +13,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.ryan.nclcs.vce.annotation.SystemLogIsCheck;
 import org.ryan.nclcs.vce.dao.Pagination;
 import org.ryan.nclcs.vce.entity.AppStudentUploadAssignment;
@@ -28,6 +29,7 @@ import org.ryan.nclcs.vce.entity.SysRoles;
 import org.ryan.nclcs.vce.entity.SysUsers;
 import org.ryan.nclcs.vce.service.appassignment.IAppStudentUploadAssignmentSerivce;
 import org.ryan.nclcs.vce.service.appassignment.IAppTutorAppointmentToStudentService;
+import org.ryan.nclcs.vce.service.appassignment.IAppTutorAppointmentToTutorService;
 import org.ryan.nclcs.vce.service.appstudents.IAppStudentsManagementService;
 import org.ryan.nclcs.vce.service.devicetoken.ISysDeviceTokenManagementService;
 import org.ryan.nclcs.vce.service.sysgroups.ISysGroupsManagementService;
@@ -88,6 +90,9 @@ public class SysRemoteServiceController {
 	
 	@Autowired
 	private IAppTutorAppointmentToStudentService appTutorAppointmentToStudentService;
+	
+	@Autowired
+	private IAppTutorAppointmentToTutorService appTutorAppointmentToTutorService;
 	
 	//local
 //	protected final String _filePath="/usr/local/vce-uploadfiles";
@@ -275,6 +280,13 @@ public class SysRemoteServiceController {
 					
 					groupsInfo=sysGroupsManagementService.findGroup(parameters,userId);
 					
+					if (groupsInfo.isEmpty()){
+						Map<String, Object> map=new HashMap<String, Object>();
+						map.put("id",-1);
+						map.put("text", "");
+						groupsInfo.add(map);
+					}
+					
 					if (student.getSysGroups()!=null&&!student.getSysGroups().isEmpty()){
 						group=group==null?student.getSysGroups().get(0):group;
 						if (group!=null&&group.getGroupCategory()!=null){
@@ -294,6 +306,12 @@ public class SysRemoteServiceController {
 			}else{
 				parameters.put("groupParentId", groupId==0?1:groupId);//groupId==0说明是查校区，不是校区助理就让groupParentId=1，就是查全部
 				groupsInfo=sysGroupsManagementService.findGroup(parameters,null);
+				if (groupsInfo.isEmpty()){
+					Map<String, Object> map=new HashMap<String, Object>();
+					map.put("id",-1);
+					map.put("text", "");
+					groupsInfo.add(map);
+				}
 			}
 			
 			result.put("status", 1);
@@ -1883,7 +1901,7 @@ public class SysRemoteServiceController {
 		JSONObject json=JSONObject.fromString(this.decodeParameters(data));
 		logger.info("this is [initstudentuploadassignmentlist.do] decode done ...");
 		
-		Integer userId=-1;
+		Integer currentStudentId=-1;
 		String token=null;
 		if (!json.has("userId")||!json.has("token")){
 			result.put("status", -1);
@@ -1893,7 +1911,7 @@ public class SysRemoteServiceController {
 		
 		if (result.isEmpty()){
 			try{
-				userId=json.getInt("userId");
+				currentStudentId=json.getInt("userId");
 			}catch(Exception ex){
 				result.put("status", 0);
 				result.put("info", "wrong parameter is userId");
@@ -1910,9 +1928,10 @@ public class SysRemoteServiceController {
 			
 			if (result.isEmpty()){
 				try {
-					String localToken=WebApplicationUtils.getToken(userId);
+					String localToken=WebApplicationUtils.getToken(currentStudentId);
 					
 					if (localToken!=null&&localToken.equals(token)){
+						logger.info("this is [initstudentuploadassignmentlist.do] confirm identity...");
 						//每页大小
 						int displayLength=Integer.parseInt(json.has("displayLength")?json.getString("displayLength"):"10");
 						//起始值
@@ -1929,7 +1948,7 @@ public class SysRemoteServiceController {
 						parameters.put("sort", 3);
 						parameters.put("order", "desc");
 						
-						result=appStudentUploadAssignmentSerivce.searchDataForApp(displayLength, displayStart, parameters, userId);
+						result=appStudentUploadAssignmentSerivce.searchDataForAPP(displayLength, displayStart, parameters, currentStudentId);
 						result.put("status", 1);
 						result.put("info", "operation success");
 						result.put("displayLength", displayLength);
@@ -1965,125 +1984,148 @@ public class SysRemoteServiceController {
 		Integer currentStudentId=0;
 		String uploadAssignmentName=null, token=null;
 		AppStudentUploadAssignment uploadAssignment=null;
+		
 		try {
 			uploadAssignmentName=ServletRequestUtils.getRequiredStringParameter(request, "assignmentName");
+		} catch (ServletRequestBindingException e) {
+			e.printStackTrace();
+			logger.info("this is [savestudentuploadassignmentinfo.do] the lack of parameter is assignmentName ...");
+		}
+		
+		try {
 			currentStudentId=ServletRequestUtils.getRequiredIntParameter(request, "userId");
-			token=ServletRequestUtils.getRequiredStringParameter(request, "token");
-		} catch (ServletRequestBindingException e1) {
-			e1.printStackTrace();
+		}catch (ServletRequestBindingException e) {
+			//e.printStackTrace();
+			try {
+				currentStudentId=Integer.parseInt(ServletRequestUtils.getRequiredStringParameter(request, "userId").trim());
+			}catch (Exception e1) {
+				e1.printStackTrace();
+				result.put("status", -1);
+				result.put("info", "the lack of parameter");
+				logger.info("this is [savestudentuploadassignmentinfo.do] the lack of parameter [userId] ...");
+			}
+		}
+		
+		try {
+//			currentStudentId=ServletRequestUtils.getRequiredIntParameter(request, "userId");
+			token=ServletRequestUtils.getRequiredStringParameter(request, "token").trim();
+		} catch (ServletRequestBindingException e) {
+			e.printStackTrace();
 			result.put("status", -1);
 			result.put("info", "the lack of parameter");
 			logger.info("this is [savestudentuploadassignmentinfo.do] the lack of parameter ...");
 		}
 		
-		String localToken=WebApplicationUtils.getToken(currentStudentId);
-		if (localToken!=null&&localToken.equals(token)){
-			
-			Calendar now=new GregorianCalendar();
-			String year="/"+now.get(Calendar.YEAR)+"/";
-			String month=(now.get(Calendar.MONTH)+1)>9?"/"+(now.get(Calendar.MONTH)+1)+"/":"/0"+(now.get(Calendar.MONTH)+1)+"/";
-			String day=now.get(Calendar.DAY_OF_MONTH)>9?"/"+now.get(Calendar.DAY_OF_MONTH)+"/":"/0"+now.get(Calendar.DAY_OF_MONTH)+"/";
-			
-			String _localPath=year;
-			File directory=new File(_filePath+_localPath);
-			if (!directory.exists()){
-				directory.mkdir();
-				logger.info("this is [savestudentuploadassignmentinfo.do] create directory ["+directory+"] success...");
-			}
-			
-			_localPath+=month;
-			directory=new File(_filePath+_localPath);
-			if (!directory.exists()){
-				directory.mkdir();
-				logger.info("this is [savestudentuploadassignmentinfo.do] create directory ["+directory+"] success...");
-			}
-			
-			_localPath+=day;
-			directory=new File(_filePath+_localPath);
-			if (!directory.exists()){
-				directory.mkdir();
-				logger.info("this is [savestudentuploadassignmentinfo.do] create directory ["+directory+"] success...");
-			}
-			
-			_localPath+=File.separator+"student_"+currentStudentId;
-			directory=new File(_filePath+_localPath);
-			logger.info("this is [savestudentuploadassignmentinfo.do] show directory name ["+directory+"]");
-			if (!directory.exists()){
-				directory.mkdir();
-				logger.info("this is [savestudentuploadassignmentinfo.do] create directory ["+directory+"] success...");
-			}
-			
-			File file=null;
-			String strFileName=null;
-			String strSuffix=null;
-			int dotPosition=-1;
-			
-			for (int i=0;i<uploadFile.length;i++){
-				if (!uploadFile[i].isEmpty()){
-					strFileName=uploadFile[i].getOriginalFilename();
-					logger.info("this is [savestudentuploadassignmentinfo.do] show file name ["+strFileName+"]");
-					
-					dotPosition=strFileName.lastIndexOf(".");
-					strSuffix=strFileName.substring(dotPosition);
-					
-					if (strSuffix!=null&&!strSuffix.equals("")&&(strSuffix.equals(".doc")||strSuffix.equals(".docx"))){
-						file=new File(directory+File.separator+Calendar.getInstance().getTimeInMillis());
-						
-						while(file.exists()){
-							logger.info("this is [savestudentuploadassignmentinfo.do] file ["+file.getName()+"] exist...");
-							file=new File(directory+File.separator+Calendar.getInstance().getTimeInMillis());
-							logger.info("this is [savestudentuploadassignmentinfo.do] change file name ["+file.getName()+"]...");
-						}
-					}
-					
-					if (!file.exists()){
-						logger.info("this is [savestudentuploadassignmentinfo.do] file ["+file.getName()+"] do not exist...");
-						try {
-							file.createNewFile();
-							logger.info("this is [savestudentuploadassignmentinfo.do] create file ["+file.getName()+"] success...");
-							uploadFile[i].transferTo(file);
-							logger.info("this is [savestudentuploadassignmentinfo.do] file ["+file.getName()+"] transfer...");
-						} catch (IOException e) {
-							logger.info("this is [savestudentuploadassignmentinfo.do] create file ["+file.getName()+"] failed...");
-							result.put("status", 0);
-							result.put("data", "save failed, try again!");
-							e.printStackTrace();
-						}
-					}
-					
-					if (result.isEmpty()){
-						uploadAssignment=new AppStudentUploadAssignment();
-						uploadAssignment.setAssignmentName((uploadAssignmentName==null||uploadAssignmentName.equals(""))?strFileName:uploadAssignmentName);
-						logger.info("this is [savestudentuploadassignmentinfo.do] set assignment name ["+uploadAssignment.getAssignmentName()+"]...");
-						uploadAssignment.setFilePath(_localPath+File.separator+file.getName());
-						uploadAssignment.setFileName(strFileName);
-						logger.info("this is [savestudentuploadassignmentinfo.do] set file name ["+strFileName+"]...");
-						
-						logger.info("this is [savestudentuploadassignmentinfo.do] find student ["+currentStudentId+"]...");
-						SysUsers student=sysUsersManagementService.get(currentStudentId);
-						uploadAssignment.setStudent(student);
-						
-						logger.info("this is [savestudentuploadassignmentinfo.do] find tutor...");
-						SysGroups classGroup=student.getSysGroups().get(0);
-						uploadAssignment.setTutor(sysUsersManagementService.findATutorFromGroup(classGroup.getId()));
-						logger.info("this is [savestudentuploadassignmentinfo.do] find tutor done...");
-						
-						logger.info("this is [saveuploadassignmentinfo.do] is saving ...");
-						appStudentUploadAssignmentSerivce.save(uploadAssignment);
-						result.put("status", 1);
-						result.put("data", "operation success!");
-						logger.info("this is [saveuploadassignmentinfo.do] save uploadAssignment done ...");
-					}
-				}else{
-					logger.info("this is [saveuploadassignmentinfo.do] save uploadAssignment error ...");
-					result.put("status", 0);
-					result.put("data", "save failed, try again!");
+		if (result.isEmpty()){
+			String localToken=WebApplicationUtils.getToken(currentStudentId);
+			if (localToken!=null&&localToken.equals(token)){
+				logger.info("this is [initstudentuploadassignmentlist.do] confirm identity...");
+				Calendar now=new GregorianCalendar();
+				String year="/"+now.get(Calendar.YEAR)+"/";
+				String month=(now.get(Calendar.MONTH)+1)>9?"/"+(now.get(Calendar.MONTH)+1)+"/":"/0"+(now.get(Calendar.MONTH)+1)+"/";
+				String day=now.get(Calendar.DAY_OF_MONTH)>9?"/"+now.get(Calendar.DAY_OF_MONTH)+"/":"/0"+now.get(Calendar.DAY_OF_MONTH)+"/";
+				
+				String _localPath=year;
+				File directory=new File(_filePath+_localPath);
+				if (!directory.exists()){
+					directory.mkdir();
+					logger.info("this is [savestudentuploadassignmentinfo.do] create directory ["+directory+"] success...");
 				}
+				
+				_localPath+=month;
+				directory=new File(_filePath+_localPath);
+				if (!directory.exists()){
+					directory.mkdir();
+					logger.info("this is [savestudentuploadassignmentinfo.do] create directory ["+directory+"] success...");
+				}
+				
+				_localPath+=day;
+				directory=new File(_filePath+_localPath);
+				if (!directory.exists()){
+					directory.mkdir();
+					logger.info("this is [savestudentuploadassignmentinfo.do] create directory ["+directory+"] success...");
+				}
+				
+				_localPath+=File.separator+"student_"+currentStudentId;
+				directory=new File(_filePath+_localPath);
+				if (!directory.exists()){
+					directory.mkdir();
+					logger.info("this is [savestudentuploadassignmentinfo.do] create directory ["+directory+"] success...");
+				}
+				logger.info("this is [savestudentuploadassignmentinfo.do] show directory name ["+directory+"]");
+				
+				File file=null;
+				String strFileName=null;
+				String strSuffix=null;
+				int dotPosition=-1;
+				
+				for (int i=0;i<uploadFile.length;i++){
+					if (!uploadFile[i].isEmpty()){
+						strFileName=uploadFile[i].getOriginalFilename();
+						logger.info("this is [savestudentuploadassignmentinfo.do] show file name ["+strFileName+"]");
+						
+						dotPosition=strFileName.lastIndexOf(".");
+						strSuffix=strFileName.substring(dotPosition);
+						
+						if (strSuffix!=null&&!strSuffix.equals("")&&(strSuffix.equals(".doc")||strSuffix.equals(".docx")||strSuffix.equals(".pdf"))){
+							file=new File(directory+File.separator+Calendar.getInstance().getTimeInMillis());
+							
+							while(file.exists()){
+								logger.info("this is [savestudentuploadassignmentinfo.do] file ["+file.getName()+"] exist...");
+								file=new File(directory+File.separator+Calendar.getInstance().getTimeInMillis());
+								logger.info("this is [savestudentuploadassignmentinfo.do] change file name ["+file.getName()+"]...");
+							}
+						}
+						
+						if (!file.exists()){
+							logger.info("this is [savestudentuploadassignmentinfo.do] file ["+file.getName()+"] do not exist...");
+							try {
+								file.createNewFile();
+								logger.info("this is [savestudentuploadassignmentinfo.do] create file ["+file.getName()+"] success...");
+								uploadFile[i].transferTo(file);
+								logger.info("this is [savestudentuploadassignmentinfo.do] file ["+file.getName()+"] transfer...");
+							} catch (IOException e) {
+								logger.info("this is [savestudentuploadassignmentinfo.do] create file ["+file.getName()+"] failed...");
+								result.put("status", 0);
+								result.put("info", "save failed, try again!");
+								e.printStackTrace();
+							}
+						}
+						
+						if (result.isEmpty()){
+							uploadAssignment=new AppStudentUploadAssignment();
+							String assignmentName=(uploadAssignmentName==null||uploadAssignmentName.equals(""))?strFileName:uploadAssignmentName;
+							uploadAssignment.setAssignmentName(StringEscapeUtils.escapeJavaScript(StringEscapeUtils.escapeHtml(assignmentName)));
+							logger.info("this is [savestudentuploadassignmentinfo.do] assignment name ["+uploadAssignment.getAssignmentName()+"]...");
+							uploadAssignment.setFilePath(_localPath+File.separator+file.getName());
+							uploadAssignment.setFileName(strFileName);
+							logger.info("this is [savestudentuploadassignmentinfo.do] set file name ["+strFileName+"]...");
+							
+							logger.info("this is [savestudentuploadassignmentinfo.do] find student ["+currentStudentId+"]...");
+							SysUsers student=sysUsersManagementService.get(currentStudentId);
+							uploadAssignment.setStudent(student);
+							
+							logger.info("this is [savestudentuploadassignmentinfo.do] find tutor...");
+							SysGroups classGroup=student.getSysGroups().get(0);
+							uploadAssignment.setTutor(sysUsersManagementService.findATutorFromGroup(classGroup.getId()));
+							
+							logger.info("this is [saveuploadassignmentinfo.do] is saving ...");
+							appStudentUploadAssignmentSerivce.save(uploadAssignment);
+							result.put("status", 1);
+							result.put("info", "operation success!");
+							logger.info("this is [saveuploadassignmentinfo.do] save uploadAssignment done ...");
+						}
+					}else{
+						logger.info("this is [saveuploadassignmentinfo.do] save uploadAssignment error ...");
+						result.put("status", 0);
+						result.put("info", "save failed, try again!");
+					}
+				}
+			}else{
+				result.put("status", -2);
+				result.put("info", "illegal user");
+				logger.info("this is [initstudentuploadassignmentlist.do] illegal user ...");
 			}
-		}else{
-			result.put("status", -2);
-			result.put("info", "illegal user");
-			logger.info("this is [initstudentuploadassignmentlist.do] illegal user ...");
 		}
 		
 		String tmp=JSONObject.fromMap(result).toString();
@@ -2157,9 +2199,10 @@ public class SysRemoteServiceController {
 							map=new HashMap<String, Object>();
 							map.put("assignmentId", toStudent.getId());
 							map.put("assignmentName", toStudent.getAssignmentName());
-							map.put("assignmentUploadTime", toStudent.getUploadTime().toString());
-							map.put("assignmentPath", toStudent.getFilePath());
-							map.put("assignmentFileName", toStudent.getFileName());
+							map.put("uploadTime", toStudent.getUploadTime()==null?"":toStudent.getUploadTime().toString());
+							map.put("downloadTime", toStudent.getDownloadTime()==null?"":toStudent.getDownloadTime().toString());
+							map.put("filePath", toStudent.getFilePath());
+							map.put("fileName", toStudent.getFileName());
 							map.put("tutorName", toStudent.getSourceTutor()==null?"":toStudent.getSourceTutor().getChineseName());
 							resultData.add(map);
 						}
@@ -2192,7 +2235,7 @@ public class SysRemoteServiceController {
 	
 	@RequestMapping(value = "/inittutordownloadassignmentlist.do", method=RequestMethod.POST)
 	@ResponseBody
-	@SystemLogIsCheck(description="初始化教师下载学生作业列表")
+	@SystemLogIsCheck(description="查询教师下载学生作业列表")
 	public String initTutorDownloadAssignmentList(HttpServletRequest request, @RequestBody String data) {
 		logger.info("this is [inittutordownloadassignmentlist.do] start ...");
 		Map<String, Object> result=new HashMap<String, Object>();
@@ -2267,7 +2310,7 @@ public class SysRemoteServiceController {
 							}
 							
 							logger.info("this is [inittutordownloadassignmentlist.do] finding assignment ...");
-							result=appStudentUploadAssignmentSerivce.searchDataForApp(displayLength, displayStart, parameters, groupIds.toString());
+							result=appStudentUploadAssignmentSerivce.searchDataForAPP(displayLength, displayStart, parameters, groupIds.toString());
 							result.put("status", 1);
 							result.put("info", "operation success!");
 							result.put("displayLength", displayLength);
@@ -2294,6 +2337,228 @@ public class SysRemoteServiceController {
 		}
 		String tmp=JSONObject.fromMap(result).toString();
 		logger.info("this is [inittutordownloadassignmentlist.do] return ["+tmp+"] ...");
+		return tmp;
+	}
+	
+	@RequestMapping(value = "/findalltutor.do", method=RequestMethod.POST)
+	@ResponseBody
+	public String findAllTutor(HttpServletRequest request, @RequestBody String data) {
+		logger.info("this is [findalltutor.do] start ...");
+		Map<String, Object> result=new HashMap<String, Object>();
+		logger.info("this is [findalltutor.do] is decoding ...");
+		JSONObject json=JSONObject.fromString(this.decodeParameters(data));
+		logger.info("this is [findalltutor.do] decode done ...");
+		
+		Integer currentTutorId=-1;
+		String token=null;
+		if (!json.has("userId")||!json.has("token")){
+			result.put("status", -1);
+			result.put("info", "the lack of parameter");
+			logger.info("this is [findalltutor.do] the lack of parameter ...");
+		}
+		
+		if (result.isEmpty()){
+			try {
+				currentTutorId=json.getInt("userId");
+			} catch (Exception e) {
+				result.put("status", -1);
+				result.put("info", "the lack of parameter");
+				logger.info("this is [findalltutor.do] get userId error ...");
+				e.printStackTrace();
+			}
+			try {
+				token=json.getString("token");
+			} catch (Exception e) {
+				result.put("status", -1);
+				result.put("info", "the lack of parameter");
+				logger.info("this is [findalltutor.do] get token error ...");
+				e.printStackTrace();
+			}
+			
+			if (result.isEmpty()){
+				try {
+					String localToken=WebApplicationUtils.getToken(currentTutorId);
+					logger.info("this is [findalltutor.do] currentTutorId ["+currentTutorId+"] ...");
+					if (localToken!=null&&localToken.equals(token)){
+						logger.info("this is [findalltutor.do] confirm identity...");
+						List<Map<String, Object>> lstData=new ArrayList<Map<String, Object>>();
+						SysRoles role=sysRolesManagementService.get(4);
+						logger.info("this is [findalltutor.do] get tutor roles...");
+						if (role!=null&&role.getSysRolesUsers()!=null&&!role.getSysRolesUsers().isEmpty()){
+							logger.info("this is [findalltutor.do] get tutor roles is not empty...");
+							List<SysUsers> lstTutors=role.getSysRolesUsers();
+							logger.info("this is [findalltutor.do] find all Tutors...");
+							Map<String, Object> map=null;
+							
+							for (SysUsers tutor:lstTutors){
+								if (tutor.getId().equals(currentTutorId)){
+									continue;
+								}
+								map=new HashMap<String, Object>();
+								map.put("id", tutor.getId());
+								logger.info("this is [findalltutor.do] tutor chinesename ["+tutor.getChineseName()+"]...");
+								map.put("text", tutor.getChineseName()+"["+((tutor.getEmailAddress()==null||tutor.getEmailAddress().equals(""))?"EMAIL":tutor.getEmailAddress())+"]");
+								lstData.add(map);
+							}
+						}
+						result.put("status", 1);
+						result.put("data", lstData);
+					}else{
+						result.put("status", -2);
+						result.put("info", "illegal user");
+						logger.info("this is [findalltutor.do] illegal user ...");
+					}
+				} catch (Exception e) {
+					result.put("status", 0);
+					result.put("info", "occur exception");
+					logger.info("this is [findalltutor.do] exception ...");
+					e.printStackTrace();
+				}
+			}
+		}
+		String tmp=JSONObject.fromMap(result).toString();
+		logger.info("this is [findalltutor.do] return ["+tmp+"] ...");
+		return tmp;
+	}
+	
+	@RequestMapping(value = "/findallstudents.do", method=RequestMethod.POST)
+	@ResponseBody
+	public String findAllStudents(HttpServletRequest request, @RequestBody String data) {
+		logger.info("this is [findallstudents.do] start ...");
+		Map<String, Object> result=new HashMap<String, Object>();
+		logger.info("this is [findallstudents.do] is decoding ...");
+		JSONObject json=JSONObject.fromString(this.decodeParameters(data));
+		logger.info("this is [findallstudents.do] decode done ...");
+		
+		Integer currentUserId=-1, studentId=-1;
+		String token=null;
+//		if (!json.has("userId")||!json.has("token")||!json.has("studentId")){
+		if (!json.has("userId")||!json.has("token")){
+			result.put("status", -1);
+			result.put("info", "the lack of parameter");
+			logger.info("this is [findallstudents.do] the lack of parameter ...");
+		}
+		
+		if (result.isEmpty()){
+			try {
+				currentUserId=json.getInt("userId");
+			} catch (Exception e) {
+				result.put("status", -1);
+				result.put("info", "the lack of parameter");
+				logger.info("this is [findallstudents.do] get userId error ...");
+				e.printStackTrace();
+			}
+			try {
+				token=json.getString("token");
+			} catch (Exception e) {
+				result.put("status", -1);
+				result.put("info", "the lack of parameter");
+				logger.info("this is [findallstudents.do] get token error ...");
+				e.printStackTrace();
+			}
+			try {
+				studentId=json.getInt("studentId");
+			} catch (Exception e) {
+				logger.info("this is [findallstudents.do] get studentId error ...");
+				studentId=-1;
+//				e.printStackTrace();
+			}
+			
+			if (result.isEmpty()){
+				try {
+					String localToken=WebApplicationUtils.getToken(currentUserId);
+					logger.info("this is [findallstudents.do] currentTutorId ["+currentUserId+"] ...");
+					if (localToken!=null&&localToken.equals(token)){
+						logger.info("this is [findallstudents.do] confirm identity...");
+						logger.info("this is [findallstudents.do] studentId ["+studentId+"]");
+						result.put("data", appStudentUploadAssignmentSerivce.searchUploadedAssignmentStudentsByTutorId(currentUserId, studentId));
+						result.put("info", "operation success");
+						result.put("status", 1);
+					}else{
+						result.put("status", -2);
+						result.put("info", "illegal user");
+						logger.info("this is [findalltutor.do] illegal user ...");
+					}
+				} catch (Exception e) {
+					result.put("status", 0);
+					result.put("info", "occur exception");
+					logger.info("this is [findalltutor.do] exception ...");
+					e.printStackTrace();
+				}
+			}
+		}
+		String tmp=JSONObject.fromMap(result).toString();
+		logger.info("this is [findalltutor.do] return ["+tmp+"] ...");
+		return tmp;
+	}
+	
+	@RequestMapping(value = "/findallappointmenttutors.do", method=RequestMethod.POST)
+	@ResponseBody
+	public String findAllAppointmentTutors(HttpServletRequest request, @RequestBody String data) {
+		logger.info("this is [findallappointmenttutors.do] start ...");
+		Map<String, Object> result=new HashMap<String, Object>();
+		logger.info("this is [findallappointmenttutors.do] is decoding ...");
+		JSONObject json=JSONObject.fromString(this.decodeParameters(data));
+		logger.info("this is [findallappointmenttutors.do] decode done ...");
+		
+		Integer currentUserId=-1, targetTutorId=-1;
+		String token=null;
+		if (!json.has("userId")||!json.has("token")){
+			result.put("status", -1);
+			result.put("info", "the lack of parameter");
+			logger.info("this is [findallappointmenttutors.do] the lack of parameter ...");
+		}
+		
+		if (result.isEmpty()){
+			try {
+				currentUserId=json.getInt("userId");
+			} catch (Exception e) {
+				result.put("status", -1);
+				result.put("info", "the lack of parameter");
+				logger.info("this is [findallappointmenttutors.do] get userId error ...");
+				e.printStackTrace();
+			}
+			try {
+				token=json.getString("token");
+			} catch (Exception e) {
+				result.put("status", -1);
+				result.put("info", "the lack of parameter");
+				logger.info("this is [findallappointmenttutors.do] get token error ...");
+				e.printStackTrace();
+			}
+			try {
+				targetTutorId=json.getInt("targetTutorId");
+			} catch (Exception e) {
+				targetTutorId=-1;
+				logger.info("this is [findallappointmenttutors.do] get targetTutorId error ...");
+//				e.printStackTrace();
+			}
+			
+			if (result.isEmpty()){
+				try {
+					String localToken=WebApplicationUtils.getToken(currentUserId);
+					logger.info("this is [findallappointmenttutors.do] currentTutorId ["+currentUserId+"] ...");
+					if (localToken!=null&&localToken.equals(token)){
+						logger.info("this is [findallappointmenttutors.do] confirm identity...");
+						logger.info("this is [findallappointmenttutors.do] targetTutorId ["+targetTutorId+"]");
+						result.put("data", appTutorAppointmentToTutorService.findTutorsForTutorToTutor(currentUserId, targetTutorId));
+						result.put("info", "operation success");
+						result.put("status", 1);
+					}else{
+						result.put("status", -2);
+						result.put("info", "illegal user");
+						logger.info("this is [findallappointmenttutors.do] illegal user ...");
+					}
+				} catch (Exception e) {
+					result.put("status", 0);
+					result.put("info", "occur exception");
+					logger.info("this is [findallappointmenttutors.do] exception ...");
+					e.printStackTrace();
+				}
+			}
+		}
+		String tmp=JSONObject.fromMap(result).toString();
+		logger.info("this is [findallappointmenttutors.do] return ["+tmp+"] ...");
 		return tmp;
 	}
 	
@@ -2376,7 +2641,7 @@ public class SysRemoteServiceController {
 						logger.info("this is [appointmenttotutor.do] save AppTutorAppointmentAssignmentToTutor ...");
 						appStudentUploadAssignmentSerivce.save(assignment);
 						result.put("status", 1);
-						result.put("data", "operation success!");
+						result.put("info", "operation success!");
 						logger.info("this is [appointmenttotutor.do] save AppTutorAppointmentAssignmentToTutor done ...");
 					}else{
 						result.put("status", -2);
@@ -2393,6 +2658,925 @@ public class SysRemoteServiceController {
 		}
 		String tmp=JSONObject.fromMap(result).toString();
 		logger.info("this is [appointmenttotutor.do] return ["+tmp+"] ...");
+		return tmp;
+	}
+	
+	@RequestMapping(value = "/showappointmentstatusinfo.do", method=RequestMethod.POST)
+	@SystemLogIsCheck(description="显示指派老师状态信息")
+	public String showAppointmentStatusInfo(HttpServletRequest request, @RequestBody String data) {
+		logger.info("this is [showappointmentstatusinfo.do] start ...");
+		Map<String, Object> result=new HashMap<String, Object>();
+		logger.info("this is [showappointmentstatusinfo.do] is decoding ...");
+		JSONObject json=JSONObject.fromString(this.decodeParameters(data));
+		logger.info("this is [showappointmentstatusinfo.do] decode done ...");
+		
+		Integer currentUserId=-1,assignmentId=-1;
+		String token=null;
+		if (!json.has("userId")||!json.has("token")||!json.has("assignmentId")){
+			result.put("status", -1);
+			result.put("info", "the lack of parameter");
+			logger.info("this is [showappointmentstatusinfo.do] the lack of parameter ...");
+		}
+		
+		if (result.isEmpty()){
+			try {
+				currentUserId=json.getInt("userId");
+			} catch (Exception e) {
+				result.put("status", -1);
+				result.put("info", "the lack of parameter");
+				logger.info("this is [showappointmentstatusinfo.do] get userId error ...");
+				e.printStackTrace();
+			}
+			try {
+				token=json.getString("token");
+			} catch (Exception e) {
+				result.put("status", -1);
+				result.put("info", "the lack of parameter");
+				logger.info("this is [showappointmentstatusinfo.do] get token error ...");
+				e.printStackTrace();
+			}
+			try {
+				assignmentId=json.getInt("assignmentId");
+			} catch (Exception e) {
+				result.put("status", -1);
+				result.put("info", "the lack of parameter");
+				logger.info("this is [showappointmentstatusinfo.do] get assignmentId error ...");
+				e.printStackTrace();
+			}
+			
+			if (result.isEmpty()){
+				try {
+					String localToken=WebApplicationUtils.getToken(currentUserId);
+					logger.info("this is [showappointmentstatusinfo.do] currentTutorId ["+currentUserId+"] ...");
+					if (localToken!=null&&localToken.equals(token)){
+						logger.info("this is [showappointmentstatusinfo.do] confirm identity...");
+						logger.info("this is [showappointmentstatusinfo.do] find assignment ["+assignmentId+"] ...");
+						AppStudentUploadAssignment assignment=appStudentUploadAssignmentSerivce.get(assignmentId);
+						Map<String,Object> map=new HashMap<String,Object>();
+						map.put("assignmentId", assignment.getId());
+						map.put("assignmentName", assignment.getAssignmentName());
+						map.put("filePath", assignment.getFilePath());
+						map.put("fileName",assignment.getFilePath());
+						map.put("assignmentToTutor", assignment.getAssignmentToTutor()==null?"":
+							assignment.getAssignmentToTutor().getTargetTutor()==null?"":assignment.getAssignmentToTutor().getTargetTutor().getChineseName());
+						map.put("studentName", assignment.getStudent()==null?"":assignment.getStudent().getChineseName());
+						map.put("uploadTime", assignment.getAssignmentToTutor()==null?"":
+							assignment.getAssignmentToTutor().getUploadTime()==null?"":assignment.getAssignmentToTutor().getUploadTime().toString());
+						map.put("downloadTime", assignment.getAssignmentToTutor()==null?"":
+							assignment.getAssignmentToTutor().getDownloadTime()==null?"":assignment.getAssignmentToTutor().getDownloadTime().toString());
+						result.put("status", 1);
+						result.put("info", map);
+						result.put("data", "operation success!");
+						logger.info("this is [showappointmentstatusinfo.do] save AppTutorAppointmentAssignmentToTutor done ...");
+					}else{
+						result.put("status", -2);
+						result.put("info", "illegal user");
+						logger.info("this is [showappointmentstatusinfo.do] illegal user ...");
+					}
+				} catch (Exception e) {
+					result.put("status", 0);
+					result.put("info", "occur exception");
+					logger.info("this is [showappointmentstatusinfo.do] exception ...");
+					e.printStackTrace();
+				}
+			}
+		}
+		String tmp=JSONObject.fromMap(result).toString();
+		logger.info("this is [showappointmentstatusinfo.do] return ["+tmp+"] ...");
+		return tmp;
+	}
+	
+	@RequestMapping(value = "/revokeappointmenttotutor.do", method=RequestMethod.POST)
+	@SystemLogIsCheck(description="收回指派教师代审作业")
+	public String revokeAppointmentToTutor(HttpServletRequest request, @RequestBody String data) {
+		logger.info("this is [revokeappointmenttotutor.do] start ...");
+		Map<String, Object> result=new HashMap<String, Object>();
+		logger.info("this is [revokeappointmenttotutor.do] is decoding ...");
+		JSONObject json=JSONObject.fromString(this.decodeParameters(data));
+		logger.info("this is [revokeappointmenttotutor.do] decode done ...");
+		
+		Integer currentUserId=-1,assignmentId=-1;
+		String token=null;
+		if (!json.has("userId")||!json.has("token")||!json.has("assignmentId")){
+			result.put("status", -1);
+			result.put("info", "the lack of parameter");
+			logger.info("this is [revokeappointmenttotutor.do] the lack of parameter ...");
+		}
+		
+		if (result.isEmpty()){
+			try {
+				currentUserId=json.getInt("userId");
+			} catch (Exception e) {
+				result.put("status", -1);
+				result.put("info", "the lack of parameter");
+				logger.info("this is [revokeappointmenttotutor.do] get userId error ...");
+				e.printStackTrace();
+			}
+			try {
+				token=json.getString("token");
+			} catch (Exception e) {
+				result.put("status", -1);
+				result.put("info", "the lack of parameter");
+				logger.info("this is [revokeappointmenttotutor.do] get token error ...");
+				e.printStackTrace();
+			}
+			try {
+				assignmentId=json.getInt("assignmentId");
+			} catch (Exception e) {
+				result.put("status", -1);
+				result.put("info", "the lack of parameter");
+				logger.info("this is [revokeappointmenttotutor.do] get assignmentId error ...");
+				e.printStackTrace();
+			}
+			
+			if (result.isEmpty()){
+				try {
+					String localToken=WebApplicationUtils.getToken(currentUserId);
+					logger.info("this is [revokeappointmenttotutor.do] currentTutorId ["+currentUserId+"] ...");
+					if (localToken!=null&&localToken.equals(token)){
+						logger.info("this is [revokeappointmenttotutor.do] confirm identity...");
+						logger.info("this is [revokeappointmenttotutor.do] find assignment ["+assignmentId+"] ...");
+						
+						if (appTutorAppointmentToTutorService.revokeTutorToTutorFromStudent(assignmentId)){
+							result.put("status", 1);
+							result.put("info", "operation success!");
+							logger.info("this is [revokeappointmenttotutor.do] revokeappointmenttotutor operation done ...");
+						}else{
+							result.put("status", 0);
+							result.put("info", "operation failed!");
+						}
+					}else{
+						result.put("status", -2);
+						result.put("info", "illegal user");
+						logger.info("this is [revokeappointmenttotutor.do] illegal user ...");
+					}
+				} catch (Exception e) {
+					result.put("status", 0);
+					result.put("info", "occur exception");
+					logger.info("this is [revokeappointmenttotutor.do] exception ...");
+					e.printStackTrace();
+				}
+			}
+		}
+		String tmp=JSONObject.fromMap(result).toString();
+		logger.info("this is [revokeappointmenttotutor.do] return ["+tmp+"] ...");
+		return tmp;
+	}
+	
+	@RequestMapping(value = "/initdownloadappointmentassignmentlist.do", method=RequestMethod.POST)
+	@ResponseBody
+	@SystemLogIsCheck(description="查询教师下载代审作业列表")
+	public String initDownloadAppointmentAssignmentlist(HttpServletRequest request, @RequestBody String data) {
+		logger.info("this is [initdownloadappointmentassignmentlist.do] start ...");
+		Map<String, Object> result=new HashMap<String, Object>();
+		logger.info("this is [initdownloadappointmentassignmentlist.do] is decoding ...");
+		JSONObject json=JSONObject.fromString(this.decodeParameters(data));
+		logger.info("this is [initdownloadappointmentassignmentlist.do] decode done ...");
+		
+		Integer currentTutorId=-1;
+		String token=null;
+		if (!json.has("userId")||!json.has("token")){
+			result.put("status", -1);
+			result.put("info", "the lack of parameter");
+			logger.info("this is [initdownloadappointmentassignmentlist.do] the lack of parameter ...");
+		}
+		
+		if (result.isEmpty()){
+			try{
+				try {
+					currentTutorId=json.getInt("userId");
+				} catch (Exception e) {
+					result.put("status", -1);
+					result.put("info", "the lack of parameter");
+					logger.info("this is [initdownloadappointmentassignmentlist.do] get userId error ...");
+					e.printStackTrace();
+				}
+				try {
+					token=json.getString("token");
+				} catch (Exception e) {
+					result.put("status", -1);
+					result.put("info", "the lack of parameter");
+					logger.info("this is [initdownloadappointmentassignmentlist.do] get token error ...");
+					e.printStackTrace();
+				}
+				
+				if (result.isEmpty()){
+					String localToken=WebApplicationUtils.getToken(currentTutorId);
+					logger.info("this is [initdownloadappointmentassignmentlist.do] currentTutorId ["+currentTutorId+"] ...");
+					if (localToken!=null&&localToken.equals(token)){
+						//每页大小
+						int displayLength=Integer.parseInt(json.has("displayLength")?json.getString("displayLength"):"10");
+						//起始值
+						int displayStart=Integer.parseInt(json.has("displayStart")?json.getString("displayStart"):"0");
+						//查询条件
+						String param=json.has("param")?json.getString("param"):"";
+						
+						logger.info("this is [initdownloadappointmentassignmentlist.do] requset parameters [displayLength = {"+displayLength+"}],[displayStart = {"+displayStart+"}],[param = {"+param+"}]");
+						Map<String, Object> parameters=new HashMap<String, Object>();
+						if (param!=null&&!param.equals("")){
+							parameters.put("assignmentName", param);
+							parameters.put("originalTutor.chineseName", param);
+							parameters.put("student.chineseName", param);
+						}
+						parameters.put("sort", 6);
+						parameters.put("order", "desc");
+						
+						SysUsers currentTutor=sysUsersManagementService.get(currentTutorId);
+						if (currentTutor!=null&&currentTutor.getSysGroups()!=null){
+							result = appTutorAppointmentToTutorService.searchDataForAPP(displayLength, displayStart, parameters, currentTutorId);
+							
+							logger.info("this is [initdownloadappointmentassignmentlist.do] finding assignment ...");
+							result.put("status", 1);
+							result.put("info", "operation success!");
+							result.put("displayLength", displayLength);
+							result.put("displayStart", displayStart+displayLength);
+							result.put("param", param);
+							logger.info("this is [initdownloadappointmentassignmentlist.do] finding assignment done...");
+						}else{
+							result.put("status", 0);
+							result.put("info", "find user info error");
+							logger.info("this is [initdownloadappointmentassignmentlist.do] find user info error ...");
+						}
+					}else{
+						result.put("status", -2);
+						result.put("info", "illegal user");
+						logger.info("this is [initdownloadappointmentassignmentlist.do] illegal user ...");
+					}
+				}
+			}catch(Exception ex){
+				ex.printStackTrace();
+				result.put("status", 0);
+				result.put("info", "occur exception");
+				logger.info("this is [initdownloadappointmentassignmentlist.do] exception ...");
+			}
+		}
+		String tmp=JSONObject.fromMap(result).toString();
+		logger.info("this is [initdownloadappointmentassignmentlist.do] return ["+tmp+"] ...");
+		return tmp;
+	}
+	
+	@RequestMapping(value = "/inittutoruploadassignmentlist.do", method=RequestMethod.POST)
+	@ResponseBody
+	@SystemLogIsCheck(description="查询教师上传已审作业列表")
+	public String initTutorUploadAssignmentList(HttpServletRequest request, @RequestBody String data) {
+		logger.info("this is [inittutoruploadassignmentlist.do] start ...");
+		Map<String, Object> result=new HashMap<String, Object>();
+		logger.info("this is [inittutoruploadassignmentlist.do] is decoding ...");
+		JSONObject json=JSONObject.fromString(this.decodeParameters(data));
+		logger.info("this is [inittutoruploadassignmentlist.do] decode done ...");
+		
+		Integer userId=-1;
+		String token=null;
+		if (!json.has("userId")||!json.has("token")){
+			result.put("status", -1);
+			result.put("info", "the lack of parameter");
+			logger.info("this is [inittutoruploadassignmentlist.do] the lack of parameter ...");
+		}
+		
+		if (result.isEmpty()){
+			try{
+				userId=json.getInt("userId");
+			}catch(Exception ex){
+				result.put("status", 0);
+				result.put("info", "wrong parameter is userId");
+				logger.info("this is [inittutoruploadassignmentlist.do] wrong parameter is userId ...");
+			}
+			
+			try{
+				token=json.getString("token");
+			}catch(Exception ex){
+				result.put("status", 0);
+				result.put("info", "wrong parameter is token");
+				logger.info("this is [inittutoruploadassignmentlist.do] wrong parameter is token ...");
+			}
+			
+			if (result.isEmpty()){
+				try {
+					String localToken=WebApplicationUtils.getToken(userId);
+					
+					if (localToken!=null&&localToken.equals(token)){
+						//每页大小
+						int displayLength=Integer.parseInt(json.has("displayLength")?json.getString("displayLength"):"10");
+						//起始值
+						int displayStart=Integer.parseInt(json.has("displayStart")?json.getString("displayStart"):"0");
+						//查询条件
+						String param=json.has("param")?json.getString("param"):"";
+						
+						logger.info("this is [inittutoruploadassignmentlist.do] requset parameters [displayLength = {"+displayLength+"}],[displayStart = {"+displayStart+"}],[param = {"+param+"}]");
+						
+						Map<String, Object> parameters=new HashMap<String, Object>();
+						if (param!=null&&!param.equals("")){
+							parameters.put("assignmentName", param);
+							parameters.put("student.chineseName", param);
+						}
+						parameters.put("sort", 4);
+						parameters.put("order", "desc");
+						
+						result=appTutorAppointmentToStudentService.searchDataForAPP(displayLength, displayStart, parameters, userId);
+						result.put("status", 1);
+						result.put("info", "operation success");
+						result.put("displayLength", displayLength);
+						result.put("displayStart", displayStart+displayLength);
+						result.put("param", param);
+						logger.info("this is [initstudentuploadassignmentlist.do] find assignment list done ...");
+					}else{
+						result.put("status", -2);
+						result.put("info", "illegal user");
+						logger.info("this is [initstudentuploadassignmentlist.do] illegal user ...");
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+					result.put("status", 0);
+					result.put("info", "operation failed");
+					logger.info("this is [initstudentuploadassignmentlist.do] occur error ...");
+				}
+			}
+		}
+		String tmp=JSONObject.fromMap(result).toString();
+		logger.info("this is [initstudentuploadassignmentlist.do] return ["+tmp+"] ...");
+		return tmp;
+	}
+	
+	@RequestMapping(value = "/savetutoruploadassignmentinfo.do", method=RequestMethod.POST)
+	@ResponseBody
+	@SystemLogIsCheck(description="保存教师上传作业信息")
+	public String saveTutorUploadAssignmentInfo(HttpServletRequest request, @RequestParam("uploadFile") CommonsMultipartFile[] uploadFile) {
+		logger.info("this is [savetutoruploadassignmentinfo.do] start ...");
+		Map<String, Object> result=new HashMap<String, Object>();
+		
+		logger.info("this is [savetutoruploadassignmentinfo.do] get page parameters ...");
+		Integer currentTutorId=-1,toStudentId=-1;
+		String uploadAssignmentName=null, token=null;
+		AppTutorAppointmentAssignmentToStudent uploadAssignment=null;
+		try {
+			currentTutorId=ServletRequestUtils.getRequiredIntParameter(request, "userId");
+			token=ServletRequestUtils.getRequiredStringParameter(request, "token");
+			toStudentId=ServletRequestUtils.getIntParameter(request, "toStudentId");
+			uploadAssignmentName=ServletRequestUtils.getRequiredStringParameter(request, "assignmentName");
+		} catch (ServletRequestBindingException e1) {
+			e1.printStackTrace();
+			result.put("status", -1);
+			result.put("info", "the lack of parameter");
+			logger.info("this is [savetutoruploadassignmentinfo.do] the lack of parameter ...");
+		}
+		
+		String localToken=WebApplicationUtils.getToken(currentTutorId);
+		if (localToken!=null&&localToken.equals(token)){
+			
+			Calendar now=new GregorianCalendar();
+			String year="/"+now.get(Calendar.YEAR)+"/";
+			String month=(now.get(Calendar.MONTH)+1)>9?"/"+(now.get(Calendar.MONTH)+1)+"/":"/0"+(now.get(Calendar.MONTH)+1)+"/";
+			String day=now.get(Calendar.DAY_OF_MONTH)>9?"/"+now.get(Calendar.DAY_OF_MONTH)+"/":"/0"+now.get(Calendar.DAY_OF_MONTH)+"/";
+			
+			String _localPath=year;
+			File directory=new File(_filePath+_localPath);
+			if (!directory.exists()){
+				directory.mkdir();
+				logger.info("this is [savetutoruploadassignmentinfo.do] create directory ["+directory+"] success...");
+			}
+			
+			_localPath+=month;
+			directory=new File(_filePath+_localPath);
+			if (!directory.exists()){
+				directory.mkdir();
+				logger.info("this is [savetutoruploadassignmentinfo.do] create directory ["+directory+"] success...");
+			}
+			
+			_localPath+=day;
+			directory=new File(_filePath+_localPath);
+			if (!directory.exists()){
+				directory.mkdir();
+				logger.info("this is [savetutoruploadassignmentinfo.do] create directory ["+directory+"] success...");
+			}
+			
+			_localPath+=File.separator+"tutor_"+currentTutorId;
+			directory=new File(_filePath+_localPath);
+			logger.info("this is [savetutoruploadassignmentinfo.do] show directory name ["+directory+"]");
+			if (!directory.exists()){
+				directory.mkdir();
+				logger.info("this is [savetutoruploadassignmentinfo.do] create directory ["+directory+"] success...");
+			}
+			
+			File file=null;
+			String strFileName=null;
+			String strSuffix=null;
+			int dotPosition=-1;
+			
+			for (int i=0;i<uploadFile.length;i++){
+				if (!uploadFile[i].isEmpty()){
+					strFileName=uploadFile[i].getOriginalFilename();
+					logger.info("this is [savetutoruploadassignmentinfo.do] show file name ["+strFileName+"]");
+					
+					dotPosition=strFileName.lastIndexOf(".");
+					strSuffix=strFileName.substring(dotPosition);
+					
+					if (strSuffix!=null&&!strSuffix.equals("")&&(strSuffix.equals(".doc")||strSuffix.equals(".docx")||strSuffix.equals(".pdf"))){
+						file=new File(directory+File.separator+Calendar.getInstance().getTimeInMillis());
+						
+						while(file.exists()){
+							logger.info("this is [savetutoruploadassignmentinfo.do] file ["+file.getName()+"] exist...");
+							file=new File(directory+File.separator+Calendar.getInstance().getTimeInMillis());
+							logger.info("this is [savetutoruploadassignmentinfo.do] change file name ["+file.getName()+"]...");
+						}
+					}
+					
+					if (!file.exists()){
+						logger.info("this is [savetutoruploadassignmentinfo.do] file ["+file.getName()+"] do not exist...");
+						try {
+							file.createNewFile();
+							logger.info("this is [savetutoruploadassignmentinfo.do] create file ["+file.getName()+"] success...");
+							uploadFile[i].transferTo(file);
+							logger.info("this is [savetutoruploadassignmentinfo.do] file ["+file.getName()+"] transfer...");
+						} catch (IOException e) {
+							logger.info("this is [savetutoruploadassignmentinfo.do] create file ["+file.getName()+"] failed...");
+							result.put("status", 0);
+							result.put("info", "save failed, try again!");
+							e.printStackTrace();
+						}
+					}
+					
+					if (result.isEmpty()){
+						uploadAssignment=new AppTutorAppointmentAssignmentToStudent();
+						
+						String assignmentName=(uploadAssignmentName==null||uploadAssignmentName.equals(""))?strFileName:uploadAssignmentName;
+						uploadAssignment.setAssignmentName(StringEscapeUtils.escapeJavaScript(StringEscapeUtils.escapeHtml(assignmentName)));
+						logger.info("this is [savetutoruploadassignmentinfo.do] set assignment name ["+uploadAssignment.getAssignmentName()+"]...");
+						uploadAssignment.setFilePath(_localPath+File.separator+file.getName());
+						uploadAssignment.setFileName(strFileName);
+						logger.info("this is [savetutoruploadassignmentinfo.do] set file name ["+strFileName+"]...");
+						
+						logger.info("this is [savetutoruploadassignmentinfo.do] set toStudentId ["+toStudentId+"]...");
+						uploadAssignment.setTargetStudent(sysUsersManagementService.get(toStudentId));
+						logger.info("this is [savetutoruploadassignmentinfo.do] set currentTutorId ["+currentTutorId+"]...");
+						uploadAssignment.setSourceTutor(sysUsersManagementService.get(currentTutorId));
+						
+						logger.info("this is [savetutoruploadassignmentinfo.do] is saving ...");
+						appTutorAppointmentToStudentService.save(uploadAssignment);
+						result.put("status", 1);
+						result.put("info", "operation success!");
+						logger.info("this is [savetutoruploadassignmentinfo.do] save uploadAssignment done ...");
+					}
+				}else{
+					logger.info("this is [savetutoruploadassignmentinfo.do] save uploadAssignment error ...");
+					result.put("status", 0);
+					result.put("info", "save failed, try again!");
+				}
+			}
+		}else{
+			result.put("status", -2);
+			result.put("info", "illegal user");
+			logger.info("this is [savetutoruploadassignmentinfo.do] illegal user ...");
+		}
+		
+		String tmp=JSONObject.fromMap(result).toString();
+		logger.info("this is [savetutoruploadassignmentinfo.do] return ["+tmp+"] ...");
+		return tmp;
+	}
+	
+	@RequestMapping(value = "/inittutoruploadappointmentassignmentlist.do", method=RequestMethod.POST)
+	@ResponseBody
+	@SystemLogIsCheck(description="查询教师上传代审作业列表")
+	public String initTutorUploadAppointmentAssignmentList(HttpServletRequest request, @RequestBody String data) {
+		logger.info("this is [inittutoruploadappointmentassignmentlist.do] start ...");
+		Map<String, Object> result=new HashMap<String, Object>();
+		logger.info("this is [inittutoruploadappointmentassignmentlist.do] is decoding ...");
+		JSONObject json=JSONObject.fromString(this.decodeParameters(data));
+		logger.info("this is [inittutoruploadappointmentassignmentlist.do] decode done ...");
+		
+		Integer userId=-1;
+		String token=null;
+		if (!json.has("userId")||!json.has("token")){
+			result.put("status", -1);
+			result.put("info", "the lack of parameter");
+			logger.info("this is [inittutoruploadappointmentassignmentlist.do] the lack of parameter ...");
+		}
+		
+		if (result.isEmpty()){
+			try{
+				userId=json.getInt("userId");
+			}catch(Exception ex){
+				result.put("status", 0);
+				result.put("info", "wrong parameter is userId");
+				logger.info("this is [inittutoruploadappointmentassignmentlist.do] wrong parameter is userId ...");
+			}
+			
+			try{
+				token=json.getString("token");
+			}catch(Exception ex){
+				result.put("status", 0);
+				result.put("info", "wrong parameter is token");
+				logger.info("this is [inittutoruploadappointmentassignmentlist.do] wrong parameter is token ...");
+			}
+			
+			if (result.isEmpty()){
+				try {
+					String localToken=WebApplicationUtils.getToken(userId);
+					
+					if (localToken!=null&&localToken.equals(token)){
+						//每页大小
+						int displayLength=Integer.parseInt(json.has("displayLength")?json.getString("displayLength"):"10");
+						//起始值
+						int displayStart=Integer.parseInt(json.has("displayStart")?json.getString("displayStart"):"0");
+						//查询条件
+						String param=json.has("param")?json.getString("param"):"";
+						
+						logger.info("this is [inittutoruploadappointmentassignmentlist.do] requset parameters [displayLength = {"+displayLength+"}],[displayStart = {"+displayStart+"}],[param = {"+param+"}]");
+						
+						Map<String, Object> parameters=new HashMap<String, Object>();
+						if (param!=null&&!param.equals("")){
+							parameters.put("assignmentName", param);
+							parameters.put("student.chineseName", param);
+						}
+						parameters.put("sort", 4);
+						parameters.put("order", "desc");
+						
+						SysUsers currentTutor=sysUsersManagementService.get(userId);
+						if (currentTutor!=null&&currentTutor.getSysGroups()!=null){
+							result = appTutorAppointmentToTutorService.searchDataForAPPToTutor(displayLength, displayStart, parameters, userId);
+						}
+						
+						result.put("status", 1);
+						result.put("info", "operation success");
+						result.put("displayLength", displayLength);
+						result.put("displayStart", displayStart+displayLength);
+						result.put("param", param);
+						logger.info("this is [inittutoruploadappointmentassignmentlist.do] find assignment list done ...");
+					}else{
+						result.put("status", -2);
+						result.put("info", "illegal user");
+						logger.info("this is [inittutoruploadappointmentassignmentlist.do] illegal user ...");
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+					result.put("status", 0);
+					result.put("info", "operation failed");
+					logger.info("this is [inittutoruploadappointmentassignmentlist.do] occur error ...");
+				}
+			}
+		}
+		String tmp=JSONObject.fromMap(result).toString();
+		logger.info("this is [inittutoruploadappointmentassignmentlist.do] return ["+tmp+"] ...");
+		return tmp;
+	}
+	
+	@RequestMapping(value = "/savetutoruploadappointmentassignmentinfo.do", method=RequestMethod.POST)
+	@ResponseBody
+	@SystemLogIsCheck(description="保存教师上传代审作业信息")
+	public String saveUploadAppointmentAssignmentInfo(HttpServletRequest request, @RequestParam("uploadFile") CommonsMultipartFile[] uploadFile) {
+		logger.info("this is [savetutoruploadappointmentassignmentinfo.do] start ...");
+		Map<String, Object> result=new HashMap<String, Object>();
+		
+		logger.info("this is [savetutoruploadappointmentassignmentinfo.do] get page parameters ...");
+		Integer currentTutorId=-1,toTutorId=-1;
+		String uploadAssignmentName=null, token=null;
+		AppTutorAppointmentAssignmentToTutor uploadAssignment=null;
+		try {
+			currentTutorId=ServletRequestUtils.getRequiredIntParameter(request, "userId");
+			token=ServletRequestUtils.getRequiredStringParameter(request, "token");
+			toTutorId=ServletRequestUtils.getIntParameter(request, "toTutoId");
+			uploadAssignmentName=ServletRequestUtils.getRequiredStringParameter(request, "assignmentName");
+		} catch (ServletRequestBindingException e) {
+			e.printStackTrace();
+			result.put("status", -1);
+			result.put("info", "the lack of parameter");
+			logger.info("this is [savetutoruploadappointmentassignmentinfo.do] the lack of parameter ...");
+		}
+		
+		String localToken=WebApplicationUtils.getToken(currentTutorId);
+		if (localToken!=null&&localToken.equals(token)){
+			
+			Calendar now=new GregorianCalendar();
+			String year="/"+now.get(Calendar.YEAR)+"/";
+			String month=(now.get(Calendar.MONTH)+1)>9?"/"+(now.get(Calendar.MONTH)+1)+"/":"/0"+(now.get(Calendar.MONTH)+1)+"/";
+			String day=now.get(Calendar.DAY_OF_MONTH)>9?"/"+now.get(Calendar.DAY_OF_MONTH)+"/":"/0"+now.get(Calendar.DAY_OF_MONTH)+"/";
+			
+			String _localPath=year;
+			File directory=new File(_filePath+_localPath);
+			if (!directory.exists()){
+				directory.mkdir();
+				logger.info("this is [savetutoruploadappointmentassignmentinfo.do] create directory ["+directory+"] success...");
+			}
+			
+			_localPath+=month;
+			directory=new File(_filePath+_localPath);
+			if (!directory.exists()){
+				directory.mkdir();
+				logger.info("this is [savetutoruploadappointmentassignmentinfo.do] create directory ["+directory+"] success...");
+			}
+			
+			_localPath+=day;
+			directory=new File(_filePath+_localPath);
+			if (!directory.exists()){
+				directory.mkdir();
+				logger.info("this is [savetutoruploadappointmentassignmentinfo.do] create directory ["+directory+"] success...");
+			}
+			
+			_localPath+=File.separator+"tutor_"+currentTutorId;
+			directory=new File(_filePath+_localPath);
+			logger.info("this is [savetutoruploadappointmentassignmentinfo.do] show directory name ["+directory+"]");
+			if (!directory.exists()){
+				directory.mkdir();
+				logger.info("this is [savetutoruploadappointmentassignmentinfo.do] create directory ["+directory+"] success...");
+			}
+			
+			File file=null;
+			String strFileName=null;
+			String strSuffix=null;
+			int dotPosition=-1;
+			
+			for (int i=0;i<uploadFile.length;i++){
+				if (!uploadFile[i].isEmpty()){
+					strFileName=uploadFile[i].getOriginalFilename();
+					logger.info("this is [savetutoruploadappointmentassignmentinfo.do] show file name ["+strFileName+"]");
+					
+					dotPosition=strFileName.lastIndexOf(".");
+					strSuffix=strFileName.substring(dotPosition);
+					
+					if (strSuffix!=null&&!strSuffix.equals("")&&(strSuffix.equals(".doc")||strSuffix.equals(".docx")||strSuffix.equals(".pdf"))){
+						file=new File(directory+File.separator+Calendar.getInstance().getTimeInMillis());
+						
+						while(file.exists()){
+							logger.info("this is [savetutoruploadappointmentassignmentinfo.do] file ["+file.getName()+"] exist...");
+							file=new File(directory+File.separator+Calendar.getInstance().getTimeInMillis());
+							logger.info("this is [savetutoruploadappointmentassignmentinfo.do] change file name ["+file.getName()+"]...");
+						}
+					}
+					
+					if (!file.exists()){
+						logger.info("this is [savetutoruploadappointmentassignmentinfo.do] file ["+file.getName()+"] do not exist...");
+						try {
+							file.createNewFile();
+							logger.info("this is [savetutoruploadappointmentassignmentinfo.do] create file ["+file.getName()+"] success...");
+							uploadFile[i].transferTo(file);
+							logger.info("this is [savetutoruploadappointmentassignmentinfo.do] file ["+file.getName()+"] transfer...");
+						} catch (IOException e) {
+							logger.info("this is [savetutoruploadappointmentassignmentinfo.do] create file ["+file.getName()+"] failed...");
+							result.put("status", 0);
+							result.put("info", "save failed, try again!");
+							e.printStackTrace();
+						}
+					}
+					
+					if (result.isEmpty()){
+						uploadAssignment=new AppTutorAppointmentAssignmentToTutor();
+						
+						String assignmentName=(uploadAssignmentName==null||uploadAssignmentName.equals(""))?strFileName:uploadAssignmentName;
+						uploadAssignment.setAssignmentName(StringEscapeUtils.escapeJavaScript(StringEscapeUtils.escapeHtml(assignmentName)));
+						logger.info("this is [savetutoruploadappointmentassignmentinfo.do] set assignment name ["+uploadAssignment.getAssignmentName()+"]...");
+						uploadAssignment.setFilePath(_localPath+File.separator+file.getName());
+						uploadAssignment.setFileName(strFileName);
+						logger.info("this is [savetutoruploadappointmentassignmentinfo.do] set file name ["+strFileName+"]...");
+						
+						logger.info("this is [savetutoruploadappointmentassignmentinfo.do] set toTutorId ["+toTutorId+"]...");
+						uploadAssignment.setTargetTutor(sysUsersManagementService.get(toTutorId));
+						logger.info("this is [savetutoruploadappointmentassignmentinfo.do] set currentTutorId ["+currentTutorId+"]...");
+						uploadAssignment.setOriginalTutor(sysUsersManagementService.get(currentTutorId));
+						
+						logger.info("this is [savetutoruploadappointmentassignmentinfo.do] is saving ...");
+						appTutorAppointmentToTutorService.save(uploadAssignment);
+						result.put("status", 1);
+						result.put("info", "operation success!");
+						logger.info("this is [savetutoruploadappointmentassignmentinfo.do] save uploadAssignment done ...");
+					}
+				}else{
+					logger.info("this is [savetutoruploadappointmentassignmentinfo.do] save uploadAssignment error ...");
+					result.put("status", 0);
+					result.put("info", "save failed, try again!");
+				}
+			}
+		}else{
+			result.put("status", -2);
+			result.put("info", "illegal user");
+			logger.info("this is [savetutoruploadappointmentassignmentinfo.do] illegal user ...");
+		}
+		
+		String tmp=JSONObject.fromMap(result).toString();
+		logger.info("this is [savetutoruploadappointmentassignmentinfo.do] return ["+tmp+"] ...");
+		return tmp;
+	}
+	
+	@RequestMapping(value = "/deletemultipleappointmenttostudent.do", method=RequestMethod.POST)
+	@SystemLogIsCheck(description="批量收回上传已审作业")
+	public String deleteMultipleAssignmentToStudent(HttpServletRequest request, @RequestBody String data) {
+		logger.info("this is [deletemultipleappointmenttostudent.do] start ...");
+		Map<String, Object> result=new HashMap<String, Object>();
+		logger.info("this is [deletemultipleappointmenttostudent.do] is decoding ...");
+		JSONObject json=JSONObject.fromString(this.decodeParameters(data));
+		logger.info("this is [deletemultipleappointmenttostudent.do] decode done ...");
+		
+		Integer userId=-1;
+		String token=null, deleteIds=null;
+		if (!json.has("userId")||!json.has("token")||!json.has("deleteIds")){
+			result.put("status", -1);
+			result.put("info", "the lack of parameter");
+			logger.info("this is [deletemultipleappointmenttostudent.do] the lack of parameter ...");
+		}
+		
+		if (result.isEmpty()){
+			try{
+				userId=json.getInt("userId");
+			}catch(Exception ex){
+				result.put("status", 0);
+				result.put("info", "wrong parameter is userId");
+				logger.info("this is [deletemultipleappointmenttostudent.do] wrong parameter is userId ...");
+			}
+			
+			try{
+				token=json.getString("token");
+			}catch(Exception ex){
+				result.put("status", 0);
+				result.put("info", "wrong parameter is token");
+				logger.info("this is [deletemultipleappointmenttostudent.do] wrong parameter is token ...");
+			}
+			
+			try{
+				deleteIds=json.getString("deleteIds");
+			}catch(Exception ex){
+				result.put("status", 0);
+				result.put("info", "wrong parameter is deleteIds");
+				logger.info("this is [deletemultipleappointmenttostudent.do] wrong parameter is deleteIds ...");
+			}
+			
+			if (result.isEmpty()){
+				try {
+					String localToken=WebApplicationUtils.getToken(userId);
+					
+					if (localToken!=null&&localToken.equals(token)){
+						logger.info("this is [deletemultipleappointmenttostudent.do] confirm identity...");
+						if (appTutorAppointmentToStudentService.revokeTutorToStudent(deleteIds)){
+							result.put("status", 1);
+							result.put("info", "operation success");
+							logger.info("this is [deletemultipleappointmenttostudent.do] revoke assignment done ...");
+						}else{
+							result.put("status", 0);
+							result.put("info", "operation failed");
+							logger.info("this is [deletemultipleappointmenttostudent.do] revoke assignment done ...");
+						}
+					}else{
+						result.put("status", -2);
+						result.put("info", "illegal user");
+						logger.info("this is [deletemultipleappointmenttostudent.do] illegal user ...");
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+					result.put("status", 0);
+					result.put("info", "operation failed");
+					logger.info("this is [deletemultipleappointmenttostudent.do] occur error ...");
+				}
+			}
+		}
+		String tmp=JSONObject.fromMap(result).toString();
+		logger.info("this is [deletemultipleappointmenttostudent.do] return ["+tmp+"] ...");
+		return tmp;
+	}
+	
+	@RequestMapping(value = "/deletemultipleassignmenttotutor.do", method=RequestMethod.POST)
+	@SystemLogIsCheck(description="批量收回上传代审作业")
+	public String deleteMultipleAssignmentToTutor(HttpServletRequest request, @RequestBody String data) {
+		logger.info("this is [deletemultipleassignmenttotutor.do] start ...");
+		Map<String, Object> result=new HashMap<String, Object>();
+		logger.info("this is [deletemultipleassignmenttotutor.do] is decoding ...");
+		JSONObject json=JSONObject.fromString(this.decodeParameters(data));
+		logger.info("this is [deletemultipleassignmenttotutor.do] decode done ...");
+		
+		Integer userId=-1;
+		String token=null, deleteIds=null;
+		if (!json.has("userId")||!json.has("token")||!json.has("deleteIds")){
+			result.put("status", -1);
+			result.put("info", "the lack of parameter");
+			logger.info("this is [deletemultipleassignmenttotutor.do] the lack of parameter ...");
+		}
+		
+		if (result.isEmpty()){
+			try{
+				userId=json.getInt("userId");
+			}catch(Exception ex){
+				result.put("status", 0);
+				result.put("info", "wrong parameter is userId");
+				logger.info("this is [deletemultipleassignmenttotutor.do] wrong parameter is userId ...");
+			}
+			
+			try{
+				token=json.getString("token");
+			}catch(Exception ex){
+				result.put("status", 0);
+				result.put("info", "wrong parameter is token");
+				logger.info("this is [deletemultipleassignmenttotutor.do] wrong parameter is token ...");
+			}
+			
+			try{
+				deleteIds=json.getString("deleteIds");
+			}catch(Exception ex){
+				result.put("status", 0);
+				result.put("info", "wrong parameter is deleteIds");
+				logger.info("this is [deletemultipleassignmenttotutor.do] wrong parameter is deleteIds ...");
+			}
+			
+			if (result.isEmpty()){
+				try {
+					String localToken=WebApplicationUtils.getToken(userId);
+					
+					if (localToken!=null&&localToken.equals(token)){
+						logger.info("this is [deletemultipleassignmenttotutor.do] confirm identity...");
+						if (appTutorAppointmentToTutorService.revokeTutorToTutor(deleteIds)){
+							result.put("status", 1);
+							result.put("info", "operation success");
+							logger.info("this is [deletemultipleassignmenttotutor.do] revoke assignment done ...");
+						}else{
+							result.put("status", 0);
+							result.put("info", "operation failed");
+							logger.info("this is [deletemultipleassignmenttotutor.do] revoke assignment done ...");
+						}
+					}else{
+						result.put("status", -2);
+						result.put("info", "illegal user");
+						logger.info("this is [deletemultipleassignmenttotutor.do] illegal user ...");
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+					result.put("status", 0);
+					result.put("info", "operation failed");
+					logger.info("this is [deletemultipleassignmenttotutor.do] occur error ...");
+				}
+			}
+		}
+		String tmp=JSONObject.fromMap(result).toString();
+		logger.info("this is [deletemultipleassignmenttotutor.do] return ["+tmp+"] ...");
+		return tmp;
+	}
+	
+	@RequestMapping(value = "/deletemultipleassignment.do", method=RequestMethod.POST)
+	@SystemLogIsCheck(description="批量收回学生上传的作业")
+	public String deleteＭultipleAssignment(HttpServletRequest request, @RequestBody String data) {
+		logger.info("this is [deletemultipleassignment.do] start ...");
+		Map<String, Object> result=new HashMap<String, Object>();
+		logger.info("this is [deletemultipleassignment.do] is decoding ...");
+		JSONObject json=JSONObject.fromString(this.decodeParameters(data));
+		logger.info("this is [deletemultipleassignment.do] decode done ...");
+		
+		Integer userId=-1;
+		String token=null, deleteIds=null;
+		if (!json.has("userId")||!json.has("token")||!json.has("deleteIds")){
+			result.put("status", -1);
+			result.put("info", "the lack of parameter");
+			logger.info("this is [deletemultipleassignment.do] the lack of parameter ...");
+		}
+		
+		if (result.isEmpty()){
+			try{
+				userId=json.getInt("userId");
+			}catch(Exception ex){
+				result.put("status", 0);
+				result.put("info", "wrong parameter is userId");
+				logger.info("this is [deletemultipleassignment.do] wrong parameter is userId ...");
+			}
+			
+			try{
+				token=json.getString("token");
+			}catch(Exception ex){
+				result.put("status", 0);
+				result.put("info", "wrong parameter is token");
+				logger.info("this is [deletemultipleassignment.do] wrong parameter is token ...");
+			}
+			
+			try{
+				deleteIds=json.getString("deleteIds");
+			}catch(Exception ex){
+				result.put("status", 0);
+				result.put("info", "wrong parameter is deleteIds");
+				logger.info("this is [deletemultipleassignment.do] wrong parameter is deleteIds ...");
+			}
+			
+			if (result.isEmpty()){
+				try {
+					String localToken=WebApplicationUtils.getToken(userId);
+					
+					if (localToken!=null&&localToken.equals(token)){
+						logger.info("this is [deletemultipleassignment.do] confirm identity...");
+						if (appStudentUploadAssignmentSerivce.deleteMultiple(deleteIds)){
+							result.put("status", 1);
+							result.put("info", "operation success");
+							logger.info("this is [deletemultipleassignment.do] revoke assignment done ...");
+						}else{
+							result.put("status", 0);
+							result.put("info", "operation failed");
+							logger.info("this is [deletemultipleassignment.do] revoke assignment done ...");
+						}
+					}else{
+						result.put("status", -2);
+						result.put("info", "illegal user");
+						logger.info("this is [deletemultipleassignment.do] illegal user ...");
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+					result.put("status", 0);
+					result.put("info", "operation failed");
+					logger.info("this is [deletemultipleassignment.do] occur error ...");
+				}
+			}
+		}
+		String tmp=JSONObject.fromMap(result).toString();
+		logger.info("this is [deletemultipleassignment.do] return ["+tmp+"] ...");
 		return tmp;
 	}
 }
