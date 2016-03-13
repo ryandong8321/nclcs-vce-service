@@ -20,6 +20,16 @@ public interface IAppTutorAppointmentToTutorService extends INclcsVceServiceBase
 	public Map<String, Object> searchDataForAjax(int displayLength, int displayStart, int sEcho, Map<String, Object> parameters, Integer userId);
 	
 	/**
+	 * 为APP提供数据，查找下载代审作业数据，为学生作业管理使用，可分页
+	 * @param displayLength
+	 * @param displayStart
+	 * @param parameters
+	 * @param userId
+	 * @return
+	 */
+	public Map<String, Object> searchDataForAPP(int displayLength, int displayStart, Map<String, Object> parameters, Integer userId);
+	
+	/**
 	 * 查找上传代审作业数据，为学生作业管理使用，可分页
 	 * @param displayLength
 	 * @param displayStart
@@ -29,6 +39,17 @@ public interface IAppTutorAppointmentToTutorService extends INclcsVceServiceBase
 	 * @return
 	 */
 	public Map<String, Object> searchDataForAjaxToTutor(int displayLength, int displayStart, int sEcho, Map<String, Object> parameters, Integer tutorId);
+	
+	/**
+	 * 为APP提供数据，查找上传代审作业数据，为学生作业管理使用，可分页
+	 * @param displayLength
+	 * @param displayStart
+	 * @param sEcho
+	 * @param parameters
+	 * @param tutorId
+	 * @return
+	 */
+	public Map<String, Object> searchDataForAPPToTutor(int displayLength, int displayStart, Map<String, Object> parameters, Integer tutorId);
 	
 	
 	public List<Map<String, Object>> findTutorsForTutorToTutor(Integer currentUserId, Integer targetTutorId);

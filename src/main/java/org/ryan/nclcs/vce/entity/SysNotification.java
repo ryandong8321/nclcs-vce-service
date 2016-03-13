@@ -17,6 +17,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
@@ -88,7 +89,7 @@ public class SysNotification implements Serializable{
 	}
 
 	public String getNotificationTitle() {
-		return notificationTitle;
+		return StringEscapeUtils.unescapeHtml(notificationTitle);
 	}
 
 	public void setNotificationTitle(String notificationTitle) {
@@ -96,7 +97,7 @@ public class SysNotification implements Serializable{
 	}
 
 	public String getNotificationMessage() {
-		return notificationMessage;
+		return StringEscapeUtils.unescapeHtml(notificationMessage);
 	}
 
 	public void setNotificationMessage(String notificationMessage) {

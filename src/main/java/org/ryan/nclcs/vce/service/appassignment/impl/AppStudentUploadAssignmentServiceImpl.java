@@ -130,8 +130,7 @@ public class AppStudentUploadAssignmentServiceImpl extends NclcsVceServiceBaseSe
 	}
 
 	@Override
-	public Map<String, Object> searchDataForApp(int displayLength, int displayStart, Map<String, Object> parameters,
-			Integer userId) {
+	public Map<String, Object> searchDataForAPP(int displayLength, int displayStart, Map<String, Object> parameters,Integer userId) {
 		Map<String, Object> result=new HashMap<String, Object>();
 		List<Map<String, Object>> data=new ArrayList<Map<String, Object>>();
 		
@@ -145,8 +144,9 @@ public class AppStudentUploadAssignmentServiceImpl extends NclcsVceServiceBaseSe
 				tmp.put("assignmentName", uploadAssignment.getAssignmentName());
 				tmp.put("filePath", uploadAssignment.getFilePath());
 				tmp.put("fileName", uploadAssignment.getFileName());
-				tmp.put("uploadTime", uploadAssignment.getUploadTime().toString());
-				tmp.put("hasDownloaded", uploadAssignment.getDownloadTime()==null?true:false);
+				tmp.put("uploadTime", uploadAssignment.getUploadTime()==null?"":uploadAssignment.getUploadTime().toString());
+				tmp.put("downloadTime", uploadAssignment.getDownloadTime()==null?"":uploadAssignment.getDownloadTime().toString());
+				tmp.put("hasDownloaded", uploadAssignment.getDownloadTime()==null?false:true);
 				data.add(tmp);
 			}
 		}
@@ -158,8 +158,7 @@ public class AppStudentUploadAssignmentServiceImpl extends NclcsVceServiceBaseSe
 	}
 
 	@Override
-	public Map<String, Object> searchDataForApp(int displayLength, int displayStart, Map<String, Object> parameters,
-			String groupIds) {
+	public Map<String, Object> searchDataForAPP(int displayLength, int displayStart, Map<String, Object> parameters,String groupIds) {
 		Map<String, Object> result=new HashMap<String, Object>();
 		List<Map<String, Object>> data=new ArrayList<Map<String, Object>>();
 		

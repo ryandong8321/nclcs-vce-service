@@ -165,7 +165,7 @@ public class AppAssignmentTutorManagementController {
 				returnData = appStudentUploadAssignmentSerivce.searchDataForAjax(displayLength, displayStart, sEcho, parameters, groupIds.toString());
 				returnData.put("draw", sEcho);
 			}
-		} catch (NumberFormatException e) {
+		} catch (Exception e) {
 			logger.info("this is [initdownloadassignmentlist.do] occur exception ...");
 			e.printStackTrace();
 		}
@@ -302,7 +302,7 @@ public class AppAssignmentTutorManagementController {
 	
 	@RequestMapping(value = "/showappointmentinfo.do", method=RequestMethod.POST)
 	@SystemUserLoginIsCheck
-	@SystemLogIsCheck(description="显示指派老师信息")
+	@SystemLogIsCheck(description="显示指派老师状态信息")
 	public String showAppointmentInfo(HttpServletRequest request, Integer assignmentId) {
 		logger.info("this is [showappointmentinfo.do] start ...");
 		logger.info("this is [showappointmentinfo.do] userId ["+assignmentId+"] ...");
@@ -378,7 +378,7 @@ public class AppAssignmentTutorManagementController {
 			returnData.put("status", 1);
 			returnData.put("data", lstData);
 			
-		} catch (NumberFormatException e) {
+		} catch (Exception e) {
 			logger.info("this is [findalltutor.do] occur exception ...");
 			returnData.put("status", 0);
 			returnData.put("data", "");
@@ -423,7 +423,7 @@ public class AppAssignmentTutorManagementController {
 				returnData.put("data", appStudentUploadAssignmentSerivce.searchUploadedAssignmentStudentsByTutorId(currentUserId, studentId));
 				returnData.put("status", 1);
 			}
-		} catch (NumberFormatException e) {
+		} catch (Exception e) {
 			logger.info("this is [findallstudents.do] occur exception ...");
 			returnData.put("status", 0);
 			returnData.put("data", "");
@@ -439,14 +439,14 @@ public class AppAssignmentTutorManagementController {
 	@RequestMapping(value = "/findallappointmenttutors.do", method=RequestMethod.POST)
 	@ResponseBody
 	public String findAllAppointmentTutors(HttpServletRequest request, @RequestBody String data) {
-		logger.info("this is [findallstudents.do] start ...");
+		logger.info("this is [findallappointmenttutors.do] start ...");
 		
 		if (data!=null&&!data.equals("")){
 			try {
-				logger.info("this is [findallstudents.do] is decoding ...");
+				logger.info("this is [findallappointmenttutors.do] is decoding ...");
 				data=URLDecoder.decode(data, "utf-8");
 			} catch (UnsupportedEncodingException e) {
-				logger.info("this is [findallstudents.do] occur error when program decoding ...");
+				logger.info("this is [findallappointmenttutors.do] occur error when program decoding ...");
 				e.printStackTrace();
 			}
 		}
@@ -464,20 +464,20 @@ public class AppAssignmentTutorManagementController {
 				} catch (Exception e) {
 					//e.printStackTrace();
 				}
-				logger.info("this is [findallstudents.do] targetTutorId ["+targetTutorId+"]");
+				logger.info("this is [findallappointmenttutors.do] targetTutorId ["+targetTutorId+"]");
 				returnData.put("data", appTutorAppointmentToTutorService.findTutorsForTutorToTutor(currentUserId, targetTutorId));
 				returnData.put("status", 1);
 			}
-		} catch (NumberFormatException e) {
-			logger.info("this is [findallstudents.do] occur exception ...");
+		} catch (Exception e) {
+			logger.info("this is [findallappointmenttutors.do] occur exception ...");
 			returnData.put("status", 0);
 			returnData.put("data", "");
 			e.printStackTrace();
 		}
 		
 		String result=JSONObject.fromObject(returnData).toString();
-		logger.info("this is [findallstudents.do] data ["+result+"] ...");
-		logger.info("this is [findallstudents.do] end ...");
+		logger.info("this is [findallappointmenttutors.do] data ["+result+"] ...");
+		logger.info("this is [findallappointmenttutors.do] end ...");
 		return result;
 	}
 	
@@ -626,7 +626,7 @@ public class AppAssignmentTutorManagementController {
 				returnData = appTutorAppointmentToTutorService.searchDataForAjax(displayLength, displayStart, sEcho, parameters, userId);
 				returnData.put("draw", sEcho);
 			}
-		} catch (NumberFormatException e) {
+		} catch (Exception e) {
 			logger.info("this is [initdownloadassignmentlist.do] occur exception ...");
 			e.printStackTrace();
 		}
@@ -705,7 +705,7 @@ public class AppAssignmentTutorManagementController {
 				returnData = appTutorAppointmentToStudentService.searchDataForAjax(displayLength, displayStart, sEcho, parameters, userId);
 				returnData.put("draw", sEcho);
 			}
-		} catch (NumberFormatException e) {
+		} catch (Exception e) {
 			logger.info("this is [inituploadassignmentlist.do] occur exception ...");
 			e.printStackTrace();
 		}
@@ -838,25 +838,29 @@ public class AppAssignmentTutorManagementController {
 							} catch (IOException e) {
 								logger.info("this is [saveuploadassignmentinfo.do] create file ["+file.getAbsolutePath()+"] failed...");
 								e.printStackTrace();
+								result.put("status", 0);
+								result.put("data", "save failed, try again!");
 							}
 						}
 						
-						String assignmentName=(uploadAssignmentName==null||uploadAssignmentName.equals(""))?strFileName:uploadAssignmentName;
-						
-						uploadAssignment.setAssignmentName(StringEscapeUtils.escapeHtml(StringEscapeUtils.escapeJavaScript(assignmentName)));
-//						uploadAssignment.setFilePath(file.getAbsolutePath());
-						uploadAssignment.setFilePath(_localPath+File.separator+file.getName());
-						uploadAssignment.setFileName(strFileName);
-						
-						uploadAssignment.setTargetStudent(sysUsersManagementService.get(toStudentId));
-						uploadAssignment.setSourceTutor(sysUsersManagementService.get(currentTutorId));
-						
-						logger.info("this is [saveuploadassignmentinfo.do] is saving ...");
-						appTutorAppointmentToStudentService.save(uploadAssignment);
-						
-						result.put("status", 1);
-						result.put("data", "operation success!");
-						logger.info("this is [saveuploadassignmentinfo.do] save uploadAssignment done ...");
+						if (result.isEmpty()){
+							String assignmentName=(uploadAssignmentName==null||uploadAssignmentName.equals(""))?strFileName:uploadAssignmentName;
+							
+							uploadAssignment.setAssignmentName(StringEscapeUtils.escapeJavaScript(StringEscapeUtils.escapeHtml(assignmentName)));
+//							uploadAssignment.setFilePath(file.getAbsolutePath());
+							uploadAssignment.setFilePath(_localPath+File.separator+file.getName());
+							uploadAssignment.setFileName(strFileName);
+							
+							uploadAssignment.setTargetStudent(sysUsersManagementService.get(toStudentId));
+							uploadAssignment.setSourceTutor(sysUsersManagementService.get(currentTutorId));
+							
+							logger.info("this is [saveuploadassignmentinfo.do] is saving ...");
+							appTutorAppointmentToStudentService.save(uploadAssignment);
+							
+							result.put("status", 1);
+							result.put("data", "operation success!");
+							logger.info("this is [saveuploadassignmentinfo.do] save uploadAssignment done ...");
+						}
 					}else{
 						result.put("status", 0);
 						result.put("data", "wrong file suffix");
@@ -948,7 +952,7 @@ public class AppAssignmentTutorManagementController {
 				returnData = appTutorAppointmentToTutorService.searchDataForAjaxToTutor(displayLength, displayStart, sEcho, parameters, userId);
 				returnData.put("draw", sEcho);
 			}
-		} catch (NumberFormatException e) {
+		} catch (Exception e) {
 			logger.info("this is [inituploadappointmentassignmentlist.do] occur exception ...");
 			e.printStackTrace();
 		}
@@ -986,7 +990,7 @@ public class AppAssignmentTutorManagementController {
 	@RequestMapping(value = "/saveuploadappointmentassignmentinfo.do", method=RequestMethod.POST)
 	@SystemUserLoginIsCheck
 	@SystemLogIsCheck(description="保存上传代审作业信息")
-	public String saveUploadＡppointmentAssignmentInfo(HttpServletRequest request, @RequestParam("files") CommonsMultipartFile[] uploadFile) {
+	public String saveUploadAppointmentAssignmentInfo(HttpServletRequest request, @RequestParam("files") CommonsMultipartFile[] uploadFile) {
 		logger.info("this is [saveuploadappointmentassignmentinfo.do] start ...");
 		Map<String, Object> result=new HashMap<String, Object>();
 		
@@ -1083,23 +1087,28 @@ public class AppAssignmentTutorManagementController {
 							} catch (IOException e) {
 								logger.info("this is [saveuploadappointmentassignmentinfo.do] create file ["+file.getAbsolutePath()+"] failed...");
 								e.printStackTrace();
+								result.put("status", 0);
+								result.put("data", "save failed, try again!");
 							}
 						}
-						String assignmentName=(uploadAssignmentName==null||uploadAssignmentName.equals(""))?strFileName:uploadAssignmentName;
-						uploadAssignment.setAssignmentName(StringEscapeUtils.escapeHtml(StringEscapeUtils.escapeJavaScript(assignmentName)));
-//						uploadAssignment.setFilePath(file.getAbsolutePath());
-						uploadAssignment.setFilePath(_localPath+File.separator+file.getName());
-						uploadAssignment.setFileName(strFileName);
 						
-						uploadAssignment.setTargetTutor(sysUsersManagementService.get(toTutorId));
-						uploadAssignment.setOriginalTutor(sysUsersManagementService.get(currentTutorId));
-						
-						logger.info("this is [saveuploadappointmentassignmentinfo.do] is saving ...");
-						appTutorAppointmentToTutorService.save(uploadAssignment);
-						
-						result.put("status", 1);
-						result.put("data", "operation success!");
-						logger.info("this is [saveuploadappointmentassignmentinfo.do] save uploadAssignment done ...");
+						if (result.isEmpty()){
+							String assignmentName=(uploadAssignmentName==null||uploadAssignmentName.equals(""))?strFileName:uploadAssignmentName;
+							uploadAssignment.setAssignmentName(StringEscapeUtils.escapeJavaScript(StringEscapeUtils.escapeHtml(assignmentName)));
+//							uploadAssignment.setFilePath(file.getAbsolutePath());
+							uploadAssignment.setFilePath(_localPath+File.separator+file.getName());
+							uploadAssignment.setFileName(strFileName);
+							
+							uploadAssignment.setTargetTutor(sysUsersManagementService.get(toTutorId));
+							uploadAssignment.setOriginalTutor(sysUsersManagementService.get(currentTutorId));
+							
+							logger.info("this is [saveuploadappointmentassignmentinfo.do] is saving ...");
+							appTutorAppointmentToTutorService.save(uploadAssignment);
+							
+							result.put("status", 1);
+							result.put("data", "operation success!");
+							logger.info("this is [saveuploadappointmentassignmentinfo.do] save uploadAssignment done ...");
+						}
 					}else{
 						result.put("status", 0);
 						result.put("data", "wrong file suffix");
@@ -1156,14 +1165,14 @@ public class AppAssignmentTutorManagementController {
 	
 	@RequestMapping(value = "/deletemultipleassignment.do", method=RequestMethod.POST)
 	@SystemUserLoginIsCheck
-	@SystemLogIsCheck(description="批量收回上传已审作业")
+	@SystemLogIsCheck(description="批量收回上传代审作业")
 	public String deleteMultipleAssignmentToTutor(HttpServletRequest request, String deleteIds) {
-		logger.info("this is [deletemultipleappointmenttostudent.do] start ...");
-		logger.info("this is [deletemultipleappointmenttostudent.do] values [deleteId={"+deleteIds+"}]");
+		logger.info("this is [deletemultipleassignment.do] start ...");
+		logger.info("this is [deletemultipleassignment.do] values [deleteId={"+deleteIds+"}]");
 		Map<String, Object> result=new HashMap<String, Object>();
 		if (deleteIds!=null&&!deleteIds.equals("")){
 			try {
-				logger.info("this is [deletemultipleappointmenttostudent.do] ready to delete ...");
+				logger.info("this is [deletemultipleassignment.do] ready to delete ...");
 				if (appTutorAppointmentToTutorService.revokeTutorToTutor(deleteIds)){
 					result.put("status", 1);
 					result.put("data", "成功收回已上传的作业");
@@ -1171,16 +1180,16 @@ public class AppAssignmentTutorManagementController {
 					result.put("status", 0);
 					result.put("data", "收回已上传的作业失败,请重试!");
 				}
-				logger.info("this is [deletemultipleappointmenttostudent.do] to delete done...");
+				logger.info("this is [deletemultipleassignment.do] to delete done...");
 			} catch (Exception e) {
-				logger.info("this is [deletemultipleappointmenttostudent.do] to trough exception when delete ...");
+				logger.info("this is [deletemultipleassignment.do] to trough exception when delete ...");
 				result.put("status", 0);
 				result.put("data", "delete failed, try again!");
 				e.printStackTrace();
 			}
 		}
 		
-		logger.info("this is [deletemultipleappointmenttostudent.do] show result ["+result+"] ...");
+		logger.info("this is [deletemultipleassignment.do] show result ["+result+"] ...");
 		request.setAttribute("result", result.get("data"));
 		return "forward:/appassignmenttutormanagement/uploadappointmentassignmentlist.do";
 	}

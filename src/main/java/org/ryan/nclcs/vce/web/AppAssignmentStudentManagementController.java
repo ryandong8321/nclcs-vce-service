@@ -264,27 +264,30 @@ public class AppAssignmentStudentManagementController {
 							} catch (IOException e) {
 								logger.info("this is [saveuploadassignmentinfo.do] create file ["+file.getAbsolutePath()+"] failed...");
 								e.printStackTrace();
+								result.put("status", 0);
+								result.put("data", "save failed, try again!");
 							}
 						}
-						
-						String assignmentName=(uploadAssignmentName==null||uploadAssignmentName.equals(""))?strFileName:uploadAssignmentName;
-						
-						uploadAssignment.setAssignmentName(StringEscapeUtils.escapeHtml(StringEscapeUtils.escapeJavaScript(assignmentName)));
-//						uploadAssignment.setFilePath(file.getAbsolutePath());
-						uploadAssignment.setFilePath(_localPath+File.separator+file.getName());
-						uploadAssignment.setFileName(strFileName);
-						
-						SysUsers student=sysUsersManagementService.get(currentStudentId);
-						uploadAssignment.setStudent(student);
-						SysGroups classGroup=student.getSysGroups().get(0);
-						uploadAssignment.setTutor(sysUsersManagementService.findATutorFromGroup(classGroup.getId()));
-						
-						logger.info("this is [saveuploadassignmentinfo.do] is saving ...");
-						appStudentUploadAssignmentSerivce.save(uploadAssignment);
-						
-						result.put("status", 1);
-						result.put("data", "operation success!");
-						logger.info("this is [saveuploadassignmentinfo.do] save uploadAssignment done ...");
+						if (result.isEmpty()){
+							String assignmentName=(uploadAssignmentName==null||uploadAssignmentName.equals(""))?strFileName:uploadAssignmentName;
+							
+							uploadAssignment.setAssignmentName(StringEscapeUtils.escapeJavaScript(StringEscapeUtils.escapeHtml(assignmentName)));
+//							uploadAssignment.setFilePath(file.getAbsolutePath());
+							uploadAssignment.setFilePath(_localPath+File.separator+file.getName());
+							uploadAssignment.setFileName(strFileName);
+							
+							SysUsers student=sysUsersManagementService.get(currentStudentId);
+							uploadAssignment.setStudent(student);
+							SysGroups classGroup=student.getSysGroups().get(0);
+							uploadAssignment.setTutor(sysUsersManagementService.findATutorFromGroup(classGroup.getId()));
+							
+							logger.info("this is [saveuploadassignmentinfo.do] is saving ...");
+							appStudentUploadAssignmentSerivce.save(uploadAssignment);
+							
+							result.put("status", 1);
+							result.put("data", "operation success!");
+							logger.info("this is [saveuploadassignmentinfo.do] save uploadAssignment done ...");
+						}
 					}else{
 						result.put("status", 0);
 						result.put("data", "wrong file suffix");
@@ -311,7 +314,7 @@ public class AppAssignmentStudentManagementController {
 	@RequestMapping(value = "/deletemultipleassignment.do", method=RequestMethod.POST)
 	@SystemUserLoginIsCheck
 	@SystemLogIsCheck(description="批量收回学生上传的作业")
-	public String deleteＭultipleＡssignment(HttpServletRequest request, String deleteIds) {
+	public String deleteＭultipleAssignment(HttpServletRequest request, String deleteIds) {
 		logger.info("this is [deletemultipleassignment.do] start ...");
 		logger.info("this is [deletemultipleassignment.do] values [deleteId={"+deleteIds+"}]");
 		Map<String, Object> result=new HashMap<String, Object>();

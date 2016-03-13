@@ -63,6 +63,35 @@ public class AppTutorAppointmentToTutorServiceImpl extends NclcsVceServiceBaseSe
 		result.put("recordsFiltered", "");
 		return result;
 	}
+	
+	@Override
+	public Map<String, Object> searchDataForAPP(int displayLength, int displayStart, Map<String, Object> parameters, Integer userId){
+		Map<String, Object> result=new HashMap<String, Object>();
+		List<Map<String, Object>> data=new ArrayList<Map<String, Object>>();
+		
+		Pagination<AppTutorAppointmentAssignmentToTutor> page=this.getCurrentDAO().searchDataForAppointmentTutor(displayLength, displayStart, 0, parameters, userId);
+		
+		if (page.getRows() != null && !page.getRows().isEmpty()) {
+			Map<String, Object> tmp=null;
+			for (AppTutorAppointmentAssignmentToTutor toTutor : page.getRows()) {
+				tmp=new HashMap<String, Object>();
+				tmp.put("assignmentId", toTutor.getUploadAssignment()==null?toTutor.getId():toTutor.getUploadAssignment().getId());
+				tmp.put("assignmentName", toTutor.getAssignmentName());
+				tmp.put("filePath", toTutor.getFilePath());
+				tmp.put("fileName", toTutor.getFileName());
+				tmp.put("studentName", toTutor.getStudent()==null?"":toTutor.getStudent().getChineseName());
+				tmp.put("originalTutor", toTutor.getOriginalTutor()==null?"":toTutor.getOriginalTutor().getChineseName());
+				tmp.put("uploadTime", toTutor.getUploadTime()==null?"":toTutor.getUploadTime().toString());
+				tmp.put("downloadTime", toTutor.getDownloadTime()==null?"":toTutor.getDownloadTime().toString());
+				data.add(tmp);
+			}
+		}
+		result.put("data", data);
+		result.put("recordsTotal", page.getTotal());
+		result.put("recordsFiltered", "");
+		return result;
+	}
+	
 
 	@Override
 	public Map<String, Object> searchDataForAjaxToTutor(int displayLength, int displayStart, int sEcho,
@@ -89,6 +118,35 @@ public class AppTutorAppointmentToTutorServiceImpl extends NclcsVceServiceBaseSe
 				}else{
 					tmp.add("<a href=\"javascript:deleteUploadAssignment('"+toTutor.getId()+"');\" class=\"btn btn-sm red\"><i class=\"fa fa-times\"></i> REVOKE</a>");
 				}
+				data.add(tmp);
+			}
+		}
+		
+		result.put("data", data);
+		result.put("recordsTotal", page.getTotal());
+		result.put("recordsFiltered", "");
+		return result;
+	}
+	
+	@Override
+	public Map<String, Object> searchDataForAPPToTutor(int displayLength, int displayStart, Map<String, Object> parameters, Integer tutorId){
+		Map<String, Object> result=new HashMap<String, Object>();
+		List<Map<String,Object>> data=new ArrayList<Map<String,Object>>();
+		
+		int sEcho=0;
+		
+		Pagination<AppTutorAppointmentAssignmentToTutor> page=this.getCurrentDAO().searchDataForTutorAppointmentTutor(displayLength, displayStart, sEcho, parameters, tutorId);
+		
+		if (page.getRows() != null && !page.getRows().isEmpty()) {
+			Map<String,Object> tmp=null;
+			for (AppTutorAppointmentAssignmentToTutor toTutor : page.getRows()) {
+				tmp=new HashMap<String,Object>();
+				tmp.put("assignmentId", toTutor.getId());
+				tmp.put("assignmentName", toTutor.getAssignmentName());
+				tmp.put("toTutorName", toTutor.getTargetTutor()==null?"":toTutor.getTargetTutor().getChineseName());
+				tmp.put("uploadName", toTutor.getUploadTime()==null?"":toTutor.getUploadTime().toString());
+				tmp.put("downloadName", toTutor.getDownloadTime()==null?"":toTutor.getDownloadTime().toString());
+				tmp.put("canRevoke", toTutor.getDownloadTime()==null?true:false);
 				data.add(tmp);
 			}
 		}

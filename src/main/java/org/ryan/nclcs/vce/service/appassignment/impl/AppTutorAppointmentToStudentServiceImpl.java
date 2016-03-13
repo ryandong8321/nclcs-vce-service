@@ -58,6 +58,33 @@ public class AppTutorAppointmentToStudentServiceImpl extends NclcsVceServiceBase
 		result.put("recordsFiltered", "");
 		return result;
 	}
+	
+	@Override
+	public Map<String, Object> searchDataForAPP(int displayLength, int displayStart, Map<String, Object> parameters, Integer userId){
+		Map<String, Object> result=new HashMap<String, Object>();
+		List<Map<String, Object>> data=new ArrayList<Map<String, Object>>();
+		
+		Pagination<AppTutorAppointmentAssignmentToStudent> page=this.getCurrentDAO().searchDataForAppointmentStudent(displayLength, displayStart, 0, parameters, userId);
+		
+		if (page.getRows() != null && !page.getRows().isEmpty()) {
+			Map<String, Object> tmp=null;
+			for (AppTutorAppointmentAssignmentToStudent toStudent : page.getRows()) {
+				tmp=new HashMap<String, Object>();
+				tmp.put("assignmentId", toStudent.getId());
+				tmp.put("assignmentName", toStudent.getAssignmentName());
+				tmp.put("studentName", toStudent.getTargetStudent()==null?"":toStudent.getTargetStudent().getChineseName());
+				tmp.put("uploadTime", toStudent.getUploadTime()==null?"":toStudent.getUploadTime().toString());
+				tmp.put("downloadTime", toStudent.getDownloadTime()==null?"":toStudent.getDownloadTime().toString());
+				tmp.put("canRevoke", toStudent.getDownloadTime()==null?true:false);
+				data.add(tmp);
+			}
+		}
+		
+		result.put("data", data);
+		result.put("recordsTotal", page.getTotal());
+		result.put("recordsFiltered", "");
+		return result;
+	}
 
 	@Override
 	public Map<String, Object> searchDataForAjaxToStudent(int displayLength, int displayStart, int sEcho,

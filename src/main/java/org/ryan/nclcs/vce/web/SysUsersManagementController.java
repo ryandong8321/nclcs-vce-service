@@ -424,28 +424,28 @@ public class SysUsersManagementController {
 				
 				String tmp=null;
 				if (sysUsers.getEnglishName()!=null){
-					tmp=StringEscapeUtils.unescapeJavaScript(StringEscapeUtils.unescapeHtml(sysUsers.getEnglishName()));
-					originalUser.setEnglishName(StringEscapeUtils.escapeHtml(StringEscapeUtils.escapeJavaScript(tmp)));
+					tmp=StringEscapeUtils.unescapeHtml(StringEscapeUtils.unescapeJavaScript(sysUsers.getEnglishName()));
+					originalUser.setEnglishName(StringEscapeUtils.escapeJavaScript(StringEscapeUtils.escapeHtml(tmp)));
 				}
 				
 				if (sysUsers.getPinyin()!=null){
-					tmp=StringEscapeUtils.unescapeJavaScript(StringEscapeUtils.unescapeHtml(sysUsers.getPinyin()));
-					originalUser.setPinyin(StringEscapeUtils.escapeHtml(StringEscapeUtils.escapeJavaScript(tmp)));
+					tmp=StringEscapeUtils.unescapeHtml(StringEscapeUtils.unescapeJavaScript(sysUsers.getPinyin()));
+					originalUser.setPinyin(StringEscapeUtils.escapeJavaScript(StringEscapeUtils.escapeHtml(tmp)));
 				}
 				
 				if (sysUsers.getHomeAddress()!=null){
-					tmp=StringEscapeUtils.unescapeJavaScript(StringEscapeUtils.unescapeHtml(sysUsers.getHomeAddress()));
+					tmp=StringEscapeUtils.unescapeHtml(StringEscapeUtils.unescapeJavaScript(sysUsers.getHomeAddress()));
 					originalUser.setHomeAddress(StringEscapeUtils.escapeHtml(StringEscapeUtils.escapeJavaScript(tmp)));
 				}
 				
 				if (sysUsers.getDaySchool()!=null){
-					tmp=StringEscapeUtils.unescapeJavaScript(StringEscapeUtils.unescapeHtml(sysUsers.getDaySchool()));
-					originalUser.setDaySchool(StringEscapeUtils.escapeHtml(StringEscapeUtils.escapeJavaScript(tmp)));
+					tmp=StringEscapeUtils.unescapeHtml(StringEscapeUtils.unescapeJavaScript(sysUsers.getDaySchool()));
+					originalUser.setDaySchool(StringEscapeUtils.escapeJavaScript(StringEscapeUtils.escapeHtml(tmp)));
 				}
 				
 				if (sysUsers.getDaySchoolGrade()!=null){
-					tmp=StringEscapeUtils.unescapeJavaScript(StringEscapeUtils.unescapeHtml(sysUsers.getDaySchoolGrade()));
-					originalUser.setDaySchoolGrade(StringEscapeUtils.escapeHtml(StringEscapeUtils.escapeJavaScript(tmp)));
+					tmp=StringEscapeUtils.unescapeHtml(StringEscapeUtils.unescapeJavaScript(sysUsers.getDaySchoolGrade()));
+					originalUser.setDaySchoolGrade(StringEscapeUtils.escapeJavaScript(StringEscapeUtils.escapeHtml(tmp)));
 				}
 				
 				originalUser.setChineseName(sysUsers.getChineseName()==null?originalUser.getChineseName():sysUsers.getChineseName());
@@ -511,13 +511,13 @@ public class SysUsersManagementController {
 			if (result.isEmpty()){//not exist
 				sysUsers.setPassword(MD5.string2MD5(MD5.string2MD5((sysUsers.getPassword()))));
 				
-				sysUsers.setUserName(StringEscapeUtils.escapeHtml(StringEscapeUtils.escapeJavaScript(sysUsers.getUserName())));
-				sysUsers.setEnglishName(StringEscapeUtils.escapeHtml(StringEscapeUtils.escapeJavaScript(sysUsers.getEnglishName())));
-				sysUsers.setChineseName(StringEscapeUtils.escapeHtml(StringEscapeUtils.escapeJavaScript(sysUsers.getChineseName())));
-				sysUsers.setPinyin(StringEscapeUtils.escapeHtml(StringEscapeUtils.escapeJavaScript(sysUsers.getPinyin())));
-				sysUsers.setHomeAddress(StringEscapeUtils.escapeHtml(StringEscapeUtils.escapeJavaScript(sysUsers.getHomeAddress())));
-				sysUsers.setDaySchool(StringEscapeUtils.escapeHtml(StringEscapeUtils.escapeJavaScript(sysUsers.getDaySchool())));
-				sysUsers.setDaySchoolGrade(StringEscapeUtils.escapeHtml(StringEscapeUtils.escapeJavaScript(sysUsers.getDaySchoolGrade())));
+				sysUsers.setUserName(StringEscapeUtils.escapeJavaScript(StringEscapeUtils.escapeHtml(sysUsers.getUserName())));
+				sysUsers.setEnglishName(StringEscapeUtils.escapeJavaScript(StringEscapeUtils.escapeHtml(sysUsers.getEnglishName())));
+				sysUsers.setChineseName(StringEscapeUtils.escapeJavaScript(StringEscapeUtils.escapeHtml(sysUsers.getChineseName())));
+				sysUsers.setPinyin(StringEscapeUtils.escapeJavaScript(StringEscapeUtils.escapeHtml(sysUsers.getPinyin())));
+				sysUsers.setHomeAddress(StringEscapeUtils.escapeJavaScript(StringEscapeUtils.escapeHtml(sysUsers.getHomeAddress())));
+				sysUsers.setDaySchool(StringEscapeUtils.escapeJavaScript(StringEscapeUtils.escapeHtml(sysUsers.getDaySchool())));
+				sysUsers.setDaySchoolGrade(StringEscapeUtils.escapeJavaScript(StringEscapeUtils.escapeHtml(sysUsers.getDaySchoolGrade())));
 				
 				//是否在日校学中文
 				SysProperties property=sysPropertiesManagementService.get(propertyIsLearnChineseId);
