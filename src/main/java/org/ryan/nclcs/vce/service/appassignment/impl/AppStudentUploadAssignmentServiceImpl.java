@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.ryan.nclcs.vce.dao.Pagination;
 import org.ryan.nclcs.vce.dao.app.assignment.IAppStudentUploadAssignmentDAO;
 import org.ryan.nclcs.vce.entity.AppStudentUploadAssignment;
@@ -141,7 +142,7 @@ public class AppStudentUploadAssignmentServiceImpl extends NclcsVceServiceBaseSe
 			for (AppStudentUploadAssignment uploadAssignment : page.getRows()) {
 				tmp=new HashMap<String, Object>();
 				tmp.put("assignmentId", uploadAssignment.getId());
-				tmp.put("assignmentName", uploadAssignment.getAssignmentName());
+				tmp.put("assignmentName",StringEscapeUtils.unescapeJavaScript(uploadAssignment.getAssignmentName()));
 				tmp.put("filePath", uploadAssignment.getFilePath());
 				tmp.put("fileName", uploadAssignment.getFileName());
 				tmp.put("uploadTime", uploadAssignment.getUploadTime()==null?"":uploadAssignment.getUploadTime().toString());
@@ -174,10 +175,10 @@ public class AppStudentUploadAssignmentServiceImpl extends NclcsVceServiceBaseSe
 				tmp.put("studentName", (student==null||student.getChineseName()==null)?"":student.getChineseName());
 				tmp.put("studentCampus", (student==null||student.getVceSchoolName()==null)?"":student.getVceSchoolName());
 				tmp.put("studentClass", (student==null||student.getVceClassName()==null)?"":student.getVceClassName());
-				tmp.put("assignmentName", uploadAssignment.getAssignmentName());
+				tmp.put("assignmentName", StringEscapeUtils.unescapeJavaScript(uploadAssignment.getAssignmentName()));
 				tmp.put("filePath", uploadAssignment.getFilePath());
 				tmp.put("fileName", uploadAssignment.getFileName());
-				tmp.put("uploadTime", uploadAssignment.getUploadTime().toString());
+				tmp.put("uploadTime", uploadAssignment.getUploadTime()==null?"":uploadAssignment.getUploadTime().toString());
 				tmp.put("downloadTime", uploadAssignment.getDownloadTime()==null?"":uploadAssignment.getDownloadTime().toString());
 				tmp.put("hasAppointment", (uploadAssignment.getHasAppointment()!=null&&uploadAssignment.getHasAppointment()==1)?true:false);
 				data.add(tmp);

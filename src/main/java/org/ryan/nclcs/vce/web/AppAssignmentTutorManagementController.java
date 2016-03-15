@@ -188,13 +188,14 @@ public class AppAssignmentTutorManagementController {
 				
 				if (assignment.getDownloadTime()==null||assignment.getDownloadTime().equals("")){
 					assignment.setDownloadTime(Calendar.getInstance().getTime());
+					appStudentUploadAssignmentSerivce.save(assignment);
 				}
-				if (assignment.getAssignmentToTutor()!=null){
-					AppTutorAppointmentAssignmentToTutor toTutor=assignment.getAssignmentToTutor();
-					toTutor.setDownloadTime(Calendar.getInstance().getTime());
-					assignment.setAssignmentToTutor(toTutor);
-				}
-				appStudentUploadAssignmentSerivce.save(assignment);
+//				if (assignment.getAssignmentToTutor()!=null){
+//					AppTutorAppointmentAssignmentToTutor toTutor=assignment.getAssignmentToTutor();
+//					toTutor.setDownloadTime(Calendar.getInstance().getTime());
+//					assignment.setAssignmentToTutor(toTutor);
+//				}
+//				appStudentUploadAssignmentSerivce.save(assignment);
 				
 				if (assignment!=null){
 					response.setCharacterEncoding("utf-8");
@@ -251,8 +252,10 @@ public class AppAssignmentTutorManagementController {
 		try{
 			if (sid!=-1){
 				AppTutorAppointmentAssignmentToTutor assignment=appTutorAppointmentToTutorService.get(sid);
-				assignment.setDownloadTime(Calendar.getInstance().getTime());
-				appTutorAppointmentToTutorService.save(assignment);
+				if (assignment.getDownloadTime()==null||assignment.getDownloadTime().equals("")){
+					assignment.setDownloadTime(Calendar.getInstance().getTime());
+					appTutorAppointmentToTutorService.save(assignment);
+				}
 				
 				if (assignment!=null){
 					response.setCharacterEncoding("utf-8");

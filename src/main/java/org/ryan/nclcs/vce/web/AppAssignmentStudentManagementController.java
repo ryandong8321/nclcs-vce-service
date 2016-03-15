@@ -424,8 +424,8 @@ public class AppAssignmentStudentManagementController {
 				
 				if (assignment.getDownloadTime()==null||assignment.getDownloadTime().equals("")){
 					assignment.setDownloadTime(Calendar.getInstance().getTime());
+					appTutorAppointmentToStudentService.save(assignment);
 				}
-				appTutorAppointmentToStudentService.save(assignment);
 				
 				if (assignment!=null){
 					response.setCharacterEncoding("utf-8");
