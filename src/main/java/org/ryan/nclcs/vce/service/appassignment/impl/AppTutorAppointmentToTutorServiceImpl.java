@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.ryan.nclcs.vce.dao.Pagination;
 import org.ryan.nclcs.vce.dao.app.assignment.IAppTutorAppointmentToTutorDAO;
 import org.ryan.nclcs.vce.entity.AppTutorAppointmentAssignmentToTutor;
@@ -75,8 +76,9 @@ public class AppTutorAppointmentToTutorServiceImpl extends NclcsVceServiceBaseSe
 			Map<String, Object> tmp=null;
 			for (AppTutorAppointmentAssignmentToTutor toTutor : page.getRows()) {
 				tmp=new HashMap<String, Object>();
-				tmp.put("assignmentId", toTutor.getUploadAssignment()==null?toTutor.getId():toTutor.getUploadAssignment().getId());
-				tmp.put("assignmentName", toTutor.getAssignmentName());
+//				tmp.put("assignmentId", toTutor.getUploadAssignment()==null?toTutor.getId():toTutor.getUploadAssignment().getId());
+				tmp.put("assignmentId", toTutor.getId());
+				tmp.put("assignmentName", StringEscapeUtils.unescapeJavaScript(toTutor.getAssignmentName()));
 				tmp.put("filePath", toTutor.getFilePath());
 				tmp.put("fileName", toTutor.getFileName());
 				tmp.put("studentName", toTutor.getStudent()==null?"":toTutor.getStudent().getChineseName());
@@ -142,7 +144,7 @@ public class AppTutorAppointmentToTutorServiceImpl extends NclcsVceServiceBaseSe
 			for (AppTutorAppointmentAssignmentToTutor toTutor : page.getRows()) {
 				tmp=new HashMap<String,Object>();
 				tmp.put("assignmentId", toTutor.getId());
-				tmp.put("assignmentName", toTutor.getAssignmentName());
+				tmp.put("assignmentName", StringEscapeUtils.unescapeJavaScript(toTutor.getAssignmentName()));
 				tmp.put("toTutorName", toTutor.getTargetTutor()==null?"":toTutor.getTargetTutor().getChineseName());
 				tmp.put("uploadName", toTutor.getUploadTime()==null?"":toTutor.getUploadTime().toString());
 				tmp.put("downloadName", toTutor.getDownloadTime()==null?"":toTutor.getDownloadTime().toString());

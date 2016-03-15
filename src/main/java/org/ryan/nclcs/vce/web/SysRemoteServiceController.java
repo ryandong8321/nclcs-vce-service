@@ -2185,7 +2185,7 @@ public class SysRemoteServiceController {
 						
 						Map<String, Object> parameters=new HashMap<String, Object>();
 						if (param!=null&&!param.equals("")){
-							parameters.put("assignmentName", param);
+							parameters.put("assignmentName", StringEscapeUtils.escapeJavaScript(param));
 						}
 						parameters.put("sort", 3);
 						parameters.put("order", "desc");
@@ -2198,7 +2198,7 @@ public class SysRemoteServiceController {
 						for (AppTutorAppointmentAssignmentToStudent toStudent:page.getRows()){
 							map=new HashMap<String, Object>();
 							map.put("assignmentId", toStudent.getId());
-							map.put("assignmentName", toStudent.getAssignmentName());
+							map.put("assignmentName", StringEscapeUtils.unescapeJavaScript(toStudent.getAssignmentName()));
 							map.put("uploadTime", toStudent.getUploadTime()==null?"":toStudent.getUploadTime().toString());
 							map.put("downloadTime", toStudent.getDownloadTime()==null?"":toStudent.getDownloadTime().toString());
 							map.put("filePath", toStudent.getFilePath());
@@ -2876,11 +2876,11 @@ public class SysRemoteServiceController {
 						logger.info("this is [initdownloadappointmentassignmentlist.do] requset parameters [displayLength = {"+displayLength+"}],[displayStart = {"+displayStart+"}],[param = {"+param+"}]");
 						Map<String, Object> parameters=new HashMap<String, Object>();
 						if (param!=null&&!param.equals("")){
-							parameters.put("assignmentName", param);
-							parameters.put("originalTutor.chineseName", param);
-							parameters.put("student.chineseName", param);
+							parameters.put("assignmentName", StringEscapeUtils.escapeJavaScript(param));
+//							parameters.put("originalTutor.chineseName", param);
+//							parameters.put("student.chineseName", param);
 						}
-						parameters.put("sort", 6);
+						parameters.put("sort", 5);
 						parameters.put("order", "desc");
 						
 						SysUsers currentTutor=sysUsersManagementService.get(currentTutorId);
@@ -2968,8 +2968,8 @@ public class SysRemoteServiceController {
 						
 						Map<String, Object> parameters=new HashMap<String, Object>();
 						if (param!=null&&!param.equals("")){
-							parameters.put("assignmentName", param);
-							parameters.put("student.chineseName", param);
+							parameters.put("assignmentName", StringEscapeUtils.escapeJavaScript(param));
+//							parameters.put("student.chineseName", param);
 						}
 						parameters.put("sort", 4);
 						parameters.put("order", "desc");
@@ -3186,8 +3186,8 @@ public class SysRemoteServiceController {
 						
 						Map<String, Object> parameters=new HashMap<String, Object>();
 						if (param!=null&&!param.equals("")){
-							parameters.put("assignmentName", param);
-							parameters.put("student.chineseName", param);
+							parameters.put("assignmentName", StringEscapeUtils.escapeJavaScript(param));
+//							parameters.put("student.chineseName", param);
 						}
 						parameters.put("sort", 4);
 						parameters.put("order", "desc");

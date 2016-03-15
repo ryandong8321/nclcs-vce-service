@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.ryan.nclcs.vce.dao.Pagination;
 import org.ryan.nclcs.vce.dao.app.assignment.IAppTutorAppointmentToStudentDAO;
 import org.ryan.nclcs.vce.entity.AppTutorAppointmentAssignmentToStudent;
@@ -71,7 +72,7 @@ public class AppTutorAppointmentToStudentServiceImpl extends NclcsVceServiceBase
 			for (AppTutorAppointmentAssignmentToStudent toStudent : page.getRows()) {
 				tmp=new HashMap<String, Object>();
 				tmp.put("assignmentId", toStudent.getId());
-				tmp.put("assignmentName", toStudent.getAssignmentName());
+				tmp.put("assignmentName", StringEscapeUtils.unescapeJavaScript(toStudent.getAssignmentName()));
 				tmp.put("studentName", toStudent.getTargetStudent()==null?"":toStudent.getTargetStudent().getChineseName());
 				tmp.put("uploadTime", toStudent.getUploadTime()==null?"":toStudent.getUploadTime().toString());
 				tmp.put("downloadTime", toStudent.getDownloadTime()==null?"":toStudent.getDownloadTime().toString());
