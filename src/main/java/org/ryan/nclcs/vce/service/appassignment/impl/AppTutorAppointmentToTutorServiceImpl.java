@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.ryan.nclcs.vce.dao.Pagination;
 import org.ryan.nclcs.vce.dao.app.assignment.IAppTutorAppointmentToTutorDAO;
 import org.ryan.nclcs.vce.entity.AppTutorAppointmentAssignmentToTutor;
@@ -14,6 +13,7 @@ import org.ryan.nclcs.vce.service.NclcsVceServiceBaseServiceImpl;
 import org.ryan.nclcs.vce.service.appassignment.IAppTutorAppointmentToTutorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.HtmlUtils;
 
 @Service("appTutorAppointmentToTutorService")
 public class AppTutorAppointmentToTutorServiceImpl extends NclcsVceServiceBaseServiceImpl<AppTutorAppointmentAssignmentToTutor, Integer, IAppTutorAppointmentToTutorDAO> implements IAppTutorAppointmentToTutorService {
@@ -42,12 +42,12 @@ public class AppTutorAppointmentToTutorServiceImpl extends NclcsVceServiceBaseSe
 				tmp.add("<input type='checkbox' name='id[]' value='"+toTutor.getId()+"'/>");
 				tmp.add(""+(++idx));
 				if (toTutor.getUploadAssignment()==null){
-					tmp.add("<a href=\"javascript:showTutorAppointmentAssignment('"+toTutor.getId()+"')\">"+toTutor.getAssignmentName()+"</a>");
+					tmp.add("<a href=\"javascript:showTutorAppointmentAssignment('"+toTutor.getId()+"')\">"+HtmlUtils.htmlEscape(toTutor.getAssignmentName())+"</a>");
 				}else{
-					tmp.add("<a href=\"javascript:showStudentAssignment('"+toTutor.getUploadAssignment().getId()+"')\">"+toTutor.getAssignmentName()+"</a>");
+					tmp.add("<a href=\"javascript:showStudentAssignment('"+toTutor.getUploadAssignment().getId()+"')\">"+HtmlUtils.htmlEscape(toTutor.getAssignmentName())+"</a>");
 				}
-				tmp.add(toTutor.getStudent()==null?"":toTutor.getStudent().getChineseName());
-				tmp.add(toTutor.getOriginalTutor().getChineseName());
+				tmp.add(toTutor.getStudent()==null?"":HtmlUtils.htmlEscape(toTutor.getStudent().getChineseName()));
+				tmp.add(toTutor.getOriginalTutor()==null?"":HtmlUtils.htmlEscape(toTutor.getOriginalTutor().getChineseName()));
 				tmp.add(toTutor.getUploadTime().toString());
 				tmp.add(toTutor.getDownloadTime()==null||toTutor.getDownloadTime().equals("")?"":toTutor.getDownloadTime().toString());
 //				if (toTutor.getDownloadTime()!=null&&!toTutor.getDownloadTime().equals("")){
@@ -78,7 +78,7 @@ public class AppTutorAppointmentToTutorServiceImpl extends NclcsVceServiceBaseSe
 				tmp=new HashMap<String, Object>();
 //				tmp.put("assignmentId", toTutor.getUploadAssignment()==null?toTutor.getId():toTutor.getUploadAssignment().getId());
 				tmp.put("assignmentId", toTutor.getId());
-				tmp.put("assignmentName", StringEscapeUtils.unescapeJavaScript(toTutor.getAssignmentName()));
+				tmp.put("assignmentName", toTutor.getAssignmentName());
 				tmp.put("filePath", toTutor.getFilePath());
 				tmp.put("fileName", toTutor.getFileName());
 				tmp.put("studentName", toTutor.getStudent()==null?"":toTutor.getStudent().getChineseName());
@@ -111,9 +111,9 @@ public class AppTutorAppointmentToTutorServiceImpl extends NclcsVceServiceBaseSe
 				tmp.add("<input type='checkbox' name='id[]' value='"+toTutor.getId()+"'/>");
 				tmp.add(""+(++idx));
 //				tmp.add("<a href=\"javascript:showStudentAssignment('"+toTutor.getId()+"')\">"+toTutor.getAssignmentName()+"</a>");
-				tmp.add(toTutor.getAssignmentName());
-				tmp.add(toTutor.getTargetTutor().getChineseName());
-				tmp.add(toTutor.getUploadTime().toString());
+				tmp.add(HtmlUtils.htmlEscape(toTutor.getAssignmentName()));
+				tmp.add(toTutor.getTargetTutor()==null?"":HtmlUtils.htmlEscape(toTutor.getTargetTutor().getChineseName()));
+				tmp.add(toTutor.getUploadTime()==null?"":toTutor.getUploadTime().toString());
 				tmp.add(toTutor.getDownloadTime()==null||toTutor.getDownloadTime().equals("")?"":toTutor.getDownloadTime().toString());
 				if (toTutor.getDownloadTime()!=null&&!toTutor.getDownloadTime().equals("")){
 					tmp.add("");
@@ -144,7 +144,7 @@ public class AppTutorAppointmentToTutorServiceImpl extends NclcsVceServiceBaseSe
 			for (AppTutorAppointmentAssignmentToTutor toTutor : page.getRows()) {
 				tmp=new HashMap<String,Object>();
 				tmp.put("assignmentId", toTutor.getId());
-				tmp.put("assignmentName", StringEscapeUtils.unescapeJavaScript(toTutor.getAssignmentName()));
+				tmp.put("assignmentName", toTutor.getAssignmentName());
 				tmp.put("toTutorName", toTutor.getTargetTutor()==null?"":toTutor.getTargetTutor().getChineseName());
 				tmp.put("uploadName", toTutor.getUploadTime()==null?"":toTutor.getUploadTime().toString());
 				tmp.put("downloadName", toTutor.getDownloadTime()==null?"":toTutor.getDownloadTime().toString());

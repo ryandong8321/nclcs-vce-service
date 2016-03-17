@@ -10,7 +10,6 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.ryan.nclcs.vce.annotation.SystemLogIsCheck;
 import org.ryan.nclcs.vce.annotation.SystemUserLoginIsCheck;
 import org.ryan.nclcs.vce.entity.SysDeviceToken;
@@ -139,7 +138,7 @@ public class SysNotificationManagementController {
 			if (notificationId!=null&&notificationId!=-1){
 				logger.info("this is [showsysnotificationinfo.do] find user ...");
 				notification=sysNotificationManagementService.get(notificationId);
-				notification.setNotificationMessage(StringEscapeUtils.unescapeJavaScript(notification.getNotificationMessage()));
+				notification.setNotificationMessage(notification.getNotificationMessage());
 			}
 		}catch(Exception ex){
 			logger.info("this is [showsysnotificationinfo.do] find user failed...");
@@ -199,9 +198,6 @@ public class SysNotificationManagementController {
 			if (originalNotification==null){
 				sysNotification.setNotificationUserInfo(user);
 				
-				sysNotification.setNotificationTitle(StringEscapeUtils.escapeJavaScript(StringEscapeUtils.escapeHtml(sysNotification.getNotificationTitle())));
-				sysNotification.setNotificationMessage(StringEscapeUtils.escapeJavaScript(StringEscapeUtils.escapeHtml(sysNotification.getNotificationMessage())));
-				
 				logger.info("this is [savesysnotification.do] is saving...");
 				sysNotificationManagementService.save(sysNotification);
 				result.put("status", 1);
@@ -209,10 +205,10 @@ public class SysNotificationManagementController {
 				logger.info("this is [savesysnotification.do] save sysNotification done ...");
 			}else{
 				originalNotification.setNotificationUserInfo(user==null?originalNotification.getNotificationUserInfo():user);
-				String title=StringEscapeUtils.unescapeHtml(StringEscapeUtils.unescapeJavaScript(sysNotification.getNotificationTitle()));
-				String message=StringEscapeUtils.unescapeHtml(StringEscapeUtils.unescapeJavaScript(sysNotification.getNotificationMessage()));
-				originalNotification.setNotificationTitle(StringEscapeUtils.escapeJavaScript(StringEscapeUtils.escapeHtml(title)));
-				originalNotification.setNotificationMessage(StringEscapeUtils.escapeJavaScript(StringEscapeUtils.escapeHtml(message)));
+				String title=sysNotification.getNotificationTitle();
+				String message=sysNotification.getNotificationMessage();
+				originalNotification.setNotificationTitle(title);
+				originalNotification.setNotificationMessage(message);
 				logger.info("this is [savesysnotification.do] is saving...");
 				sysNotificationManagementService.save(originalNotification);
 				result.put("status", 1);

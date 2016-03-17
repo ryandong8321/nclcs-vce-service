@@ -13,7 +13,6 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.ryan.nclcs.vce.annotation.SystemLogIsCheck;
 import org.ryan.nclcs.vce.dao.Pagination;
 import org.ryan.nclcs.vce.entity.AppStudentUploadAssignment;
@@ -1943,7 +1942,7 @@ public class SysRemoteServiceController {
 						
 						Map<String, Object> parameters=new HashMap<String, Object>();
 						if (param!=null&&!param.equals("")){
-							parameters.put("assignmentName", StringEscapeUtils.escapeJavaScript(param));
+							parameters.put("assignmentName", param);
 						}
 						parameters.put("sort", 3);
 						parameters.put("order", "desc");
@@ -2095,7 +2094,7 @@ public class SysRemoteServiceController {
 						if (result.isEmpty()){
 							uploadAssignment=new AppStudentUploadAssignment();
 							String assignmentName=(uploadAssignmentName==null||uploadAssignmentName.equals(""))?strFileName:uploadAssignmentName;
-							uploadAssignment.setAssignmentName(StringEscapeUtils.escapeJavaScript(assignmentName));
+							uploadAssignment.setAssignmentName(assignmentName);
 							logger.info("this is [savestudentuploadassignmentinfo.do] assignment name ["+uploadAssignment.getAssignmentName()+"]...");
 							uploadAssignment.setFilePath(_localPath+File.separator+file.getName());
 							uploadAssignment.setFileName(strFileName);
@@ -2185,7 +2184,7 @@ public class SysRemoteServiceController {
 						
 						Map<String, Object> parameters=new HashMap<String, Object>();
 						if (param!=null&&!param.equals("")){
-							parameters.put("assignmentName", StringEscapeUtils.escapeJavaScript(param));
+							parameters.put("assignmentName", param);
 						}
 						parameters.put("sort", 3);
 						parameters.put("order", "desc");
@@ -2198,7 +2197,7 @@ public class SysRemoteServiceController {
 						for (AppTutorAppointmentAssignmentToStudent toStudent:page.getRows()){
 							map=new HashMap<String, Object>();
 							map.put("assignmentId", toStudent.getId());
-							map.put("assignmentName", StringEscapeUtils.unescapeJavaScript(toStudent.getAssignmentName()));
+							map.put("assignmentName", toStudent.getAssignmentName());
 							map.put("uploadTime", toStudent.getUploadTime()==null?"":toStudent.getUploadTime().toString());
 							map.put("downloadTime", toStudent.getDownloadTime()==null?"":toStudent.getDownloadTime().toString());
 							map.put("filePath", toStudent.getFilePath());
@@ -2285,7 +2284,7 @@ public class SysRemoteServiceController {
 						
 						Map<String, Object> parameters=new HashMap<String, Object>();
 						if (param!=null&&!param.equals("")){
-							parameters.put("assignmentName", StringEscapeUtils.escapeJavaScript(param));
+							parameters.put("assignmentName", param);
 //							parameters.put("campusName", param);
 //							parameters.put("studentName", param);
 						}
@@ -2715,7 +2714,7 @@ public class SysRemoteServiceController {
 						AppStudentUploadAssignment assignment=appStudentUploadAssignmentSerivce.get(assignmentId);
 						Map<String,Object> map=new HashMap<String,Object>();
 						map.put("assignmentId", assignment.getId());
-						map.put("assignmentName", StringEscapeUtils.unescapeJavaScript(assignment.getAssignmentName()));
+						map.put("assignmentName", assignment.getAssignmentName());
 						map.put("filePath", assignment.getFilePath());
 						map.put("fileName",assignment.getFilePath());
 						map.put("assignmentToTutor", assignment.getAssignmentToTutor()==null?"":
@@ -2876,7 +2875,7 @@ public class SysRemoteServiceController {
 						logger.info("this is [initdownloadappointmentassignmentlist.do] requset parameters [displayLength = {"+displayLength+"}],[displayStart = {"+displayStart+"}],[param = {"+param+"}]");
 						Map<String, Object> parameters=new HashMap<String, Object>();
 						if (param!=null&&!param.equals("")){
-							parameters.put("assignmentName", StringEscapeUtils.escapeJavaScript(param));
+							parameters.put("assignmentName", param);
 //							parameters.put("originalTutor.chineseName", param);
 //							parameters.put("student.chineseName", param);
 						}
@@ -2968,7 +2967,7 @@ public class SysRemoteServiceController {
 						
 						Map<String, Object> parameters=new HashMap<String, Object>();
 						if (param!=null&&!param.equals("")){
-							parameters.put("assignmentName", StringEscapeUtils.escapeJavaScript(param));
+							parameters.put("assignmentName", param);
 //							parameters.put("student.chineseName", param);
 						}
 						parameters.put("sort", 4);
@@ -3010,11 +3009,42 @@ public class SysRemoteServiceController {
 		Integer currentTutorId=-1,toStudentId=-1;
 		String uploadAssignmentName=null, token=null;
 		AppTutorAppointmentAssignmentToStudent uploadAssignment=null;
+		
 		try {
 			currentTutorId=ServletRequestUtils.getRequiredIntParameter(request, "userId");
-			token=ServletRequestUtils.getRequiredStringParameter(request, "token");
-			toStudentId=ServletRequestUtils.getIntParameter(request, "toStudentId");
+		}catch (ServletRequestBindingException e) {
+			try {
+				currentTutorId=Integer.parseInt(ServletRequestUtils.getRequiredStringParameter(request, "userId").trim());
+			}catch (Exception e1) {
+				e1.printStackTrace();
+				result.put("status", -1);
+				result.put("info", "the lack of parameter");
+				logger.info("this is [savestudentuploadassignmentinfo.do] the lack of parameter [userId] ...");
+			}
+		}
+		
+		try {
+			toStudentId=ServletRequestUtils.getRequiredIntParameter(request, "toStudentId");
+		}catch (ServletRequestBindingException e) {
+			try {
+				toStudentId=Integer.parseInt(ServletRequestUtils.getRequiredStringParameter(request, "toStudentId").trim());
+			}catch (Exception e1) {
+				e1.printStackTrace();
+				result.put("status", -1);
+				result.put("info", "the lack of parameter");
+				logger.info("this is [savestudentuploadassignmentinfo.do] the lack of parameter [toStudentId] ...");
+			}
+		}
+		
+		try {
 			uploadAssignmentName=ServletRequestUtils.getRequiredStringParameter(request, "assignmentName");
+		} catch (ServletRequestBindingException e) {
+			e.printStackTrace();
+			logger.info("this is [savestudentuploadassignmentinfo.do] the lack of parameter is assignmentName ...");
+		}
+		
+		try {
+			token=ServletRequestUtils.getRequiredStringParameter(request, "token").trim();
 		} catch (ServletRequestBindingException e1) {
 			e1.printStackTrace();
 			result.put("status", -1);
@@ -3101,7 +3131,7 @@ public class SysRemoteServiceController {
 						uploadAssignment=new AppTutorAppointmentAssignmentToStudent();
 						
 						String assignmentName=(uploadAssignmentName==null||uploadAssignmentName.equals(""))?strFileName:uploadAssignmentName;
-						uploadAssignment.setAssignmentName(StringEscapeUtils.escapeJavaScript(StringEscapeUtils.escapeHtml(assignmentName)));
+						uploadAssignment.setAssignmentName(assignmentName);
 						logger.info("this is [savetutoruploadassignmentinfo.do] set assignment name ["+uploadAssignment.getAssignmentName()+"]...");
 						uploadAssignment.setFilePath(_localPath+File.separator+file.getName());
 						uploadAssignment.setFileName(strFileName);
@@ -3186,7 +3216,7 @@ public class SysRemoteServiceController {
 						
 						Map<String, Object> parameters=new HashMap<String, Object>();
 						if (param!=null&&!param.equals("")){
-							parameters.put("assignmentName", StringEscapeUtils.escapeJavaScript(param));
+							parameters.put("assignmentName", param);
 //							parameters.put("student.chineseName", param);
 						}
 						parameters.put("sort", 4);
@@ -3232,11 +3262,42 @@ public class SysRemoteServiceController {
 		Integer currentTutorId=-1,toTutorId=-1;
 		String uploadAssignmentName=null, token=null;
 		AppTutorAppointmentAssignmentToTutor uploadAssignment=null;
+		
 		try {
 			currentTutorId=ServletRequestUtils.getRequiredIntParameter(request, "userId");
-			token=ServletRequestUtils.getRequiredStringParameter(request, "token");
-			toTutorId=ServletRequestUtils.getIntParameter(request, "toTutoId");
+		}catch (ServletRequestBindingException e) {
+			try {
+				currentTutorId=Integer.parseInt(ServletRequestUtils.getRequiredStringParameter(request, "userId").trim());
+			}catch (Exception e1) {
+				e1.printStackTrace();
+				result.put("status", -1);
+				result.put("info", "the lack of parameter");
+				logger.info("this is [savestudentuploadassignmentinfo.do] the lack of parameter [userId] ...");
+			}
+		}
+		
+		try {
+			toTutorId=ServletRequestUtils.getRequiredIntParameter(request, "toTutorId");
+		}catch (ServletRequestBindingException e) {
+			try {
+				toTutorId=Integer.parseInt(ServletRequestUtils.getRequiredStringParameter(request, "toTutorId").trim());
+			}catch (Exception e1) {
+				e1.printStackTrace();
+				result.put("status", -1);
+				result.put("info", "the lack of parameter");
+				logger.info("this is [savestudentuploadassignmentinfo.do] the lack of parameter [toTutorId] ...");
+			}
+		}
+		
+		try {
 			uploadAssignmentName=ServletRequestUtils.getRequiredStringParameter(request, "assignmentName");
+		} catch (ServletRequestBindingException e) {
+			e.printStackTrace();
+			logger.info("this is [savestudentuploadassignmentinfo.do] the lack of parameter is assignmentName ...");
+		}
+		
+		try {
+			token=ServletRequestUtils.getRequiredStringParameter(request, "token").trim();
 		} catch (ServletRequestBindingException e) {
 			e.printStackTrace();
 			result.put("status", -1);
@@ -3323,7 +3384,7 @@ public class SysRemoteServiceController {
 						uploadAssignment=new AppTutorAppointmentAssignmentToTutor();
 						
 						String assignmentName=(uploadAssignmentName==null||uploadAssignmentName.equals(""))?strFileName:uploadAssignmentName;
-						uploadAssignment.setAssignmentName(StringEscapeUtils.escapeJavaScript(StringEscapeUtils.escapeHtml(assignmentName)));
+						uploadAssignment.setAssignmentName(assignmentName);
 						logger.info("this is [savetutoruploadappointmentassignmentinfo.do] set assignment name ["+uploadAssignment.getAssignmentName()+"]...");
 						uploadAssignment.setFilePath(_localPath+File.separator+file.getName());
 						uploadAssignment.setFileName(strFileName);

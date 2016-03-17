@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.ryan.nclcs.vce.dao.Pagination;
 import org.ryan.nclcs.vce.dao.app.assignment.IAppStudentUploadAssignmentDAO;
 import org.ryan.nclcs.vce.entity.AppStudentUploadAssignment;
@@ -14,6 +13,7 @@ import org.ryan.nclcs.vce.service.NclcsVceServiceBaseServiceImpl;
 import org.ryan.nclcs.vce.service.appassignment.IAppStudentUploadAssignmentSerivce;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.HtmlUtils;
 
 @Service("appStudentUploadAssignmentService")
 public class AppStudentUploadAssignmentServiceImpl extends NclcsVceServiceBaseServiceImpl<AppStudentUploadAssignment, Integer, IAppStudentUploadAssignmentDAO> implements IAppStudentUploadAssignmentSerivce {
@@ -42,7 +42,7 @@ public class AppStudentUploadAssignmentServiceImpl extends NclcsVceServiceBaseSe
 				tmp.add("<input type='checkbox' name='id[]' value='"+uploadAssignment.getId()+"'/>");
 				tmp.add(""+(++idx));
 //				tmp.add("<a href=\"javascript:showUploadAssignment('"+uploadAssignment.getId()+"')\">"+uploadAssignment.getAssignmentName()+"</a>");
-				tmp.add(uploadAssignment.getAssignmentName());
+				tmp.add(HtmlUtils.htmlEscape(uploadAssignment.getAssignmentName()));
 				tmp.add(uploadAssignment.getUploadTime().toString());
 				tmp.add(uploadAssignment.getDownloadTime()==null||uploadAssignment.getDownloadTime().equals("")?"":uploadAssignment.getDownloadTime().toString());
 				if (uploadAssignment.getDownloadTime()!=null&&!uploadAssignment.getDownloadTime().equals("")){
@@ -78,10 +78,10 @@ public class AppStudentUploadAssignmentServiceImpl extends NclcsVceServiceBaseSe
 				tmp=new ArrayList<String>();
 				tmp.add("<input type='checkbox' name='id[]' value='"+uploadAssignment.getId()+"'/>");
 				tmp.add(""+(++idx));
-				tmp.add("<a href=\"javascript:showStudentAssignment('"+uploadAssignment.getId()+"')\">"+uploadAssignment.getAssignmentName()+"</a>");
-				tmp.add((student==null||student.getChineseName()==null)?"":student.getChineseName());
-				tmp.add((student==null||student.getVceSchoolName()==null)?"":student.getVceSchoolName());
-				tmp.add((student==null||student.getVceClassName()==null)?"":student.getVceClassName());
+				tmp.add("<a href=\"javascript:showStudentAssignment('"+uploadAssignment.getId()+"')\">"+HtmlUtils.htmlEscape(uploadAssignment.getAssignmentName())+"</a>");
+				tmp.add((student==null||student.getChineseName()==null)?"":HtmlUtils.htmlEscape(student.getChineseName()));
+				tmp.add((student==null||student.getVceSchoolName()==null)?"":HtmlUtils.htmlEscape(student.getVceSchoolName()));
+				tmp.add((student==null||student.getVceClassName()==null)?"":HtmlUtils.htmlEscape(student.getVceClassName()));
 				tmp.add(uploadAssignment.getUploadTime().toString());
 				tmp.add(uploadAssignment.getDownloadTime()==null||uploadAssignment.getDownloadTime().equals("")?"":uploadAssignment.getDownloadTime().toString());
 				if (uploadAssignment.getHasAppointment()!=null&&uploadAssignment.getHasAppointment()==1){
@@ -142,7 +142,7 @@ public class AppStudentUploadAssignmentServiceImpl extends NclcsVceServiceBaseSe
 			for (AppStudentUploadAssignment uploadAssignment : page.getRows()) {
 				tmp=new HashMap<String, Object>();
 				tmp.put("assignmentId", uploadAssignment.getId());
-				tmp.put("assignmentName",StringEscapeUtils.unescapeJavaScript(uploadAssignment.getAssignmentName()));
+				tmp.put("assignmentName",uploadAssignment.getAssignmentName());
 				tmp.put("filePath", uploadAssignment.getFilePath());
 				tmp.put("fileName", uploadAssignment.getFileName());
 				tmp.put("uploadTime", uploadAssignment.getUploadTime()==null?"":uploadAssignment.getUploadTime().toString());
@@ -175,7 +175,7 @@ public class AppStudentUploadAssignmentServiceImpl extends NclcsVceServiceBaseSe
 				tmp.put("studentName", (student==null||student.getChineseName()==null)?"":student.getChineseName());
 				tmp.put("studentCampus", (student==null||student.getVceSchoolName()==null)?"":student.getVceSchoolName());
 				tmp.put("studentClass", (student==null||student.getVceClassName()==null)?"":student.getVceClassName());
-				tmp.put("assignmentName", StringEscapeUtils.unescapeJavaScript(uploadAssignment.getAssignmentName()));
+				tmp.put("assignmentName", uploadAssignment.getAssignmentName());
 				tmp.put("filePath", uploadAssignment.getFilePath());
 				tmp.put("fileName", uploadAssignment.getFileName());
 				tmp.put("uploadTime", uploadAssignment.getUploadTime()==null?"":uploadAssignment.getUploadTime().toString());

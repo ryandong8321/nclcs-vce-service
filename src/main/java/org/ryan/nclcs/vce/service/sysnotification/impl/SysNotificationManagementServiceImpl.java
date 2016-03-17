@@ -12,6 +12,7 @@ import org.ryan.nclcs.vce.service.NclcsVceServiceBaseServiceImpl;
 import org.ryan.nclcs.vce.service.sysnotification.ISysNotificationManagementService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.HtmlUtils;
 
 @Service("sysNotificationManagementService")
 public class SysNotificationManagementServiceImpl extends NclcsVceServiceBaseServiceImpl<SysNotification, Integer, ISysNotificationManagementDAO> implements ISysNotificationManagementService {
@@ -39,8 +40,8 @@ public class SysNotificationManagementServiceImpl extends NclcsVceServiceBaseSer
 				tmp=new ArrayList<String>();
 				tmp.add("<input type='checkbox' name='id[]' value='"+notification.getId()+"'/>");
 				tmp.add(""+(++idx));
-				tmp.add("<a href=\"javascript:showNotification('"+notification.getId()+"')\">"+notification.getNotificationTitle()+"</a>");
-				tmp.add(notification.getNotificationMessage());
+				tmp.add("<a href=\"javascript:showNotification('"+notification.getId()+"')\">"+HtmlUtils.htmlEscape(notification.getNotificationTitle())+"</a>");
+				tmp.add(HtmlUtils.htmlEscape(notification.getNotificationMessage()));
 				if (notification.getIsSend()==0){
 					tmp.add("<a href=\"javascript:deleteInfo('"+notification.getId()+"');\" class=\"btn btn-sm red\"><i class=\"fa fa-times\"></i> DELETE</a>"
 							+"&nbsp;<a href=\"javascript:sendNotification('"+notification.getId()+"');\" class=\"btn btn-sm green\"><i class=\"fa fa-bullhorn\"></i> SEND</a>");

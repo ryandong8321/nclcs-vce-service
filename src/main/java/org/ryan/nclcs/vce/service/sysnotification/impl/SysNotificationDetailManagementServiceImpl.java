@@ -14,6 +14,7 @@ import org.ryan.nclcs.vce.service.NclcsVceServiceBaseServiceImpl;
 import org.ryan.nclcs.vce.service.sysnotification.ISysNotificationDetailManagementService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.HtmlUtils;
 
 @Service("sysNotificationDetailManagementService")
 public class SysNotificationDetailManagementServiceImpl extends NclcsVceServiceBaseServiceImpl<SysNotificationDetail, Integer, ISysNotificationDetailManagementDAO> implements ISysNotificationDetailManagementService {
@@ -55,8 +56,8 @@ public class SysNotificationDetailManagementServiceImpl extends NclcsVceServiceB
 				}
 				tmp.add("<input type='checkbox' name='id[]' value='"+notificationDetailId+"'/>");
 				tmp.add(""+(++idx));
-				tmp.add("<a href=\"javascript:showNotification('"+notification.getId()+"')\">"+notification.getNotificationTitle()+"</a>");
-				tmp.add(notification.getNotificationMessage());
+				tmp.add("<a href=\"javascript:showNotification('"+notification.getId()+"')\">"+HtmlUtils.htmlEscape(notification.getNotificationTitle())+"</a>");
+				tmp.add(HtmlUtils.htmlEscape(notification.getNotificationMessage()));
 				tmp.add("<a href=\"javascript:deleteInfo('"+notificationDetailId+"');\" class=\"btn btn-sm red\"><i class=\"fa fa-times\"></i> DELETE</a>");
 				data.add(tmp);
 			}

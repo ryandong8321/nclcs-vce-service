@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.ryan.nclcs.vce.dao.Pagination;
 import org.ryan.nclcs.vce.dao.app.assignment.IAppTutorAppointmentToStudentDAO;
 import org.ryan.nclcs.vce.entity.AppTutorAppointmentAssignmentToStudent;
@@ -13,6 +12,7 @@ import org.ryan.nclcs.vce.service.NclcsVceServiceBaseServiceImpl;
 import org.ryan.nclcs.vce.service.appassignment.IAppTutorAppointmentToStudentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.HtmlUtils;
 
 @Service("appTutorAppointmentToStudentService")
 public class AppTutorAppointmentToStudentServiceImpl extends NclcsVceServiceBaseServiceImpl<AppTutorAppointmentAssignmentToStudent, Integer, IAppTutorAppointmentToStudentDAO> implements IAppTutorAppointmentToStudentService {
@@ -41,9 +41,9 @@ public class AppTutorAppointmentToStudentServiceImpl extends NclcsVceServiceBase
 				tmp.add("<input type='checkbox' name='id[]' value='"+toStudent.getId()+"'/>");
 				tmp.add(""+(++idx));
 //				tmp.add("<a href=\"javascript:showUploadAssignment('"+toStudent.getId()+"')\">"+toStudent.getAssignmentName()+"</a>");
-				tmp.add(toStudent.getAssignmentName());
-				tmp.add(toStudent.getTargetStudent().getChineseName());
-				tmp.add(toStudent.getUploadTime().toString());
+				tmp.add(HtmlUtils.htmlEscape(toStudent.getAssignmentName()));
+				tmp.add(toStudent.getTargetStudent()==null?"":HtmlUtils.htmlEscape(toStudent.getTargetStudent().getChineseName()));
+				tmp.add(toStudent.getUploadTime()==null?"":toStudent.getUploadTime().toString());
 				tmp.add(toStudent.getDownloadTime()==null||toStudent.getDownloadTime().equals("")?"":toStudent.getDownloadTime().toString());
 				if (toStudent.getDownloadTime()!=null&&!toStudent.getDownloadTime().equals("")){
 					tmp.add("");
@@ -72,7 +72,7 @@ public class AppTutorAppointmentToStudentServiceImpl extends NclcsVceServiceBase
 			for (AppTutorAppointmentAssignmentToStudent toStudent : page.getRows()) {
 				tmp=new HashMap<String, Object>();
 				tmp.put("assignmentId", toStudent.getId());
-				tmp.put("assignmentName", StringEscapeUtils.unescapeJavaScript(toStudent.getAssignmentName()));
+				tmp.put("assignmentName", toStudent.getAssignmentName());
 				tmp.put("studentName", toStudent.getTargetStudent()==null?"":toStudent.getTargetStudent().getChineseName());
 				tmp.put("uploadTime", toStudent.getUploadTime()==null?"":toStudent.getUploadTime().toString());
 				tmp.put("downloadTime", toStudent.getDownloadTime()==null?"":toStudent.getDownloadTime().toString());
@@ -102,7 +102,7 @@ public class AppTutorAppointmentToStudentServiceImpl extends NclcsVceServiceBase
 				tmp=new ArrayList<String>();
 				tmp.add("<input type='checkbox' name='id[]' value='"+toStudent.getId()+"'/>");
 				tmp.add(""+(++idx));
-				tmp.add("<a href=\"javascript:showStudentAssignment('"+toStudent.getId()+"')\">"+toStudent.getAssignmentName()+"</a>");
+				tmp.add("<a href=\"javascript:showStudentAssignment('"+toStudent.getId()+"')\">"+HtmlUtils.htmlEscape(toStudent.getAssignmentName())+"</a>");
 				tmp.add(toStudent.getUploadTime().toString());
 				tmp.add(toStudent.getDownloadTime()==null||toStudent.getDownloadTime().equals("")?"":toStudent.getDownloadTime().toString());
 //				if (toStudent.getDownloadTime()!=null&&!toStudent.getDownloadTime().equals("")){
