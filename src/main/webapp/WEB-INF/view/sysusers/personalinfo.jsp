@@ -659,6 +659,7 @@ License: You must have a valid license purchased only from themeforest(the above
 <script src="<%=basePath%>assets/metronic/assets/admin/layout4/scripts/demo.js" type="text/javascript"></script>
 <script src="<%=basePath%>assets/metronic/assets/admin/pages/scripts/form-validation.js"></script>
 <!-- END PAGE LEVEL SCRIPTS -->
+<script src="<%=basePath%>assets/JQuery_md5/jquery.md5.js" type="text/javascript"></script>
 <script>
 var $isLearnChinese, $studentGroup, $studentGroupClass;
 var isLearnChineseData, propertyIsLearnChineseId, studentGroupData, studentGroupClassData;
@@ -981,7 +982,7 @@ function saveNewPWD(){
 		async : false,
 		contentType : "application/json; charset=utf-8",
 		url : "<%=basePath%>sysusersmanagement/changepassword.do",
-		      data: "{'op':'"+$("#opassword").val()+"' , 'np':'"+$("#newPassword").val()+"','ud':'"+$("#userId").val()+"'}",
+		      data: "{'op':'"+$.md5($.md5($("#opassword").val()))+"' , 'np':'"+$.md5($.md5($("#newPassword").val()))+"','ud':'"+$("#userId").val()+"'}",
 		      dataType: 'json',
 		      success: function(result) {
 		      	if (result.status==1){

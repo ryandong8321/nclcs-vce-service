@@ -521,7 +521,7 @@ License: You must have a valid license purchased only from themeforest(the above
 												<div class="row">
 													<div class="col-md-offset-3 col-md-9">
 														<button type="submit" class="btn blue"><i class="fa fa-check"></i> 保存</button>
-														<button type="button" class="btn default" onclick="javascript:history.back();">取消</button>
+														<button type="button" class="btn default" onclick="javascript:doCancelAction();">取消</button>
 													</div>
 												</div>
 											</div>
@@ -868,6 +868,10 @@ function dologout(){
 					window.location="<%=basePath%>sysusersmanagement/userlogout.do";
 				}
 			});
+}
+
+function doCancelAction(){
+	window.location="<%=basePath%>appstudentsinfomanagement/appstudentsinfolist.do";
 }
 
 var message;

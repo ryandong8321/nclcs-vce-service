@@ -53,6 +53,7 @@ var Login = function() {
         $('.login-form input').keypress(function(e) {
             if (e.which == 13) {
                 if ($('.login-form').validate().form()) {
+                	$("#password").val($.md5($.md5($("#password").val())));
                     $('.login-form').submit(); //form validation success, call ajax form submit
                 }
                 return false;

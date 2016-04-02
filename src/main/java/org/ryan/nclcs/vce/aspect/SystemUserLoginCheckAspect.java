@@ -40,7 +40,7 @@ public class SystemUserLoginCheckAspect {
 		if (session.getAttribute("u_id")==null||session.getAttribute("u_id").equals("")){
 			logger.info("SYSTEM CHECK USER DO NOT LOGIN...");
 			try {
-				((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getResponse().sendRedirect("/nclcs-vce-service/index.jsp");
+				((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getResponse().sendRedirect("/nclcs-vce-service/sysusersmanagement/douserlogin.do");
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

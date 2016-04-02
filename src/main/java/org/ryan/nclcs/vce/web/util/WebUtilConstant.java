@@ -15,4 +15,6 @@ public class WebUtilConstant {
 	public static String HOST = "http://msg.umeng.com";
 	
 	public static String POSTPATH = "/api/send";
+	
+	public static String ALIASTYPE="kUMessageAliasTypeVCE";
 }

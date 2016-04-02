@@ -12,5 +12,6 @@ public interface ISysDeviceTokenManagementService extends INclcsVceServiceBaseSe
 	public List<SysDeviceToken> findDeviceTokenByUserId(List<Integer> userId);
 	
 	public boolean sendNotificationToApp(List<SysDeviceToken> deviceTokens, String text, String titel, String ticker);
-
+	
+	public boolean sendDelayNotificationToApp(String userName);
 }

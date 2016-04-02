@@ -6,10 +6,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import org.ryan.nclcs.vce.annotation.SystemLogIsCheck;
 import org.ryan.nclcs.vce.annotation.SystemUserLoginIsCheck;
 import org.ryan.nclcs.vce.entity.AppStudentsScores;
@@ -22,6 +20,7 @@ import org.ryan.nclcs.vce.service.sysgroups.ISysGroupsManagementService;
 import org.ryan.nclcs.vce.service.sysproperties.ISysPropertiesManagementService;
 import org.ryan.nclcs.vce.service.sysusers.ISysUsersManagementService;
 import org.ryan.nclcs.vce.web.util.MD5;
+import org.ryan.nclcs.vce.web.util.TokenUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -310,6 +309,23 @@ public class AppStudentsInfomationManagementController {
 				result.put("status", 0);
 				result.put("data", "save failed because user_name has exist!");
 			}
+		}
+		
+		logger.info("this is [savestudentinfo.do] check token ...");
+		String userName=request.getSession().getAttribute("u_name")==null?"":request.getSession().getAttribute("u_name").toString();
+		if (userName!=null&&!userName.equals("")){
+			String sessionToken=request.getSession().getAttribute(userName)==null?"":request.getSession().getAttribute(userName).toString();
+			if (sessionToken!=null&&!sessionToken.equals("")&&TokenUtils.getInstance().validateSessionToken(userName, sessionToken)){
+				logger.info("this is [savestudentinfo.do] check token success...");
+			}else{
+				parameters.put("status", -2);
+				parameters.put("data", "illegal user!");
+				logger.info("this is [savestudentinfo.do] to delete failed...");
+			}
+		}else{
+			parameters.put("status", -2);
+			parameters.put("data", "illegal user!");
+			logger.info("this is [savestudentinfo.do] to delete failed...");
 		}
 		
 		if (result.isEmpty()){

@@ -2,6 +2,8 @@ package org.ryan.nclcs.vce.web;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,14 +15,11 @@ import javax.servlet.http.HttpServletResponse;
 import org.ryan.nclcs.vce.annotation.SystemLogIsCheck;
 import org.ryan.nclcs.vce.annotation.SystemUserLoginIsCheck;
 import org.ryan.nclcs.vce.entity.SysGroups;
-import org.ryan.nclcs.vce.entity.SysProperties;
 import org.ryan.nclcs.vce.entity.SysRoles;
 import org.ryan.nclcs.vce.entity.SysUsers;
-import org.ryan.nclcs.vce.service.sysgroups.ISysGroupsManagementService;
-import org.ryan.nclcs.vce.service.sysproperties.ISysPropertiesManagementService;
-import org.ryan.nclcs.vce.service.sysroles.ISysRolesManagementService;
 import org.ryan.nclcs.vce.service.sysusers.ISysUsersManagementService;
-import org.ryan.nclcs.vce.web.util.MD5;
+import org.ryan.nclcs.vce.web.util.PasswordHash;
+import org.ryan.nclcs.vce.web.util.TokenUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,14 +43,14 @@ public class SysUsersManagementController {
 	@Autowired
 	private ISysUsersManagementService sysUsersManagementService;
 	
-	@Autowired
-	private ISysPropertiesManagementService sysPropertiesManagementService;
-	
-	@Autowired
-	private ISysGroupsManagementService sysGroupsManagementService;
-	
-	@Autowired
-	private ISysRolesManagementService sysRolesManagementService;
+//	@Autowired
+//	private ISysPropertiesManagementService sysPropertiesManagementService;
+//	
+//	@Autowired
+//	private ISysGroupsManagementService sysGroupsManagementService;
+//	
+//	@Autowired
+//	private ISysRolesManagementService sysRolesManagementService;
 	
 	@RequestMapping(value = "/sysuserslist.do")
 	@SystemUserLoginIsCheck
@@ -168,28 +167,59 @@ public class SysUsersManagementController {
 				result.put("data", "用户名已存在，请修改后重试!");
 			}
 		}
+		if (result.isEmpty()){
+			logger.info("this is [savesysusers.do] check token ...");
+			String userName=request.getSession().getAttribute("u_name")==null?"":request.getSession().getAttribute("u_name").toString();
+			if (userName!=null&&!userName.equals("")){
+				String sessionToken=request.getSession().getAttribute(userName)==null?"":request.getSession().getAttribute(userName).toString();
+				if (sessionToken!=null&&!sessionToken.equals("")&&TokenUtils.getInstance().validateSessionToken(userName, sessionToken)){
+					logger.info("this is [savesysusers.do] check token success...");
+				}else{
+					result.put("status", -2);
+					result.put("data", "illegal user!");
+					logger.info("this is [savesysusers.do] to delete failed...");
+				}
+			}else{
+				result.put("status", -2);
+				result.put("data", "illegal user!");
+				logger.info("this is [savesysusers.do] to delete failed...");
+			}
+		}
 		
 		if (result.isEmpty()){
 			if (userId!=null&&userId!=0){
 				sysUsers.setId(userId);
 			}else if (userId==null||userId==0){
-				sysUsers.setPassword(MD5.string2MD5(MD5.string2MD5(sysUsers.getPassword())));
+//				sysUsers.setPassword(MD5.string2MD5(MD5.string2MD5(sysUsers.getPassword())));
+				try {
+					logger.info("this is [savesysusers.do] generate password ...");
+					sysUsers.setPassword(PasswordHash.createHash(PasswordHash.giveMeSalt(sysUsers.getPassword(), sysUsers.getUserName())));
+					logger.info("this is [savesysusers.do] generate password done...");
+				} catch (NoSuchAlgorithmException e) {
+					e.printStackTrace();
+					result.put("status", 0);
+					result.put("data", "密码生成错误，请重试!");
+				} catch (InvalidKeySpecException e) {
+					e.printStackTrace();
+					result.put("status", 0);
+					result.put("data", "密码生成错误，请重试!");
+				}
 			}
 			
-			try{
-				logger.info("this is [savesysusers.do] is saving ...");
-//				result=storeBillManagementService.saveBill(bill);
-//				sysUsers.setCreateTime(new Date(Calendar.getInstance().getTimeInMillis()));
-				logger.info("this is [savesysusers.do] show sysUsers ["+sysUsers+"] ...");
-				sysUsersManagementService.save(sysUsers);
-				result.put("status", 1);
-				result.put("data", "operation success!");
-				logger.info("this is [savesysusers.do] save sysUsers done ...");
-			}catch(Exception ex){
-				logger.info("this is [savesysusers.do] save sysUsers error ...");
-				result.put("status", 0);
-				result.put("data", "save failed, try again!");
-				ex.printStackTrace();
+			if (result.isEmpty()){
+				try{
+					logger.info("this is [savesysusers.do] is saving ...");
+					logger.info("this is [savesysusers.do] show sysUsers ["+sysUsers+"] ...");
+					sysUsersManagementService.save(sysUsers);
+					result.put("status", 1);
+					result.put("data", "operation success!");
+					logger.info("this is [savesysusers.do] save sysUsers done ...");
+				}catch(Exception ex){
+					logger.info("this is [savesysusers.do] save sysUsers error ...");
+					result.put("status", 0);
+					result.put("data", "save failed, try again!");
+					ex.printStackTrace();
+				}
 			}
 			logger.info("this is [savesysusers.do] show result ["+result+"] ...");
 		}
@@ -208,11 +238,27 @@ public class SysUsersManagementController {
 		Map<String, Object> result=new HashMap<String, Object>();
 		if (deleteId!=null&&deleteId!=0){
 			try {
-				logger.info("this is [deletesysusers.do] ready to delete ...");
-				sysUsersManagementService.delete(sysUsersManagementService.get(deleteId));
-				result.put("status", 1);
-				result.put("data", "operation success!");
-				logger.info("this is [deletesysusers.do] to delete done...");
+				logger.info("this is [deletesysusers.do] check token ...");
+				String userName=request.getSession().getAttribute("u_name")==null?"":request.getSession().getAttribute("u_name").toString();
+				if (userName!=null&&!userName.equals("")){
+					String sessionToken=request.getSession().getAttribute(userName)==null?"":request.getSession().getAttribute(userName).toString();
+					if (sessionToken!=null&&!sessionToken.equals("")&&TokenUtils.getInstance().validateSessionToken(userName, sessionToken)){
+						logger.info("this is [deletesysusers.do] check token success...");
+						logger.info("this is [deletesysusers.do] ready to delete ...");
+						sysUsersManagementService.delete(sysUsersManagementService.get(deleteId));
+						result.put("status", 1);
+						result.put("data", "operation success!");
+						logger.info("this is [deletesysusers.do] to delete done...");
+					}else{
+						result.put("status", -2);
+						result.put("data", "illegal user!");
+						logger.info("this is [deletesysusers.do] to delete failed...");
+					}
+				}else{
+					result.put("status", -2);
+					result.put("data", "illegal user!");
+					logger.info("this is [deletesysusers.do] to delete failed...");
+				}
 			} catch (Exception e) {
 				logger.info("this is [deletesysusers.do] to trough exception when delete ...");
 				result.put("status", 0);
@@ -220,7 +266,6 @@ public class SysUsersManagementController {
 				e.printStackTrace();
 			}
 		}
-		
 		logger.info("this is [deletesysusers.do] show result ["+result+"] ...");
 		request.setAttribute("result", result.get("data"));
 		return "forward:/sysusersmanagement/sysuserslist.do";
@@ -235,11 +280,27 @@ public class SysUsersManagementController {
 		Map<String, Object> result=new HashMap<String, Object>();
 		if (deleteIds!=null&&!deleteIds.equals("")){
 			try {
-				logger.info("this is [deletemultiplesysusers.do] ready to delete ...");
-				sysUsersManagementService.deleteMultiple(deleteIds);
-				result.put("status", 1);
-				result.put("data", "operation success!");
-				logger.info("this is [deletemultiplesysusers.do] to delete done...");
+				logger.info("this is [deletemultiplesysusers.do] check token ...");
+				String userName=request.getSession().getAttribute("u_name")==null?"":request.getSession().getAttribute("u_name").toString();
+				if (userName!=null&&!userName.equals("")){
+					String sessionToken=request.getSession().getAttribute(userName)==null?"":request.getSession().getAttribute(userName).toString();
+					if (sessionToken!=null&&!sessionToken.equals("")&&TokenUtils.getInstance().validateSessionToken(userName, sessionToken)){
+						logger.info("this is [deletemultiplesysusers.do] check token success...");
+						logger.info("this is [deletemultiplesysusers.do] ready to delete ...");
+						sysUsersManagementService.deleteMultiple(deleteIds);
+						result.put("status", 1);
+						result.put("data", "operation success!");
+						logger.info("this is [deletemultiplesysusers.do] to delete done...");
+					}else{
+						result.put("status", -2);
+						result.put("data", "illegal user!");
+						logger.info("this is [deletemultiplesysusers.do] to delete failed...");
+					}
+				}else{
+					result.put("status", -2);
+					result.put("data", "illegal user!");
+					logger.info("this is [deletemultiplesysusers.do] to delete failed...");
+				}
 			} catch (Exception e) {
 				logger.info("this is [deletemultiplesysusers.do] to trough exception when delete ...");
 				result.put("status", 0);
@@ -253,48 +314,89 @@ public class SysUsersManagementController {
 		return "forward:/sysusersmanagement/sysuserslist.do";
 	}
 	
+	@RequestMapping(value = "/douserlogin.do")
+	public String doUserLogin(HttpServletRequest request) {
+		logger.info("this is [douserlogin.do] start ...");
+		
+		TokenUtils tokenUtils=TokenUtils.getInstance();
+		String tokenName="vce.newchinese.vic.edu.au."+request.getSession().getId();
+		String token=tokenUtils.generateToken(request.getSession().getId());
+		System.out.println("token=="+token);
+		tokenUtils.setLoginTokenMap(tokenName, token);
+		
+		request.setAttribute("tokenName", tokenName);
+		request.setAttribute("token", token);
+		return "forward:/login.jsp";
+	}
+	
 	@RequestMapping(value = "/userlogin.do", method=RequestMethod.POST)
 	@SystemLogIsCheck(description="用户登录")
 	public String userLogin(HttpServletRequest request, @ModelAttribute("sysuser") SysUsers sysUsers) {
 		logger.info("this is [userlogin.do] start ...");
 		Map<String, Object> result=new HashMap<String, Object>();
 		
-		logger.info("this is [userlogin.do] check is user_name exist...");
-		Map<String,Object> parameters=new HashMap<String,Object>();
-		parameters.put("userName", sysUsers.getUserName());
-		parameters.put("password", MD5.string2MD5(MD5.string2MD5(sysUsers.getPassword())));
+		String tokenName="vce.newchinese.vic.edu.au."+request.getSession().getId();
+		logger.info("this is [userlogin.do] get token name ["+tokenName+"]");
+		String token=ServletRequestUtils.getStringParameter(request, tokenName, "");
+		logger.info("this is [userlogin.do] get token ["+token+"]");
 		
-		SysUsers user=sysUsersManagementService.isExistByParameters(parameters);
-		if (user!=null){
-			result.put("status", 1);
-			result.put("data", "login success!");
-			logger.info("this is [userlogin.do] login success ...");
+		if (TokenUtils.getInstance().validateLoginToken(tokenName, token)){
+			logger.info("this is [userlogin.do] validateLoginToken done...");
+			logger.info("this is [userlogin.do] check is user_name exist...");
+			Map<String,Object> parameters=new HashMap<String,Object>();
+			parameters.put("userName", sysUsers.getUserName());
+//			parameters.put("password", MD5.string2MD5(sysUsers.getPassword()));
+//			parameters.put("password", sysUsers.getPassword());
 			
-			request.getSession().setAttribute("u_id", user.getId());
-			request.getSession().setAttribute("u_name", user.getUserName());
-			if (user.getSysRoles()!=null&&!user.getSysRoles().isEmpty()){
-				List<SysRoles> lstRoles=new ArrayList<SysRoles>();
-				for(SysRoles role:user.getSysRoles()){
-					lstRoles.add(role);
+			SysUsers user=sysUsersManagementService.isExistByParameters(parameters);
+			if (user!=null){
+				try {
+					if (PasswordHash.validatePassword(PasswordHash.giveMeSalt(sysUsers.getPassword(), sysUsers.getUserName()), user.getPassword())){
+						result.put("status", 1);
+						result.put("data", "login success!");
+						logger.info("this is [userlogin.do] login success ...");
+
+						String sessionToken=TokenUtils.getInstance().generateToken(request.getSession().getId());
+						TokenUtils.getInstance().setSessionTokenMap(user.getUserName(), sessionToken);
+						request.getSession().setAttribute(user.getUserName(), sessionToken);
+						
+						request.getSession().setAttribute("u_id", user.getId());
+						request.getSession().setAttribute("u_name", user.getUserName());
+						if (user.getSysRoles()!=null&&!user.getSysRoles().isEmpty()){
+							List<SysRoles> lstRoles=new ArrayList<SysRoles>();
+							for(SysRoles role:user.getSysRoles()){
+								lstRoles.add(role);
+							}
+							request.getSession().setAttribute("u_sr", lstRoles);//roles
+						}
+						if (user.getSysGroups()!=null&&!user.getSysGroups().isEmpty()){
+							List<SysGroups> lstGroups=new ArrayList<SysGroups>();
+							for(SysGroups group:user.getSysGroups()){
+								lstGroups.add(group);
+							}
+							request.getSession().setAttribute("u_sg", lstGroups);//groups
+						}
+					}else{
+						result.put("status", 0);
+						result.put("data", "login failed, try again!");
+						logger.info("this is [userlogin.do] login failed ...");
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+					result.put("status", 0);
+					result.put("data", "login failed, try again!");
+					logger.info("this is [userlogin.do] login failed ...");
 				}
-				request.getSession().setAttribute("u_sr", lstRoles);//roles
+			}else{
+				result.put("status", 0);
+				result.put("data", "login failed, try again!");
+				logger.info("this is [userlogin.do] login failed ...");
 			}
-			if (user.getSysGroups()!=null&&!user.getSysGroups().isEmpty()){
-				List<SysGroups> lstGroups=new ArrayList<SysGroups>();
-				for(SysGroups group:user.getSysGroups()){
-					lstGroups.add(group);
-				}
-				request.getSession().setAttribute("u_sg", lstGroups);//groups
-			}
-		}else{
-			result.put("status", 0);
-			result.put("data", "login failed, try again!");
-			logger.info("this is [userlogin.do] login failed ...");
 		}
 		
 		request.setAttribute("result", result.get("data"));
 		request.setAttribute("sysuser", sysUsers);
-		return result.get("status").equals(1)?"forward:/sysnotificationmanagement/sysnotificationdetail.do":"forward:/index.jsp";
+		return result.get("status").equals(1)?"forward:/sysnotificationmanagement/sysnotificationdetail.do":"forward:/sysusersmanagement/douserlogin.do";
 	}
 	
 	@RequestMapping(value = "/userlogout.do", method=RequestMethod.GET)
@@ -302,13 +404,44 @@ public class SysUsersManagementController {
 	@SystemLogIsCheck(description="用户登录")
 	public String userLogout(HttpServletRequest request) {
 		logger.info("this is [userlogout.do] start ...");
-		
-		logger.info("this is [userlogout.do] check is user_name exist...");
-		request.getSession().setAttribute("u_id", null);
-		request.getSession().setAttribute("u_name", null);
-		request.getSession().setAttribute("u_sr", null);//roles
-		request.getSession().setAttribute("u_sg", null);//groups
-		return "redirect:/index.jsp";
+		try{
+			logger.info("this is [userlogout.do] remove token ...");
+			if (request.getSession().getAttribute("u_name")!=null){
+				TokenUtils.getInstance().removeSessionToken(request.getSession().getAttribute("u_name").toString());
+			}
+			logger.info("this is [userlogout.do] remove token done...");
+		}catch(Exception ex){
+			ex.printStackTrace();
+		}
+		try {
+			logger.info("this is [userlogout.do] remove u_id ...");
+			request.getSession().setAttribute("u_id", null);
+			logger.info("this is [userlogout.do] remove u_id done...");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		try {
+			logger.info("this is [userlogout.do] remove u_name ...");
+			request.getSession().setAttribute("u_name", null);
+			logger.info("this is [userlogout.do] remove u_name done...");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		try {
+			logger.info("this is [userlogout.do] remove u_sr ...");
+			request.getSession().setAttribute("u_sr", null);//roles
+			logger.info("this is [userlogout.do] remove u_sr done...");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		try {
+			logger.info("this is [userlogout.do] remove u_sg ...");
+			request.getSession().setAttribute("u_sg", null);//groups
+			logger.info("this is [userlogout.do] remove u_sg done...");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return "redirect:/sysusersmanagement/douserlogin.do";
 	}
 	
 	@RequestMapping(value = "/changepassword.do",method=RequestMethod.POST)
@@ -342,18 +475,36 @@ public class SysUsersManagementController {
 			parameters.put("data", "parameters error, try again please.");
 		}
 		try{
-			logger.info("this is [changepassword.do] is checking ...");
-			SysUsers user=sysUsersManagementService.get(Integer.parseInt(ud));
-			if (!MD5.string2MD5(MD5.string2MD5(op)).equals(user.getPassword())){
-				parameters.put("status", 0);
-				parameters.put("data", "原始密码输入错误，请重新输入！");
+			logger.info("this is [changepassword.do] check token ...");
+			String userName=request.getSession().getAttribute("u_name")==null?"":request.getSession().getAttribute("u_name").toString();
+			if (userName!=null&&!userName.equals("")){
+				String sessionToken=request.getSession().getAttribute(userName)==null?"":request.getSession().getAttribute(userName).toString();
+				if (sessionToken!=null&&!sessionToken.equals("")&&TokenUtils.getInstance().validateSessionToken(userName, sessionToken)){
+					logger.info("this is [changepassword.do] check token success...");
+					logger.info("this is [changepassword.do] is checking password...");
+					SysUsers user=sysUsersManagementService.get(Integer.parseInt(ud));
+//					if (!MD5.string2MD5(MD5.string2MD5(op)).equals(user.getPassword())){
+					if (!PasswordHash.validatePassword(PasswordHash.giveMeSalt(op, user.getUserName()), user.getPassword())){
+						parameters.put("status", 0);
+						parameters.put("data", "原始密码输入错误，请重新输入！");
+					}else{
+//						user.setPassword(MD5.string2MD5(MD5.string2MD5(np)));
+						user.setPassword(PasswordHash.createHash(PasswordHash.giveMeSalt(np, user.getUserName())));
+						logger.info("this is [changepassword.do] is saving ...");
+						sysUsersManagementService.save(user);
+						parameters.put("status", 1);
+						parameters.put("data", "密码修改成功！");
+						logger.info("this is [changepassword.do] is done ...");
+					}
+				}else{
+					parameters.put("status", -2);
+					parameters.put("data", "illegal user!");
+					logger.info("this is [changepassword.do] to delete failed...");
+				}
 			}else{
-				user.setPassword(MD5.string2MD5(MD5.string2MD5(np)));
-				logger.info("this is [changepassword.do] is saving ...");
-				sysUsersManagementService.save(user);
-				parameters.put("status", 1);
-				parameters.put("data", "密码修改成功！");
-				logger.info("this is [changepassword.do] is done ...");
+				parameters.put("status", -2);
+				parameters.put("data", "illegal user!");
+				logger.info("this is [changepassword.do] to delete failed...");
 			}
 		}catch(Exception ex){
 			logger.info("this is [changepassword.do] saving error ...");
@@ -452,14 +603,12 @@ public class SysUsersManagementController {
 				originalUser.setEmailAddress(sysUsers.getEmailAddress()==null?originalUser.getEmailAddress():sysUsers.getEmailAddress());
 				originalUser.setHomePhone(sysUsers.getHomePhone()==null?originalUser.getHomePhone():sysUsers.getHomePhone());
 			}else if (userId==null||userId==0){
-				sysUsers.setPassword(MD5.string2MD5(MD5.string2MD5(sysUsers.getPassword())));
+//				sysUsers.setPassword(MD5.string2MD5(MD5.string2MD5(sysUsers.getPassword())));
 			}
 			
 			try{
 				logger.info("this is [savepersonalinfo.do] is saving ...");
-//				sysUsers.setCreateTime(new Date(Calendar.getInstance().getTimeInMillis()));
 				logger.info("this is [savepersonalinfo.do] show sysUsers ["+originalUser+"] ...");
-				
 				sysUsersManagementService.save(originalUser);
 				result.put("status", 1);
 				result.put("data", "operation success!");
@@ -478,79 +627,109 @@ public class SysUsersManagementController {
 		return "forward:/sysusersmanagement/sysuserspersonal.do";
 	}
 	
-	@RequestMapping(value = "/sysuserregister.do")
-	public String sysUserRegister(HttpServletRequest request, HttpServletResponse response, ModelMap modelMap) {
+	@RequestMapping(value = "/changePasswordonce.do")
+	public String changePasswordOnce(HttpServletRequest request, HttpServletResponse response, ModelMap modelMap) {
 		logger.info("this is [sysuserregister.do] start ...");
-		logger.info("this is [sysuserregister.do] end ...");
-		return "sysusers/appstudentregister";
-	}
-	
-	@RequestMapping(value = "/saveuserregister.do", method=RequestMethod.POST)
-	public String saveUserRegister(HttpServletRequest request, @ModelAttribute("sysuser") SysUsers sysUsers, Integer userId, Integer propertyIsLearnChineseId, Integer studentGroupId, Integer studentGroupClassId) {
-		logger.info("this is [saveuserregister.do] start ...");
-		Map<String, Object> result=new HashMap<String, Object>();
 		
-		try {
-			
-			logger.info("this is [saveuserregister.do] check is user_name exist...");
-			Map<String,Object> parameters=new HashMap<String,Object>();
-			
-			parameters.put("userName", sysUsers.getUserName());
-			if (sysUsersManagementService.isExistByParameters(parameters)!=null){
-				request.setAttribute("sysuser", sysUsers);
-				result.put("status", 2);
-				result.put("data", "用户名已存在，请重试!");
-			}
-			
-			if (propertyIsLearnChineseId==null||propertyIsLearnChineseId==null||studentGroupClassId==null){
-				result.put("status", 0);
-				result.put("data", "save failed because lack of parameters!");
-			}
-			
-			if (result.isEmpty()){//not exist
-				sysUsers.setPassword(MD5.string2MD5(MD5.string2MD5((sysUsers.getPassword()))));
-				
-				sysUsers.setUserName(sysUsers.getUserName());
-				sysUsers.setEnglishName(sysUsers.getEnglishName());
-				sysUsers.setChineseName(sysUsers.getChineseName());
-				sysUsers.setPinyin(sysUsers.getPinyin());
-				sysUsers.setHomeAddress(sysUsers.getHomeAddress());
-				sysUsers.setDaySchool(sysUsers.getDaySchool());
-				sysUsers.setDaySchoolGrade(sysUsers.getDaySchoolGrade());
-				
-				//是否在日校学中文
-				SysProperties property=sysPropertiesManagementService.get(propertyIsLearnChineseId);
-				sysUsers.setPropertyIsLearnChinese(property);
-				
-				SysGroups groupNewCampus=sysGroupsManagementService.get(studentGroupId);
-				sysUsers.setVceSchoolName(groupNewCampus.getGroupName());
-				
-				SysGroups groupNewClass=sysGroupsManagementService.get(studentGroupClassId);
-				sysUsers.setVceClassName(groupNewClass.getGroupName());
-				
-				logger.info("this is [saveuserregister.do] is saving user ...");
-				boolean flag=this.sysUsersManagementService.saveRegisterUser(sysUsers, groupNewClass, sysRolesManagementService.get(5));
-				if(flag){
-					result.put("status", 1);
-					result.put("data", "register success!");
-					logger.info("this is [saveuserregister.do] register success ...");
-				}else{
-					result.put("status", 0);
-					result.put("data", "register failed, try again!");
-					logger.info("this is [saveuserregister.do] register failed ...");
+		logger.info("this is [sysuserregister.do] find all users ...");
+		List<Map<String, Object>> list=sysUsersManagementService.findAllSysUsersByParameters(new HashMap<String,Object>());
+		SysUsers user=null;
+		for (Map<String, Object> map:list){
+			logger.info("this is [sysuserregister.do] change password one by one ...");
+			user=sysUsersManagementService.get(Integer.parseInt(""+map.get("id")));
+			if (user!=null&&!user.getUserName().startsWith("1000")){
+				logger.info("this is [sysuserregister.do] change password of user ["+user.getUserName()+"] ...");
+				try {
+					user.setPassword(PasswordHash.createHash(PasswordHash.giveMeSalt(user.getPassword(), user.getUserName())));
+					sysUsersManagementService.save(user);
+					logger.info("this is [sysuserregister.do] has changed password of user ["+user.getUserName()+"] ...");
+				} catch (NoSuchAlgorithmException e) {
+					e.printStackTrace();
+					logger.info("this is [sysuserregister.do] changed password of user ["+user.getUserName()+"] failed...");
+				} catch (InvalidKeySpecException e) {
+					e.printStackTrace();
+					logger.info("this is [sysuserregister.do] changed password of user ["+user.getUserName()+"] failed...");
 				}
-				
 			}
-		} catch (Exception e) {
-			result.put("status", 0);
-			result.put("data", "register failed, try again!");
-			logger.info("this is [saveuserregister.do] occur exception ...");
-			e.printStackTrace();
 		}
 		
-		request.setAttribute("result", result.get("data"));
-		request.setAttribute("status", result.get("status"));
-		
-		return "forward:/sysusersmanagement/sysuserregister.do";
+		logger.info("this is [sysuserregister.do] end ...");
+		return null;
 	}
+	
+//	@RequestMapping(value = "/sysuserregister.do")
+//	public String sysUserRegister(HttpServletRequest request, HttpServletResponse response, ModelMap modelMap) {
+//		logger.info("this is [sysuserregister.do] start ...");
+//		logger.info("this is [sysuserregister.do] end ...");
+//		return "sysusers/appstudentregister";
+//	}
+//	
+//	@RequestMapping(value = "/saveuserregister.do", method=RequestMethod.POST)
+//	public String saveUserRegister(HttpServletRequest request, @ModelAttribute("sysuser") SysUsers sysUsers, Integer userId, Integer propertyIsLearnChineseId, Integer studentGroupId, Integer studentGroupClassId) {
+//		logger.info("this is [saveuserregister.do] start ...");
+//		Map<String, Object> result=new HashMap<String, Object>();
+//		
+//		try {
+//			
+//			logger.info("this is [saveuserregister.do] check is user_name exist...");
+//			Map<String,Object> parameters=new HashMap<String,Object>();
+//			
+//			parameters.put("userName", sysUsers.getUserName());
+//			if (sysUsersManagementService.isExistByParameters(parameters)!=null){
+//				request.setAttribute("sysuser", sysUsers);
+//				result.put("status", 2);
+//				result.put("data", "用户名已存在，请重试!");
+//			}
+//			
+//			if (propertyIsLearnChineseId==null||propertyIsLearnChineseId==null||studentGroupClassId==null){
+//				result.put("status", 0);
+//				result.put("data", "save failed because lack of parameters!");
+//			}
+//			
+//			if (result.isEmpty()){//not exist
+//				sysUsers.setPassword(MD5.string2MD5(MD5.string2MD5((sysUsers.getPassword()))));
+//				
+//				sysUsers.setUserName(sysUsers.getUserName());
+//				sysUsers.setEnglishName(sysUsers.getEnglishName());
+//				sysUsers.setChineseName(sysUsers.getChineseName());
+//				sysUsers.setPinyin(sysUsers.getPinyin());
+//				sysUsers.setHomeAddress(sysUsers.getHomeAddress());
+//				sysUsers.setDaySchool(sysUsers.getDaySchool());
+//				sysUsers.setDaySchoolGrade(sysUsers.getDaySchoolGrade());
+//				
+//				//是否在日校学中文
+//				SysProperties property=sysPropertiesManagementService.get(propertyIsLearnChineseId);
+//				sysUsers.setPropertyIsLearnChinese(property);
+//				
+//				SysGroups groupNewCampus=sysGroupsManagementService.get(studentGroupId);
+//				sysUsers.setVceSchoolName(groupNewCampus.getGroupName());
+//				
+//				SysGroups groupNewClass=sysGroupsManagementService.get(studentGroupClassId);
+//				sysUsers.setVceClassName(groupNewClass.getGroupName());
+//				
+//				logger.info("this is [saveuserregister.do] is saving user ...");
+//				boolean flag=this.sysUsersManagementService.saveRegisterUser(sysUsers, groupNewClass, sysRolesManagementService.get(5));
+//				if(flag){
+//					result.put("status", 1);
+//					result.put("data", "register success!");
+//					logger.info("this is [saveuserregister.do] register success ...");
+//				}else{
+//					result.put("status", 0);
+//					result.put("data", "register failed, try again!");
+//					logger.info("this is [saveuserregister.do] register failed ...");
+//				}
+//				
+//			}
+//		} catch (Exception e) {
+//			result.put("status", 0);
+//			result.put("data", "register failed, try again!");
+//			logger.info("this is [saveuserregister.do] occur exception ...");
+//			e.printStackTrace();
+//		}
+//		
+//		request.setAttribute("result", result.get("data"));
+//		request.setAttribute("status", result.get("status"));
+//		
+//		return "forward:/sysusersmanagement/sysuserregister.do";
+//	}
 }

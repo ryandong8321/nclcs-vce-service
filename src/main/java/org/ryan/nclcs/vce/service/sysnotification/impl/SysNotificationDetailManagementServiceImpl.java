@@ -49,9 +49,14 @@ public class SysNotificationDetailManagementServiceImpl extends NclcsVceServiceB
 				tmp=new ArrayList<String>();
 				lst=notification.getSysNotificationDetailInfo();
 				for (SysNotificationDetail detail:lst){
-					if (detail.getDetailReceiveUserInfo().getId()==userId){
-						notificationDetailId=detail.getId();
-						break;
+					try {
+						if (detail!=null&&detail.getDetailReceiveUserInfo()!=null&&detail.getDetailReceiveUserInfo().getId()==userId){
+							notificationDetailId=detail.getId();
+							break;
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
+						continue;
 					}
 				}
 				tmp.add("<input type='checkbox' name='id[]' value='"+notificationDetailId+"'/>");

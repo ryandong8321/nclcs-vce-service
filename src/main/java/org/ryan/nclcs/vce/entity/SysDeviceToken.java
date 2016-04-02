@@ -10,7 +10,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-
 @SuppressWarnings("serial")
 @Entity
 @Table(name = "sys_users_device_token", catalog = "nclcs_vce_management")
@@ -41,6 +40,20 @@ public class SysDeviceToken implements Serializable{
 	 */
 	@Column(name = "sys_users_id", nullable = false)
 	private Integer sysUserId;
+	
+	/**
+	 * 对应用户的用户名
+	 */
+	@Column(name = "sys_users_name", nullable = false, length=64)
+	private String sysUserName;
+
+	public String getSysUserName() {
+		return sysUserName;
+	}
+
+	public void setSysUserName(String sysUserName) {
+		this.sysUserName = sysUserName;
+	}
 
 	public Integer getId() {
 		return id;

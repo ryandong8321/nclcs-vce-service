@@ -1,11 +1,13 @@
 package org.ryan.nclcs.vce.web.util;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class WebApplicationUtils {
 	
-	private static Map<Integer, String> USER_LOGIN_TOKEN=new HashMap<Integer, String>();
+//	private static Map<Integer, String> USER_LOGIN_TOKEN=new HashMap<Integer, String>();
+	
+	private static Map<Integer, String> USER_LOGIN_TOKEN=new ConcurrentHashMap<Integer, String>();
 	
 	public static String getToken(Integer key){
 		String token=null;

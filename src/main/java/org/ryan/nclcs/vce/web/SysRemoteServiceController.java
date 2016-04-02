@@ -19,7 +19,6 @@ import org.ryan.nclcs.vce.entity.AppStudentUploadAssignment;
 import org.ryan.nclcs.vce.entity.AppStudentsScores;
 import org.ryan.nclcs.vce.entity.AppTutorAppointmentAssignmentToStudent;
 import org.ryan.nclcs.vce.entity.AppTutorAppointmentAssignmentToTutor;
-import org.ryan.nclcs.vce.entity.SysDeviceToken;
 import org.ryan.nclcs.vce.entity.SysGroups;
 import org.ryan.nclcs.vce.entity.SysNotification;
 import org.ryan.nclcs.vce.entity.SysNotificationDetail;
@@ -37,7 +36,7 @@ import org.ryan.nclcs.vce.service.sysnotification.ISysNotificationManagementServ
 import org.ryan.nclcs.vce.service.sysproperties.ISysPropertiesManagementService;
 import org.ryan.nclcs.vce.service.sysroles.ISysRolesManagementService;
 import org.ryan.nclcs.vce.service.sysusers.ISysUsersManagementService;
-import org.ryan.nclcs.vce.web.util.MD5;
+import org.ryan.nclcs.vce.web.util.PasswordHash;
 import org.ryan.nclcs.vce.web.util.WebApplicationUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -119,55 +118,71 @@ public class SysRemoteServiceController {
 		
 		Map<String,Object> parameters=new HashMap<String,Object>();
 		parameters.put("userName", userName);
-		parameters.put("password", MD5.string2MD5(MD5.string2MD5(userPWD)));
+//		parameters.put("password", MD5.string2MD5(MD5.string2MD5(userPWD)));
 		SysUsers user=sysUsersManagementService.isExistByParameters(parameters);
 		if (user!=null){
-			result.put("status", 1);
-			result.put("info", "login success!");
 			
-			//set new device token
-			if (deviceToken!=null&&!deviceToken.equals("")){
-				sysDeviceTokenManagementService.setNewDeviceToken(user.getId(), deviceToken);
-			}
-			//end
-			
-			logger.info("this is [userlogin.do] login success ...");
-			WebApplicationUtils.setNewToken(user.getId(), user.getUserName()+user.getPassword());
-			result.put("token", WebApplicationUtils.getToken(user.getId()));
-			result.put("userid", user.getId());
-			result.put("username", user.getUserName());
-			result.put("chinesename", user.getChineseName());
-			
-			List<Map<String,Object>> param=new ArrayList<Map<String,Object>>();
-			if (user.getSysRoles()!=null&&!user.getSysRoles().isEmpty()){
-				Map<String,Object> map=null;
-				for (SysRoles role:user.getSysRoles()){
-					map=new HashMap<String,Object>();
-					map.put("roleId", role.getId());
-					map.put("roleName", role.getRoleName());
-					param.add(map);
+			try {
+				if (PasswordHash.validatePassword(PasswordHash.giveMeSalt(userPWD, userName), user.getPassword())){
+					result.put("status", 1);
+					result.put("info", "login success!");
+					
+					//set new device token
+					if (deviceToken!=null&&!deviceToken.equals("")){
+						sysDeviceTokenManagementService.setNewDeviceToken(user.getId(), deviceToken);
+					}
+					//end
+					
+					//send delay notification to app
+					sysDeviceTokenManagementService.sendDelayNotificationToApp(user.getUserName());
+					//end
+					
+					logger.info("this is [userlogin.do] login success ...");
+					WebApplicationUtils.setNewToken(user.getId(), user.getUserName()+user.getPassword());
+					result.put("token", WebApplicationUtils.getToken(user.getId()));
+					result.put("userid", user.getId());
+					result.put("username", user.getUserName());
+					result.put("chinesename", user.getChineseName());
+					
+					List<Map<String,Object>> param=new ArrayList<Map<String,Object>>();
+					if (user.getSysRoles()!=null&&!user.getSysRoles().isEmpty()){
+						Map<String,Object> map=null;
+						for (SysRoles role:user.getSysRoles()){
+							map=new HashMap<String,Object>();
+							map.put("roleId", role.getId());
+							map.put("roleName", role.getRoleName());
+							param.add(map);
+						}
+					}
+					result.put("roles", param);
+					
+					param=new ArrayList<Map<String,Object>>();
+					if (user.getSysGroups()!=null&&!user.getSysGroups().isEmpty()){
+						Map<String,Object> map=null;
+						for (SysGroups group:user.getSysGroups()){
+							map=new HashMap<String,Object>();
+							map.put("groupId", group.getId());
+							map.put("groupName", group.getGroupName());
+							map.put("groupCategory", group.getGroupCategory());
+							param.add(map);
+						}
+					}
+					result.put("groups", param);
+					
+					logger.info("this is [userlogin.do] set value to session...");
+					request.getSession().setAttribute("u_id", user.getId());
+					request.getSession().setAttribute("u_name", user.getUserName());
+				}else{
+					result.put("status", 0);
+					result.put("info", "login failed, try again!");
+					logger.info("this is [userlogin.do] login failed ...");
 				}
+			} catch (Exception e) {
+				e.printStackTrace();
+				result.put("status", 0);
+				result.put("info", "login failed, try again!");
+				logger.info("this is [userlogin.do] login failed ...");
 			}
-			result.put("roles", param);
-			
-			param=new ArrayList<Map<String,Object>>();
-			if (user.getSysGroups()!=null&&!user.getSysGroups().isEmpty()){
-				Map<String,Object> map=null;
-				for (SysGroups group:user.getSysGroups()){
-					map=new HashMap<String,Object>();
-					map.put("groupId", group.getId());
-					map.put("groupName", group.getGroupName());
-					map.put("groupCategory", group.getGroupCategory());
-					param.add(map);
-				}
-			}
-			result.put("groups", param);
-			
-			
-			logger.info("this is [userlogin.do] set value to session...");
-			request.getSession().setAttribute("u_id", user.getId());
-			request.getSession().setAttribute("u_name", user.getUserName());
-			
 		}else{
 			result.put("status", 0);
 			result.put("info", "login failed, try again!");
@@ -402,7 +417,8 @@ public class SysRemoteServiceController {
 					user.setPropertyIsLearnChinese(property);
 				}
 				
-				user.setPassword(MD5.string2MD5(MD5.string2MD5(userPWD)));
+//				user.setPassword(MD5.string2MD5(MD5.string2MD5(userPWD)));
+				user.setPassword(PasswordHash.createHash(PasswordHash.giveMeSalt(userPWD, userName)));
 				
 				SysGroups groupNewCampus=sysGroupsManagementService.get(Integer.parseInt(campus));
 				user.setVceSchoolName(groupNewCampus.getGroupName());
@@ -486,56 +502,63 @@ public class SysRemoteServiceController {
 					SysUsers studentUser=sysUsersManagementService.get(childrenId);
 					
 					if (studentUser!=null){//student exist
-						
 						if (studentUser.getSysGroups()==null||studentUser.getSysGroups().isEmpty()||studentUser.getSysGroups().size()>1){//class setting was wrong
 							result.put("status", 4);
 							result.put("info", "student class was wrong");
 							logger.info("this is [saveparentregister.do] student class was wrong ...");
 						}else{
-							String userPWD=json.has("userPWD")?json.getString("userPWD"):"";
-							String pinyin=json.has("pinyin")?json.getString("pinyin"):"";
-							String chineseName=json.has("chineseName")?json.getString("chineseName"):"";
-							String englishName=json.has("englishName")?json.getString("englishName"):"";
-							String homeAddress=json.has("homeAddress")?json.getString("homeAddress"):"";
-							String mobilePhone=json.has("mobilePhone")?json.getString("mobilePhone"):"";
-							String homePhone=json.has("homePhone")?json.getString("homePhone"):"";
-							String emailAddress=json.has("emailAddress")?json.getString("emailAddress"):"";
-							
-							parentUser=new SysUsers();
-							parentUser.setUserName(userName);
-							parentUser.setPinyin(pinyin);
-							parentUser.setChineseName(chineseName);
-							parentUser.setEnglishName(englishName);
-							parentUser.setHomeAddress(homeAddress);
-							parentUser.setHomePhone(homePhone);
-							parentUser.setMobilePhone(mobilePhone);
-							parentUser.setEmailAddress(emailAddress);
-							parentUser.setChildrenId(childrenId);
-							logger.info("this is [saveparentregister.do] user ["+parentUser+"]");
-							
-							parentUser.setPassword(MD5.string2MD5(MD5.string2MD5(userPWD)));
-							
-							logger.info("this is [saveparentregister.do] is saving user ...");
-							this.sysUsersManagementService.saveRegisterUser(parentUser, studentUser.getSysGroups().get(0), sysRolesManagementService.get(6));
-							logger.info("this is [saveparentregister.do] save user done...");
-							
-							parentUser=sysUsersManagementService.isExistByParameters(parameters);
-							if (parentUser!=null){
-								result.put("status", 1);
-								result.put("info", "register success!");
-								logger.info("this is [saveparentregister.do] register success ...");
+							try{
+								String userPWD=json.has("userPWD")?json.getString("userPWD"):"";
+								String pinyin=json.has("pinyin")?json.getString("pinyin"):"";
+								String chineseName=json.has("chineseName")?json.getString("chineseName"):"";
+								String englishName=json.has("englishName")?json.getString("englishName"):"";
+								String homeAddress=json.has("homeAddress")?json.getString("homeAddress"):"";
+								String mobilePhone=json.has("mobilePhone")?json.getString("mobilePhone"):"";
+								String homePhone=json.has("homePhone")?json.getString("homePhone"):"";
+								String emailAddress=json.has("emailAddress")?json.getString("emailAddress"):"";
 								
-								WebApplicationUtils.setNewToken(parentUser.getId(), parentUser.getUserName()+parentUser.getPassword());
-								result.put("token", WebApplicationUtils.getToken(parentUser.getId()));
-								result.put("userid", parentUser.getId());
-								result.put("username", parentUser.getUserName());
-								result.put("chinesename", parentUser.getChineseName());
+								parentUser=new SysUsers();
+								parentUser.setUserName(userName);
+								parentUser.setPinyin(pinyin);
+								parentUser.setChineseName(chineseName);
+								parentUser.setEnglishName(englishName);
+								parentUser.setHomeAddress(homeAddress);
+								parentUser.setHomePhone(homePhone);
+								parentUser.setMobilePhone(mobilePhone);
+								parentUser.setEmailAddress(emailAddress);
+								parentUser.setChildrenId(childrenId);
+								logger.info("this is [saveparentregister.do] user ["+parentUser+"]");
 								
-								logger.info("this is [saveparentregister.do] set value to session...");
-								request.getSession().setAttribute("u_id", parentUser.getId());
-								request.getSession().setAttribute("u_name", parentUser.getUserName());
+	//							parentUser.setPassword(MD5.string2MD5(MD5.string2MD5(userPWD)));
+								parentUser.setPassword(PasswordHash.createHash(PasswordHash.giveMeSalt(userPWD, userName)));
 								
-							}else{
+								logger.info("this is [saveparentregister.do] is saving user ...");
+								this.sysUsersManagementService.saveRegisterUser(parentUser, studentUser.getSysGroups().get(0), sysRolesManagementService.get(6));
+								logger.info("this is [saveparentregister.do] save user done...");
+								
+								parentUser=sysUsersManagementService.isExistByParameters(parameters);
+								if (parentUser!=null){
+									result.put("status", 1);
+									result.put("info", "register success!");
+									logger.info("this is [saveparentregister.do] register success ...");
+									
+									WebApplicationUtils.setNewToken(parentUser.getId(), parentUser.getUserName()+parentUser.getPassword());
+									result.put("token", WebApplicationUtils.getToken(parentUser.getId()));
+									result.put("userid", parentUser.getId());
+									result.put("username", parentUser.getUserName());
+									result.put("chinesename", parentUser.getChineseName());
+									
+									logger.info("this is [saveparentregister.do] set value to session...");
+									request.getSession().setAttribute("u_id", parentUser.getId());
+									request.getSession().setAttribute("u_name", parentUser.getUserName());
+									
+								}else{
+									result.put("status", 0);
+									result.put("info", "register failed, try again!");
+									logger.info("this is [saveparentregister.do] register failed ...");
+								}
+							}catch (Exception ex){
+								ex.printStackTrace();
 								result.put("status", 0);
 								result.put("info", "register failed, try again!");
 								logger.info("this is [saveparentregister.do] register failed ...");
@@ -758,22 +781,33 @@ public class SysRemoteServiceController {
 //					currentUserId=Integer.parseInt(""+request.getSession().getAttribute("u_id"));
 //				}
 				if (localToken!=null&&localToken.equals(token)){
+					
 					user=sysUsersManagementService.get(userId);
-					String originalPWD=json.has("originalPWD")?json.getString("originalPWD"):"";
-					String newPWD=json.has("newPWD")?json.getString("newPWD"):"";
+					if (user==null){
+						result.put("status", -2);
+						result.put("info", "illegal user");
+						logger.info("this is [changepassword.do] illegal user ...");
+					}
 					
-					
-					logger.info("this is [changepassword.do] is checking ...");
-					if (!MD5.string2MD5(MD5.string2MD5(originalPWD)).equals(user.getPassword())){
-						result.put("status", 0);
-						result.put("info", "原始密码输入错误，请重新输入！");
-					}else{
-						user.setPassword(MD5.string2MD5(MD5.string2MD5(newPWD)));
-						logger.info("this is [changepassword.do] is saving ...");
-						sysUsersManagementService.save(user);
-						result.put("status", 1);
-						result.put("info", "密码修改成功！");
-						logger.info("this is [changepassword.do] is done ...");
+					if(result.isEmpty()){
+						String originalPWD=json.has("originalPWD")?json.getString("originalPWD"):"";
+						String newPWD=json.has("newPWD")?json.getString("newPWD"):"";
+						
+						logger.info("this is [changepassword.do] is checking ...");
+//						if (!MD5.string2MD5(MD5.string2MD5(originalPWD)).equals(user.getPassword())){
+						if (!PasswordHash.validatePassword(PasswordHash.giveMeSalt(originalPWD, user.getUserName()), user.getPassword())){
+							result.put("status", 0);
+							result.put("info", "原始密码输入错误，请重新输入！");
+						}else{
+//							user.setPassword(MD5.string2MD5(MD5.string2MD5(newPWD)));
+							user.setPassword(PasswordHash.createHash(PasswordHash.giveMeSalt(newPWD, user.getUserName())));
+							
+							logger.info("this is [changepassword.do] is saving ...");
+							sysUsersManagementService.save(user);
+							result.put("status", 1);
+							result.put("info", "密码修改成功！");
+							logger.info("this is [changepassword.do] is done ...");
+						}
 					}
 				}else{
 					result.put("status", -2);
@@ -1827,11 +1861,10 @@ public class SysRemoteServiceController {
 					sysNotificationManagementService.save(notification);
 					
 					//send notification to App user
-					List<SysDeviceToken> deviceTokens=sysDeviceTokenManagementService.findDeviceTokenByUserId(userIds);
 					String text="您有一条新通知";
 					String ticker="通知";
 					String title="通知";
-					sysDeviceTokenManagementService.sendNotificationToApp(deviceTokens, text, title, ticker);
+					sysDeviceTokenManagementService.sendNotificationToApp(sysDeviceTokenManagementService.findDeviceTokenByUserId(userIds), text, title, ticker);
 					//end
 					
 					result.put("status", 1);
