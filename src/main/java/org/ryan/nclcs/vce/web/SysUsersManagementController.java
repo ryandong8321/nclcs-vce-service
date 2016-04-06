@@ -627,36 +627,6 @@ public class SysUsersManagementController {
 		return "forward:/sysusersmanagement/sysuserspersonal.do";
 	}
 	
-	@RequestMapping(value = "/changePasswordonce.do")
-	public String changePasswordOnce(HttpServletRequest request, HttpServletResponse response, ModelMap modelMap) {
-		logger.info("this is [sysuserregister.do] start ...");
-		
-		logger.info("this is [sysuserregister.do] find all users ...");
-		List<Map<String, Object>> list=sysUsersManagementService.findAllSysUsersByParameters(new HashMap<String,Object>());
-		SysUsers user=null;
-		for (Map<String, Object> map:list){
-			logger.info("this is [sysuserregister.do] change password one by one ...");
-			user=sysUsersManagementService.get(Integer.parseInt(""+map.get("id")));
-			if (user!=null&&!user.getUserName().startsWith("1000")){
-				logger.info("this is [sysuserregister.do] change password of user ["+user.getUserName()+"] ...");
-				try {
-					user.setPassword(PasswordHash.createHash(PasswordHash.giveMeSalt(user.getPassword(), user.getUserName())));
-					sysUsersManagementService.save(user);
-					logger.info("this is [sysuserregister.do] has changed password of user ["+user.getUserName()+"] ...");
-				} catch (NoSuchAlgorithmException e) {
-					e.printStackTrace();
-					logger.info("this is [sysuserregister.do] changed password of user ["+user.getUserName()+"] failed...");
-				} catch (InvalidKeySpecException e) {
-					e.printStackTrace();
-					logger.info("this is [sysuserregister.do] changed password of user ["+user.getUserName()+"] failed...");
-				}
-			}
-		}
-		
-		logger.info("this is [sysuserregister.do] end ...");
-		return null;
-	}
-	
 //	@RequestMapping(value = "/sysuserregister.do")
 //	public String sysUserRegister(HttpServletRequest request, HttpServletResponse response, ModelMap modelMap) {
 //		logger.info("this is [sysuserregister.do] start ...");
