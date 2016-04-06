@@ -415,4 +415,66 @@ public class SysGroupsManagementServiceImpl extends NclcsVceServiceBaseServiceIm
 		return result;
 	}
 
+	@Override
+	public List<Map<String, Object>> findCampusInfo(Map<String, Object> parameters, Integer groupId,
+			boolean needSelected) {
+		List<Map<String, Object>> result=new ArrayList<>();
+		if (parameters!=null&&!parameters.isEmpty()){
+			List<Object> param=new ArrayList<Object>();
+			StringBuffer hql=new StringBuffer("from SysGroups sgs ");
+			boolean hasWhere=false;
+			
+			if (parameters.containsKey("groupParentId")){
+				hql.append(" where sgs.groupParentId = ?");
+				param.add(parameters.get("groupParentId"));
+				hasWhere=true;
+			}
+			
+			if (parameters.containsKey("groupIds")){
+				if(!hasWhere){
+					hql.append(" where ");
+					hasWhere=true;
+				}else{
+					hql.append(" and ");
+				}
+				String groupIds=parameters.get("groupIds")==null?"":parameters.get("groupIds").toString();
+				if (groupIds!=null&&!groupIds.equals("")){
+					if (groupIds.contains(",")){
+						String[] ids=groupIds.split(",");
+						hql.append(" sgs.id in (");
+						for (int idx=0;idx<ids.length;idx++){
+							if (idx==0){
+								hql.append("?");
+							}else{
+								hql.append(",?");
+							}
+							param.add(ids[idx]);
+						}
+						hql.append(")");
+					}else{
+						hql.append("sgs.id = ?");
+						param.add(groupIds);
+					}
+				}
+			}
+			
+			List<SysGroups> lst=this.getCurrentDAO().find(hql.toString(), param.toArray());
+			if (lst!=null&&!lst.isEmpty()){
+				Map<String, Object> map=null;
+				for (SysGroups group:lst){
+					map=new HashMap<String, Object>();
+					map.put("id", group.getId());
+					map.put("text", group.getGroupName());
+					if (needSelected&&group.getId()==groupId){
+						map.put("selected", "selected");
+					}
+					result.add(map);
+				}
+			}
+			
+		}
+		
+		return result;
+	}
+
 }

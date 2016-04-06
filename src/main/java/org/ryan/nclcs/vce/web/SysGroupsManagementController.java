@@ -458,4 +458,63 @@ public class SysGroupsManagementController {
 		logger.info("this is [savegroupuserrelationship.do] end ...");
 		return result;
 	}
+	
+	@RequestMapping(value = "/findcampusinfo.do", method=RequestMethod.POST)
+	@ResponseBody
+	@SystemUserLoginIsCheck
+	public String findCampusInfo(HttpServletRequest request, @RequestBody String data) {
+		logger.info("this is [findcampusinfo.do] start ...");
+		Integer groupId=0, groupParentId=-1, needSelected=0;
+		String groupIds=null;
+		Map<String, Object> result=new HashMap<String, Object>();
+		
+		if (data!=null&&!data.equals("")){
+			try {
+				logger.info("this is [findcampusinfo.do] is decoding ...");
+				data=URLDecoder.decode(data, "utf-8");
+			} catch (UnsupportedEncodingException e) {
+				logger.info("this is [findcampusinfo.do] occur error when program decoding ...");
+				e.printStackTrace();
+			}
+		}
+		
+		try{
+			JSONObject json=JSONObject.fromString(data);
+			
+			if (json.has("groupId")){
+				groupId=json.getInt("groupId");
+			}
+			
+			if (json.has("groupParentId")){
+				groupParentId=json.getInt("groupParentId");
+			}
+			
+			if (json.has("groupIds")){
+				groupIds=json.getString("groupIds");
+			}
+			
+			if (json.has("needSelected")){//是否需要加入被选中, 0:不需要, 1:需要
+				needSelected=json.getInt("needSelected");
+			}
+		}catch(Exception ex){
+			logger.info("this is [findcampusinfo.do] get parameter error ...");
+			result.put("status", -1);
+			result.put("data", "parameters error");
+			ex.printStackTrace();
+		}
+		
+		Map<String, Object> parameters=new HashMap<String, Object>();
+		parameters.put("groupParentId", groupParentId);
+		parameters.put("groupIds", groupIds);
+		
+		List<Map<String,Object>> campusInfo=sysGroupsManagementService.findCampusInfo(parameters, groupId, needSelected==0?false:true);
+		
+		result.put("status", 1);
+		result.put("data", campusInfo);
+		
+		String json=JSONObject.fromObject(result).toString();
+		logger.info("this is [findcampusinfo.do] data ["+json+"] ...");
+		logger.info("this is [findcampusinfo.do] end ...");
+		return json;
+	}
 }

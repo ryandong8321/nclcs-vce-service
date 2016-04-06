@@ -84,4 +84,6 @@ public interface ISysGroupsManagementService extends INclcsVceServiceBaseService
 	public List<Map<String, Object>> findAllCampusOrClass(Map<String, Object> parameters, Integer groupCategory);
 	
 	public List<SysGroups> findSubGroups(String parentIds);
+	
+	public List<Map<String, Object>> findCampusInfo(Map<String, Object> parameters, Integer groupId, boolean needSelected);
 }

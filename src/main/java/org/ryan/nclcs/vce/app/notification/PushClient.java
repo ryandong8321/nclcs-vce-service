@@ -10,6 +10,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 public class PushClient {

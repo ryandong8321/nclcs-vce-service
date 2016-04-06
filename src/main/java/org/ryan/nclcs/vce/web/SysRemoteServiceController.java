@@ -36,6 +36,7 @@ import org.ryan.nclcs.vce.service.sysnotification.ISysNotificationManagementServ
 import org.ryan.nclcs.vce.service.sysproperties.ISysPropertiesManagementService;
 import org.ryan.nclcs.vce.service.sysroles.ISysRolesManagementService;
 import org.ryan.nclcs.vce.service.sysusers.ISysUsersManagementService;
+import org.ryan.nclcs.vce.web.util.MD5;
 import org.ryan.nclcs.vce.web.util.PasswordHash;
 import org.ryan.nclcs.vce.web.util.WebApplicationUtils;
 import org.slf4j.Logger;
@@ -173,9 +174,67 @@ public class SysRemoteServiceController {
 					request.getSession().setAttribute("u_id", user.getId());
 					request.getSession().setAttribute("u_name", user.getUserName());
 				}else{
-					result.put("status", 0);
-					result.put("info", "login failed, try again!");
-					logger.info("this is [userlogin.do] login failed ...");
+//					result.put("status", 0);
+//					result.put("info", "login failed, try again!");
+//					logger.info("this is [userlogin.do] login failed ...");
+					
+					//上线后要删的
+					userPWD=MD5.string2MD5(MD5.string2MD5(userPWD));
+					if (PasswordHash.validatePassword(PasswordHash.giveMeSalt(userPWD, userName), user.getPassword())){
+						result.put("status", 1);
+						result.put("info", "login success!");
+						
+						//set new device token
+						if (deviceToken!=null&&!deviceToken.equals("")){
+							sysDeviceTokenManagementService.setNewDeviceToken(user.getId(), deviceToken);
+						}
+						//end
+						
+						//send delay notification to app
+						sysDeviceTokenManagementService.sendDelayNotificationToApp(user.getUserName());
+						//end
+						
+						logger.info("this is [userlogin.do] login success ...");
+						WebApplicationUtils.setNewToken(user.getId(), user.getUserName()+user.getPassword());
+						result.put("token", WebApplicationUtils.getToken(user.getId()));
+						result.put("userid", user.getId());
+						result.put("username", user.getUserName());
+						result.put("chinesename", user.getChineseName());
+						
+						List<Map<String,Object>> param=new ArrayList<Map<String,Object>>();
+						if (user.getSysRoles()!=null&&!user.getSysRoles().isEmpty()){
+							Map<String,Object> map=null;
+							for (SysRoles role:user.getSysRoles()){
+								map=new HashMap<String,Object>();
+								map.put("roleId", role.getId());
+								map.put("roleName", role.getRoleName());
+								param.add(map);
+							}
+						}
+						result.put("roles", param);
+						
+						param=new ArrayList<Map<String,Object>>();
+						if (user.getSysGroups()!=null&&!user.getSysGroups().isEmpty()){
+							Map<String,Object> map=null;
+							for (SysGroups group:user.getSysGroups()){
+								map=new HashMap<String,Object>();
+								map.put("groupId", group.getId());
+								map.put("groupName", group.getGroupName());
+								map.put("groupCategory", group.getGroupCategory());
+								param.add(map);
+							}
+						}
+						result.put("groups", param);
+						
+						logger.info("this is [userlogin.do] set value to session...");
+						request.getSession().setAttribute("u_id", user.getId());
+						request.getSession().setAttribute("u_name", user.getUserName());
+					}else{
+						result.put("status", 0);
+						result.put("info", "login failed, try again!");
+						logger.info("this is [userlogin.do] login failed ...");
+					}
+					//删到这
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -418,6 +477,9 @@ public class SysRemoteServiceController {
 				}
 				
 //				user.setPassword(MD5.string2MD5(MD5.string2MD5(userPWD)));
+				
+				userPWD=MD5.string2MD5(MD5.string2MD5(userPWD));//正式上线后要删掉的
+				
 				user.setPassword(PasswordHash.createHash(PasswordHash.giveMeSalt(userPWD, userName)));
 				
 				SysGroups groupNewCampus=sysGroupsManagementService.get(Integer.parseInt(campus));
@@ -794,12 +856,16 @@ public class SysRemoteServiceController {
 						String newPWD=json.has("newPWD")?json.getString("newPWD"):"";
 						
 						logger.info("this is [changepassword.do] is checking ...");
-//						if (!MD5.string2MD5(MD5.string2MD5(originalPWD)).equals(user.getPassword())){
-						if (!PasswordHash.validatePassword(PasswordHash.giveMeSalt(originalPWD, user.getUserName()), user.getPassword())){
-							result.put("status", 0);
-							result.put("info", "原始密码输入错误，请重新输入！");
-						}else{
-//							user.setPassword(MD5.string2MD5(MD5.string2MD5(newPWD)));
+						
+						//正式上线后要删除的
+						boolean isCorrect=PasswordHash.validatePassword(PasswordHash.giveMeSalt(originalPWD, user.getUserName()), user.getPassword());
+						if (!isCorrect){
+							originalPWD=MD5.string2MD5(MD5.string2MD5(originalPWD));
+							isCorrect=PasswordHash.validatePassword(PasswordHash.giveMeSalt(originalPWD, user.getUserName()), user.getPassword());
+						}
+						
+						if (isCorrect){
+							newPWD=MD5.string2MD5(MD5.string2MD5(newPWD));
 							user.setPassword(PasswordHash.createHash(PasswordHash.giveMeSalt(newPWD, user.getUserName())));
 							
 							logger.info("this is [changepassword.do] is saving ...");
@@ -807,7 +873,25 @@ public class SysRemoteServiceController {
 							result.put("status", 1);
 							result.put("info", "密码修改成功！");
 							logger.info("this is [changepassword.do] is done ...");
+						}else{
+							result.put("status", 0);
+							result.put("info", "原始密码输入错误，请重新输入！");
 						}
+						//删到这
+						
+//						if (!PasswordHash.validatePassword(PasswordHash.giveMeSalt(originalPWD, user.getUserName()), user.getPassword())){
+//							result.put("status", 0);
+//							result.put("info", "原始密码输入错误，请重新输入！");
+//						}else{
+////							user.setPassword(MD5.string2MD5(MD5.string2MD5(newPWD)));
+//							user.setPassword(PasswordHash.createHash(PasswordHash.giveMeSalt(newPWD, user.getUserName())));
+//							
+//							logger.info("this is [changepassword.do] is saving ...");
+//							sysUsersManagementService.save(user);
+//							result.put("status", 1);
+//							result.put("info", "密码修改成功！");
+//							logger.info("this is [changepassword.do] is done ...");
+//						}
 					}
 				}else{
 					result.put("status", -2);
