@@ -128,15 +128,27 @@ public class SysRemoteServiceController {
 					result.put("status", 1);
 					result.put("info", "login success!");
 					
-					//set new device token
-					if (deviceToken!=null&&!deviceToken.equals("")){
-						sysDeviceTokenManagementService.setNewDeviceToken(user.getId(), deviceToken);
+					try{
+						//set new device token
+						if (deviceToken!=null&&!deviceToken.equals("")){
+//							sysDeviceTokenManagementService.setNewDeviceToken(user.getId(), deviceToken);
+							sysDeviceTokenManagementService.setNewDeviceToken(user, deviceToken);
+						}
+						//end
+					}catch(Exception ex){
+						ex.printStackTrace();
+						logger.info("this is [userlogin.do] create user device info exception ...");
 					}
-					//end
 					
-					//send delay notification to app
-					sysDeviceTokenManagementService.sendDelayNotificationToApp(user.getUserName());
-					//end
+					try{
+						//send delay notification to app
+						sysDeviceTokenManagementService.sendDelayNotificationToApp(user.getUserName());
+						//end
+					}catch(Exception ex){
+						ex.printStackTrace();
+						logger.info("this is [userlogin.do] send delay notification exception ...");
+					}
+					
 					
 					logger.info("this is [userlogin.do] login success ...");
 					WebApplicationUtils.setNewToken(user.getId(), user.getUserName()+user.getPassword());

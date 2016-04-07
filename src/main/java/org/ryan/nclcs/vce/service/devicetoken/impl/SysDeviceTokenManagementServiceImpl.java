@@ -19,6 +19,7 @@ import org.ryan.nclcs.vce.app.notification.ios.IOSCustomizedcast;
 import org.ryan.nclcs.vce.dao.devicetoken.ISysDeviceTokenManagementDAO;
 import org.ryan.nclcs.vce.entity.AppMissedNotification;
 import org.ryan.nclcs.vce.entity.SysDeviceToken;
+import org.ryan.nclcs.vce.entity.SysUsers;
 import org.ryan.nclcs.vce.service.NclcsVceServiceBaseServiceImpl;
 import org.ryan.nclcs.vce.service.appmissednotification.IAppMissedNotificationService;
 import org.ryan.nclcs.vce.service.devicetoken.ISysDeviceTokenManagementService;
@@ -377,6 +378,38 @@ public class SysDeviceTokenManagementServiceImpl
 				}
 				device.setDeviceTokenValue(deviceToken);
 				device.setSysUserId(userId);
+				this.getCurrentDAO().save(device);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			result=false;
+		}
+		return result;
+	}
+
+	@Override
+	public boolean setNewDeviceToken(SysUsers sysUsers, String deviceToken) {
+		boolean result=true;
+		try {
+			if (sysUsers!=null&&sysUsers.getId()!=null&&sysUsers.getUserName()!=null&&!sysUsers.getUserName().equals("")){
+				SysDeviceToken device=null;
+				StringBuffer hql=new StringBuffer("from SysDeviceToken sdt where sdt.sysUserId = ?");
+				device=this.getCurrentDAO().findUnique(hql.toString(), sysUsers.getId());
+				
+				if (device==null){
+					device=new SysDeviceToken();
+				}
+				
+				if (deviceToken.length()==44){
+					device.setDeviceTokenType(1);
+				}else if (deviceToken.length()==64){
+					device.setDeviceTokenType(0);
+				}
+				
+				device.setDeviceTokenValue(deviceToken);
+				device.setSysUserId(sysUsers.getId());
+				device.setSysUserName(sysUsers.getUserName());
+				
 				this.getCurrentDAO().save(device);
 			}
 		} catch (Exception e) {
