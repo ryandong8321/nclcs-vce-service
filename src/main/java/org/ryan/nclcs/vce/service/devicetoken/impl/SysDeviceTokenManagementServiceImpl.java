@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpResponse;
@@ -264,7 +263,7 @@ public class SysDeviceTokenManagementServiceImpl
 				if (missed.getDeviceTokenType()!=null&&missed.getDeviceTokenType().equals(0)){//iOS
 					try {
 						logger.info("Sending iOS delay notification username ["+missed.getSysUserName()+"]...");
-						iOSAliasCast=new IOSCustomizedcast(WebUtilConstant._android_appkey, WebUtilConstant._android_appMasterSecret);
+						iOSAliasCast=new IOSCustomizedcast(WebUtilConstant._ios_appkey, WebUtilConstant._ios_appMasterSecret);
 						iOSAliasCast.setAlias(missed.getSysUserName(), WebUtilConstant.ALIASTYPE);
 						iOSAliasCast.setAlert(missed.getNotifictionContent());
 						iOSAliasCast.setBadge(badge);

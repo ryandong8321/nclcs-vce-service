@@ -186,67 +186,9 @@ public class SysRemoteServiceController {
 					request.getSession().setAttribute("u_id", user.getId());
 					request.getSession().setAttribute("u_name", user.getUserName());
 				}else{
-//					result.put("status", 0);
-//					result.put("info", "login failed, try again!");
-//					logger.info("this is [userlogin.do] login failed ...");
-					
-					//上线后要删的
-					userPWD=MD5.string2MD5(MD5.string2MD5(userPWD));
-					if (PasswordHash.validatePassword(PasswordHash.giveMeSalt(userPWD, userName), user.getPassword())){
-						result.put("status", 1);
-						result.put("info", "login success!");
-						
-						//set new device token
-						if (deviceToken!=null&&!deviceToken.equals("")){
-							sysDeviceTokenManagementService.setNewDeviceToken(user.getId(), deviceToken);
-						}
-						//end
-						
-						//send delay notification to app
-						sysDeviceTokenManagementService.sendDelayNotificationToApp(user.getUserName());
-						//end
-						
-						logger.info("this is [userlogin.do] login success ...");
-						WebApplicationUtils.setNewToken(user.getId(), user.getUserName()+user.getPassword());
-						result.put("token", WebApplicationUtils.getToken(user.getId()));
-						result.put("userid", user.getId());
-						result.put("username", user.getUserName());
-						result.put("chinesename", user.getChineseName());
-						
-						List<Map<String,Object>> param=new ArrayList<Map<String,Object>>();
-						if (user.getSysRoles()!=null&&!user.getSysRoles().isEmpty()){
-							Map<String,Object> map=null;
-							for (SysRoles role:user.getSysRoles()){
-								map=new HashMap<String,Object>();
-								map.put("roleId", role.getId());
-								map.put("roleName", role.getRoleName());
-								param.add(map);
-							}
-						}
-						result.put("roles", param);
-						
-						param=new ArrayList<Map<String,Object>>();
-						if (user.getSysGroups()!=null&&!user.getSysGroups().isEmpty()){
-							Map<String,Object> map=null;
-							for (SysGroups group:user.getSysGroups()){
-								map=new HashMap<String,Object>();
-								map.put("groupId", group.getId());
-								map.put("groupName", group.getGroupName());
-								map.put("groupCategory", group.getGroupCategory());
-								param.add(map);
-							}
-						}
-						result.put("groups", param);
-						
-						logger.info("this is [userlogin.do] set value to session...");
-						request.getSession().setAttribute("u_id", user.getId());
-						request.getSession().setAttribute("u_name", user.getUserName());
-					}else{
-						result.put("status", 0);
-						result.put("info", "login failed, try again!");
-						logger.info("this is [userlogin.do] login failed ...");
-					}
-					//删到这
+					result.put("status", 0);
+					result.put("info", "login failed, try again!");
+					logger.info("this is [userlogin.do] login failed ...");
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -261,6 +203,52 @@ public class SysRemoteServiceController {
 		}
 		String tmp=JSONObject.fromMap(result).toString();
 		logger.info("this is [userlogin.do] return ["+tmp+"] ...");
+		return tmp;
+	}
+	
+	@RequestMapping(value = "/userlogout.do", method=RequestMethod.POST)
+	@ResponseBody
+	@SystemLogIsCheck(description="用户登出")
+	public String userLogout(HttpServletRequest request, @RequestBody String data) {
+		
+		logger.info("this is [userlogout.do] start ...");
+		Map<String, Object> result=new HashMap<String, Object>();
+		logger.info("this is [userlogout.do] is decoding ...");
+		JSONObject json=JSONObject.fromString(this.decodeParameters(data));
+		logger.info("this is [userlogout.do] decode done ...");
+		
+		Integer userId=-1;
+		String token=null;
+		if (!json.has("userId")||!json.has("token")){
+			result.put("status", -1);
+			result.put("info", "the lack of parameter");
+			logger.info("this is [userlogout.do] the lack of parameter ...");
+		}
+		
+		if (result.isEmpty()){
+			try{
+				userId=json.getInt("userId");
+				token=json.getString("token");
+				String localToken=WebApplicationUtils.getToken(userId);
+				if (localToken!=null&&localToken.equals(token)){
+					WebApplicationUtils.removeToken(userId);
+					result.put("status", 1);
+					result.put("info", "operation success");
+				}else{
+					result.put("status", -2);
+					result.put("info", "illegal user");
+					logger.info("this is [userlogout.do] illegal user ...");
+				}
+				
+			}catch(Exception ex){
+				ex.printStackTrace();
+				result.put("status", 0);
+				result.put("info", "user logout error");
+				logger.info("this is [userlogout.do] exception ...");
+			}
+		}
+		String tmp=JSONObject.fromMap(result).toString();
+		logger.info("this is [userlogout.do] return ["+tmp+"] ...");
 		return tmp;
 	}
 	
@@ -1915,7 +1903,7 @@ public class SysRemoteServiceController {
 						}
 					}
 					logger.info("this is [saveandsendnotification.do] get [u_sr] is ["+roleCategory+"]...");
-					List <SysGroups> lstGroups=null;
+					List <SysGroups> lstGroups=currentUser.getSysGroups();
 					if (roleCategory==-1){
 						result.put("status",0);
 						result.put("info", "wrong role, login again please");
