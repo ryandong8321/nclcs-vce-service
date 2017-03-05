@@ -476,10 +476,6 @@ public class SysRemoteServiceController {
 					user.setPropertyIsLearnChinese(property);
 				}
 				
-//				user.setPassword(MD5.string2MD5(MD5.string2MD5(userPWD)));
-				
-				userPWD=MD5.string2MD5(MD5.string2MD5(userPWD));//正式上线后要删掉的
-				
 				user.setPassword(PasswordHash.createHash(PasswordHash.giveMeSalt(userPWD, userName)));
 				
 				SysGroups groupNewCampus=sysGroupsManagementService.get(Integer.parseInt(campus));
@@ -857,15 +853,11 @@ public class SysRemoteServiceController {
 						
 						logger.info("this is [changepassword.do] is checking ...");
 						
-						//正式上线后要删除的
-						boolean isCorrect=PasswordHash.validatePassword(PasswordHash.giveMeSalt(originalPWD, user.getUserName()), user.getPassword());
-						if (!isCorrect){
-							originalPWD=MD5.string2MD5(MD5.string2MD5(originalPWD));
-							isCorrect=PasswordHash.validatePassword(PasswordHash.giveMeSalt(originalPWD, user.getUserName()), user.getPassword());
-						}
-						
-						if (isCorrect){
-							newPWD=MD5.string2MD5(MD5.string2MD5(newPWD));
+						if (!PasswordHash.validatePassword(PasswordHash.giveMeSalt(originalPWD, user.getUserName()), user.getPassword())){
+							result.put("status", 0);
+							result.put("info", "原始密码输入错误，请重新输入！");
+						}else{
+//							user.setPassword(MD5.string2MD5(MD5.string2MD5(newPWD)));
 							user.setPassword(PasswordHash.createHash(PasswordHash.giveMeSalt(newPWD, user.getUserName())));
 							
 							logger.info("this is [changepassword.do] is saving ...");
@@ -873,25 +865,7 @@ public class SysRemoteServiceController {
 							result.put("status", 1);
 							result.put("info", "密码修改成功！");
 							logger.info("this is [changepassword.do] is done ...");
-						}else{
-							result.put("status", 0);
-							result.put("info", "原始密码输入错误，请重新输入！");
 						}
-						//删到这
-						
-//						if (!PasswordHash.validatePassword(PasswordHash.giveMeSalt(originalPWD, user.getUserName()), user.getPassword())){
-//							result.put("status", 0);
-//							result.put("info", "原始密码输入错误，请重新输入！");
-//						}else{
-////							user.setPassword(MD5.string2MD5(MD5.string2MD5(newPWD)));
-//							user.setPassword(PasswordHash.createHash(PasswordHash.giveMeSalt(newPWD, user.getUserName())));
-//							
-//							logger.info("this is [changepassword.do] is saving ...");
-//							sysUsersManagementService.save(user);
-//							result.put("status", 1);
-//							result.put("info", "密码修改成功！");
-//							logger.info("this is [changepassword.do] is done ...");
-//						}
 					}
 				}else{
 					result.put("status", -2);
@@ -1516,7 +1490,7 @@ public class SysRemoteServiceController {
 //					}
 //					
 //					if (sort!=null&&!sort.equals("")){
-						parameters.put("sort", 3);
+						parameters.put("sort", 4);
 //					}
 //					if (dir!=null&&!dir.equals("")){
 						parameters.put("order", "desc");
