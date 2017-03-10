@@ -18,6 +18,7 @@ import org.ryan.nclcs.vce.entity.SysGroups;
 import org.ryan.nclcs.vce.entity.SysRoles;
 import org.ryan.nclcs.vce.entity.SysUsers;
 import org.ryan.nclcs.vce.service.sysusers.ISysUsersManagementService;
+import org.ryan.nclcs.vce.web.util.MD5;
 import org.ryan.nclcs.vce.web.util.PasswordHash;
 import org.ryan.nclcs.vce.web.util.TokenUtils;
 import org.slf4j.Logger;
@@ -42,6 +43,8 @@ public class SysUsersManagementController {
 	
 	@Autowired
 	private ISysUsersManagementService sysUsersManagementService;
+	
+	private static final String _RESETPWD="123456";
 	
 //	@Autowired
 //	private ISysPropertiesManagementService sysPropertiesManagementService;
@@ -310,6 +313,66 @@ public class SysUsersManagementController {
 		}
 		
 		logger.info("this is [deletemultiplesysusers.do] show result ["+result+"] ...");
+		request.setAttribute("result", result.get("data"));
+		return "forward:/sysusersmanagement/sysuserslist.do";
+	}
+	
+	@RequestMapping(value = "/resetuserspassword.do", method=RequestMethod.POST)
+	@SystemUserLoginIsCheck
+	@SystemLogIsCheck(description="批量重置用户密码")
+	public String resetUsersPassword(HttpServletRequest request, String userIds) {
+		logger.info("this is [resetuserspassword.do] start ...");
+		logger.info("this is [resetuserspassword.do] values [userIds={"+userIds+"}]");
+		Map<String, Object> result=new HashMap<String, Object>();
+		if (userIds!=null&&!userIds.equals("")){
+			try {
+				logger.info("this is [resetuserspassword.do] check token ...");
+				String userName=request.getSession().getAttribute("u_name")==null?"":request.getSession().getAttribute("u_name").toString();
+				if (userName!=null&&!userName.equals("")){
+					String sessionToken=request.getSession().getAttribute(userName)==null?"":request.getSession().getAttribute(userName).toString();
+					if (sessionToken!=null&&!sessionToken.equals("")&&TokenUtils.getInstance().validateSessionToken(userName, sessionToken)){
+						logger.info("this is [resetuserspassword.do] check token success...");
+						logger.info("this is [resetuserspassword.do] ready to reset ...");
+						String[] usersId=null;
+						if (userIds.contains(",")){
+							usersId=userIds.split(",");
+						}else{
+							usersId=new String[1];
+							usersId[0]=userIds;
+						}
+						int userId=0;
+						SysUsers user=null;
+						for (int idx=0;idx<usersId.length;idx++){
+							userId=Integer.parseInt(usersId[idx]);
+							logger.info("this is [resetuserspassword.do] show id ["+userId+"] ...");
+							user=sysUsersManagementService.get(userId);
+							logger.info("this is [resetuserspassword.do] show id ["+userId+"] is changing...");
+							user.setPassword(PasswordHash.createHash(PasswordHash.giveMeSalt(MD5.string2MD5(MD5.string2MD5(_RESETPWD)), user.getUserName())));
+							sysUsersManagementService.save(user);
+							logger.info("this is [resetuserspassword.do] show id ["+userId+"] has changed...");
+						}
+						result.put("status", 1);
+						result.put("data", "operation success!");
+						logger.info("this is [resetuserspassword.do] to reset done...");
+					}else{
+						result.put("status", -2);
+						result.put("data", "illegal user!");
+						logger.info("this is [resetuserspassword.do] to reset failed...");
+					}
+				}else{
+					result.put("status", -2);
+					result.put("data", "illegal user!");
+					logger.info("this is [resetuserspassword.do] to reset failed...");
+				}
+			} catch (Exception e) {
+				logger.info("this is [resetuserspassword.do] to trough exception when reset ...");
+				result.put("status", 0);
+				result.put("data", "delete failed, try again!");
+				e.printStackTrace();
+			}
+		}
+		
+		logger.info("this is [resetuserspassword.do] show result ["+result+"] ...");
 		request.setAttribute("result", result.get("data"));
 		return "forward:/sysusersmanagement/sysuserslist.do";
 	}

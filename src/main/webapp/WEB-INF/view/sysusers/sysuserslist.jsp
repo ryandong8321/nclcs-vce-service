@@ -340,6 +340,10 @@
 											<a href="javascript:deleteSeletedUsers();">
 											删除选择的用户 </a>
 										</li>
+										<li>
+											<a href="javascript:resetUsersPassword();">
+											用户密码重置 </a>
+										</li>
 										<!-- <li>
 											<a href="javascript:;">
 											Export to Excel </a>
@@ -434,6 +438,9 @@
 				<form action="<%=basePath%>sysusersmanagement/deletemultiplesysusers.do" id="frmDeleteInfo" name="frmDeleteInfo" method="POST">
 					<input type="hidden" id="deleteIds" name="deleteIds" value=""/>
 				</form>
+				<form action="<%=basePath%>sysusersmanagement/resetuserspassword.do" id="frmResetUsersPwd" name="frmResetUsersPwd" method="POST">
+					<input type="hidden" id="userIds" name="userIds" value=""/>
+				</form>
 			</div>
 			<!-- END PAGE CONTENT-->
 		</div>
@@ -521,6 +528,21 @@
 			}
 		});
 	}
+     
+     function resetUsersPassword(){
+    	 var userTable = new Datatable(), selections=userTable.getSelectedRows();
+    	 //alert(selections);
+    	 if(JSON.stringify(selections)=="[]"){
+    		 showMessage("请选择要重置密码的用户");
+    		 return;
+    	 }
+    	 bootbox.confirm("<font size='3'>您选择用户的密码将会重置，此操作<font color='red'>不可恢复</font>，请确认</font>", function (result){
+			if (result==true){
+				$("#userIds").val(selections);
+				$("#frmResetUsersPwd").submit();
+			}
+		});
+     }
      
      function dologout(){
   		 bootbox.confirm("<font size='3'>您即将退出系统，请确认</font>", function (result){
